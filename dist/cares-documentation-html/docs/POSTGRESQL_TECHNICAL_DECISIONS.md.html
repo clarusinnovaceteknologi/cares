@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Technical Decisions (Preparation)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_TECHNICAL_DECISIONS.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Technical Decisions (Preparation)</h1>
+<p><strong>Status:</strong> Documentation and technical decision preparation only (NOT IMPLEMENTED, NOT TESTED). This document consolidates unresolved technical issues, options, proposed recommendations, dependencies, and validation requirements to support formal PostgreSQL schema/security design review. It does not create schema/DDL/migrations, implement controls, or resolve owner/commercial/privacy/legal/security/operational approvals.</p>
+<p><strong>Sources reviewed:</strong> <a href="ARCHITECTURE.md.html">ARCHITECTURE.md</a>, <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>, <a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a>, <a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a>, <a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">adr/0006-atomic-per-tenant-asset-licensing.md</a>, <a href="ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md.html">ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md</a>.</p>
+<h2>Decision register</h2>
+<table>
+<thead>
+<tr>
+<th>Decision ID</th>
+<th>Topic</th>
+<th>Status</th>
+<th>Summary recommendation (technical, proposed)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TD-001</td>
+<td>PostgreSQL version and verified transaction-context binding mechanism</td>
+<td>Proposed</td>
+<td>Select a supported PostgreSQL version and implement protected verifier-written, transaction-bound context bound to backend/session transaction identity with explicit cleanup/fail-closed semantics; do not use custom GUCs as authorization source</td>
+</tr>
+<tr>
+<td>TD-002</td>
+<td>Tenant assertion verification, nonce lifecycle, and trusted helper interfaces</td>
+<td>Proposed</td>
+<td>Hardened <code>SECURITY DEFINER</code> verifier performs full assertion validation and nonce consumption; narrow helpers expose only required decisions/values; non-authoritative diagnostics only outside authz path</td>
+</tr>
+<tr>
+<td>TD-003</td>
+<td>Logical database roles, ownership, grants, and <code>SECURITY DEFINER</code> boundaries</td>
+<td>Proposed</td>
+<td>Enforce logical roles <code>cares_api_runtime</code>, <code>cares_ingest_runtime</code>, <code>cares_worker_runtime</code>, <code>cares_migration</code>, <code>cares_maintenance</code> with least privilege, NOLOGIN/controlled definer ownership, fixed <code>search_path</code>, minimal grants, and no runtime ownership/bypass</td>
+</tr>
+<tr>
+<td>TD-004</td>
+<td>RLS policy catalog and <code>FORCE ROW LEVEL SECURITY</code> applicability</td>
+<td>Proposed</td>
+<td>Restrictive tenant boundary + permissive/action-scope gates using verified context helpers; enable RLS and apply FORCE RLS where ownership/role design permits; explicitly design <code>UPDATE</code>/<code>SELECT</code>/<code>RETURNING</code> visibility</td>
+</tr>
+<tr>
+<td>TD-005</td>
+<td>Identity binding and fingerprint alias schema semantics</td>
+<td>Proposed</td>
+<td>Reconciled model: canonical asset, stable <code>asset_data_source</code> binding, stable <code>source_device_key_id</code>, versioned <code>source_device_fingerprint_alias</code>; tenant-scoped uniqueness, overlap/rotation/collision/migration without duplicates or licensed-usage inflation</td>
+</tr>
+<tr>
+<td>TD-006</td>
+<td>Operation-by-operation transaction-boundary map</td>
+<td>Proposed</td>
+<td>Define atomic commit boundaries per operation for business state, idempotency/result, audit/lifecycle/licensing/evidence records, and outbox records; fail closed on partial/ambiguous outcomes</td>
+</tr>
+<tr>
+<td>TD-007</td>
+<td>Idempotency ledger scope and unknown-commit recovery</td>
+<td>Proposed</td>
+<td>Separate ingestion <code>event_receipt</code>, licensing/identity operation idempotency ledger, and outbox attempt/replay records; durable request-hash/result semantics and reconciliation for unknown commit/timeout/retry</td>
+</tr>
+<tr>
+<td>TD-008</td>
+<td>Outbox scope, delivery ambiguity, reconciliation, and replay</td>
+<td>Proposed</td>
+<td>Distinguish event-processing outbox from controlled/external-side-effect outbox; use leases/fencing, cumulative attempts, generation-scoped replay controls, <code>delivery_unknown</code> safety state, reconciliation evidence/authorization before ambiguous replay</td>
+</tr>
+<tr>
+<td>TD-009</td>
+<td>Evidence storage metadata, custody, and controlled transitions</td>
+<td>Proposed</td>
+<td>Immutable evidence metadata/objects with append-only custody sequencing/hash linkage; protected transaction-bound single-use authorization for controlled transitions (not GUC), atomic state/custody/authorization handling; recognize DB hash-chain trust-boundary limits</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>TD-001 — PostgreSQL version and verified transaction-context binding mechanism</h2>
+<ul>
+<li><strong>Problem statement:</strong> CARES requires tenant isolation/RLS and authorization decisions to rely on protected, verifier-written, transaction-bound verified context. Custom PostgreSQL GUCs are explicitly prohibited as authentication/authorization sources, but the exact PostgreSQL version, transaction-binding identifier/primitive, and cleanup/anti-reuse mechanism are not selected.</li>
+<li><strong>Security or correctness implications:</strong> Incorrect binding (or fallback to GUC/session state) can enable cross-tenant access, context replay, pool/session bleed, backend PID/transaction identifier reuse authorization, and fail-open behavior.</li>
+<li><strong>Available technical options:</strong>
+<ol>
+<li><strong>Security-internal verifier-written transaction context table keyed to current backend and transaction identity</strong> with narrow helper reads and explicit cleanup/binding checks (preferred conceptual direction in final corrections).</li>
+<li><strong>Transaction-local temp table populated by verifier/definer code</strong> (simpler lifetime, weaker boundary against same-session untrusted SQL/tampering depending on model).</li>
+<li><strong>Opaque handle in non-authoritative GUC/session variable + protected lookup record</strong> (handle not proof; must validate against current binding/protected record every use).</li>
+<li><strong>Per-statement external verification only</strong> (high latency/complexity; unsuitable as primary RLS source).</li>
+</ol>
+</li>
+<li><strong>Advantages and disadvantages:</strong>
+<ul>
+<li>Option 1: <strong>Pros:</strong> strong non-GUC authorization source, auditable boundary, explicit claims/nonce linkage possible. <strong>Cons:</strong> requires careful binding semantics, helper overhead, cleanup/anti-reuse design, and PostgreSQL-version-specific validation.</li>
+<li>Option 2: <strong>Pros:</strong> natural transaction scope. <strong>Cons:</strong> same-session tamper risk/visibility concerns; less robust as a security boundary.</li>
+<li>Option 3: <strong>Pros:</strong> can avoid exposing claims in GUC. <strong>Cons:</strong> added complexity; easy to misuse if handle treated as authority.</li>
+<li>Option 4: <strong>Pros:</strong> separation of crypto verification concerns. <strong>Cons:</strong> operationally complex, hard to make atomic with DB RLS decisions.</li>
+</ul>
+</li>
+<li><strong>Recommended option, with technical justification:</strong> <strong>Option 1 (Proposed).</strong> It best satisfies the documented requirement that authorization helpers read protected verifier-written state rather than mutable caller/session configuration, and supports fail-closed binding/cleanup validation.</li>
+<li><strong>Dependencies and assumptions:</strong> Selected/supported PostgreSQL major/minor version; availability and semantics of transaction/backend identifiers and required features; pooling/reset behavior; security-internal schema permissions; hardened verifier implementation. Assumes no reliance on untrusted GUC values for allow/deny.</li>
+<li><strong>Validation required:</strong> Production-equivalent PostgreSQL tests for GUC forgery resistance, pool/session bleed, PID/transaction reuse, cleanup/rollback behavior, helper privilege boundaries, fail-closed missing/invalid/expired context, and RLS enforcement under concurrent pooled connections.</li>
+<li><strong>Status:</strong> <strong>Proposed</strong>.</li>
+</ul>
+<h2>TD-002 — Tenant assertion verification, nonce lifecycle, and trusted helper interfaces</h2>
+<ul>
+<li><strong>Problem statement:</strong> The system needs a trustworthy way to establish tenant/principal/scope context per transaction/job, including signature/claim validation, replay prevention, and minimal helper interfaces consumable by RLS/policies and controlled procedures.</li>
+<li><strong>Security or correctness implications:</strong> Weak verification or nonce handling enables tenant spoofing, replay, scope escalation, stale-context reuse, and unauthorized cross-tenant data access or evidence/licensing actions.</li>
+<li><strong>Available technical options:</strong>
+<ol>
+<li><strong>Hardened <code>SECURITY DEFINER</code> verifier function(s)</strong> that validate canonical claims/signature/issuer/audience/tenant/principal/scopes/expiry/skew/request or job binding, consume nonce, and write protected context atomically.</li>
+<li><strong>Application-only verification with database trusting application-provided context</strong> (insufficient for DB-enforced tenant isolation).</li>
+<li><strong>Split verification:</strong> external/auth service verifies assertion and DB verifier records only DB-binding proof (possible but more moving parts).</li>
+</ol>
+</li>
+<li><strong>Advantages and disadvantages:</strong>
+<ul>
+<li>Option 1: <strong>Pros:</strong> single DB-visible trust boundary for RLS helpers; can atomically bind nonce/context to transaction. <strong>Cons:</strong> requires strict definer hardening, key/signature design decisions, and careful interface minimization.</li>
+<li>Option 2: <strong>Pros:</strong> simpler DB layer. <strong>Cons:</strong> does not meet defense-in-depth/RLS trust requirements; unacceptable risk.</li>
+<li>Option 3: <strong>Pros:</strong> crypto/service separation. <strong>Cons:</strong> increased protocol complexity and failure modes; must still prevent forged DB binding.</li>
+</ul>
+</li>
+<li><strong>Recommended option, with technical justification:</strong> <strong>Option 1 (Proposed), possibly with external support services only if DB-recorded binding/proof remains verifier-controlled and fail-closed.</strong> Aligns with <a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a> and <a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a>.</li>
+<li><strong>Dependencies and assumptions:</strong> Assertion format/canonicalization and signature algorithm; issuer/audience/key distribution and rotation/revocation; nonce storage/TTL/cleanup; trusted time/skew policy; request/job binding semantics; TD-001 binding mechanism; TD-003 definer/role boundaries.</li>
+<li><strong>Validation required:</strong> Positive/negative cryptographic and DB tests for invalid signature/issuer/audience/tenant/principal/scope/expiry/skew/nonce replay, missing context, helper output minimization (no full context leakage), and atomic nonce-consume+context-bind behavior.</li>
+<li><strong>Status:</strong> <strong>Proposed</strong>.</li>
+</ul>
+<h2>TD-003 — Logical database roles, ownership, grants, and <code>SECURITY DEFINER</code> boundaries</h2>
+<ul>
+<li><strong>Problem statement:</strong> Reconciled documents require normalized logical role separation and strict boundaries for ordinary runtime roles, migration/maintenance roles, and security-critical definer functions/helpers.</li>
+<li><strong>Security or correctness implications:</strong> Over-privileged roles, unsafe definer ownership/search paths, or direct access to security-internal tables can bypass RLS, forge context/authorizations, corrupt evidence/licensing state, or create un-auditable privileged operations.</li>
+<li><strong>Available technical options:</strong>
+<ol>
+<li><strong>Granular logical roles + security-internal schema ownership by controlled NOLOGIN owners + hardened <code>SECURITY DEFINER</code> helpers with fixed <code>search_path</code> and minimal <code>EXECUTE</code> grants</strong> (reconciled direction).</li>
+<li><strong>Single runtime role plus coarse admin role</strong> (simpler operations, high privilege concentration).</li>
+<li><strong>Per-feature fine-grained roles beyond the five logical roles</strong> (more granular, higher operational complexity).</li>
+</ol>
+</li>
+<li><strong>Advantages and disadvantages:</strong>
+<ul>
+<li>Option 1: <strong>Pros:</strong> aligns least privilege with API/ingest/worker/migration/maintenance responsibilities; supports defense in depth. <strong>Cons:</strong> requires careful grant/ownership matrix and testing.</li>
+<li>Option 2: <strong>Pros:</strong> simpler to configure initially. <strong>Cons:</strong> conflicts with reconciled security posture and increases blast radius.</li>
+<li>Option 3: <strong>Pros:</strong> potentially tighter isolation. <strong>Cons:</strong> complexity may delay correct implementation; not required by current reconciliation.</li>
+</ul>
+</li>
+<li><strong>Recommended option, with technical justification:</strong> <strong>Option 1 (Proposed).</strong> Preserve the five logical roles and enforce explicit prohibitions for ordinary runtime roles (no SUPERUSER/BYPASSRLS, no ownership of protected tables/policies/security-critical functions, no direct security-internal table mutation except approved narrow interfaces).</li>
+<li><strong>Dependencies and assumptions:</strong> TD-001/TD-002 helper interfaces; schema/table ownership design; extension/maintenance procedures; controlled break-glass model (owner/security decision). Assumes production-equivalent non-owner role testing.</li>
+<li><strong>Validation required:</strong> Grant/ownership audits, <code>SECURITY DEFINER</code> hardening review, search-path/function-resolution tests, privilege-escalation negative tests, and RLS tests under exact runtime-equivalent roles.</li>
+<li><strong>Status:</strong> <strong>Proposed</strong>.</li>
+</ul>
+<h2>TD-004 — RLS policy catalog and <code>FORCE ROW LEVEL SECURITY</code> applicability</h2>
+<ul>
+<li><strong>Problem statement:</strong> Tenant isolation requires consistent RLS/FORCE RLS posture, policy composition (restrictive tenant boundary and action/scope gates), and correct handling of <code>SELECT</code>/<code>INSERT</code>/<code>UPDATE</code>/<code>DELETE</code>/<code>RETURNING</code> semantics.</li>
+<li><strong>Security or correctness implications:</strong> Missing or miscomposed policies, owner bypass, or incorrect assumptions about <code>UPDATE</code> implying <code>SELECT</code> can leak cross-tenant data, block legitimate row-addressed operations, or permit unauthorized writes.</li>
+<li><strong>Available technical options:</strong>
+<ol>
+<li><strong>Verified-context-driven restrictive tenant policies plus permissive/action-scope gates on all tenant/protected tables</strong>, with <code>FORCE ROW LEVEL SECURITY</code> applied where ownership/role design permits and explicit <code>UPDATE</code>/<code>SELECT</code>/<code>RETURNING</code> design.</li>
+<li><strong>Service-layer-only tenant filtering</strong> (no DB defense in depth).</li>
+<li><strong>Coarse table-level RLS without action/scope composition</strong> (simpler, less expressive/precise).</li>
+</ol>
+</li>
+<li><strong>Advantages and disadvantages:</strong>
+<ul>
+<li>Option 1: <strong>Pros:</strong> strongest alignment with reconciled security direction and fail-closed behavior. <strong>Cons:</strong> requires detailed policy catalog, testing, and careful privilege design.</li>
+<li>Option 2: <strong>Pros:</strong> application simplicity. <strong>Cons:</strong> violates reconciled architecture and is unsafe.</li>
+<li>Option 3: <strong>Pros:</strong> easier initial policy set. <strong>Cons:</strong> may not express required scope/action distinctions or evidence/licensing controls.</li>
+</ul>
+</li>
+<li><strong>Recommended option, with technical justification:</strong> <strong>Option 1 (Proposed).</strong> Include explicit per-table/operation policy catalog, partition-table access controls, and a decision on whether approved write scopes imply required read visibility for row-addressed workflows.</li>
+<li><strong>Dependencies and assumptions:</strong> TD-001/TD-002/TD-003; table inventory and ownership model; approved scope vocabulary; PostgreSQL RLS/FORCE RLS behavior for selected version/roles.</li>
+<li><strong>Validation required:</strong> RLS allow/deny matrix tests, cross-tenant negative tests, FORCE RLS applicability checks, partition-parent/child behavior tests, <code>UPDATE ... RETURNING</code>/qualification visibility tests, and pooled-connection role tests.</li>
+<li><strong>Status:</strong> <strong>Proposed</strong> (includes owner/security decision on <code>asset:write</code> implying <code>asset:read</code> for approved row-addressed workflows).</li>
+</ul>
+<h2>TD-005 — Identity binding and fingerprint alias schema semantics</h2>
+<ul>
+<li><strong>Problem statement:</strong> Source documents must use one reconciled identity model: canonical asset, stable source-device binding (<code>asset_data_source</code>/<code>source_device_key_id</code>), and versioned fingerprint aliases (<code>source_device_fingerprint_alias</code>), with explicit lookup/overlap/rotation/collision/migration semantics.</li>
+<li><strong>Security or correctness implications:</strong> Ambiguous identity/source-of-truth definitions can create duplicate bindings/assets/licensed usage, incorrect merges/splits, cross-tenant association errors, or broken fingerprint rotation/reprocessing.</li>
+<li><strong>Available technical options:</strong>
+<ol>
+<li><strong>Stable binding + separate versioned alias records</strong> with tenant-scoped uniqueness, overlap states, and deterministic lookup/conflict handling (reconciled direction).</li>
+<li><strong>Fingerprint/key-version embedded as binding identity</strong> (rotation/overlap becomes identity rewrite risk).</li>
+<li><strong>Connector-instance identity treated as device identity</strong> (incorrect for multi-device sources).</li>
+</ol>
+</li>
+<li><strong>Advantages and disadvantages:</strong>
+<ul>
+<li>Option 1: <strong>Pros:</strong> preserves stable binding identity across rotation, supports overlap and auditable migration, aligns with ADR 0006/final corrections. <strong>Cons:</strong> more entities/constraints/transaction logic.</li>
+<li>Option 2: <strong>Pros:</strong> fewer tables conceptually. <strong>Cons:</strong> conflicts with reconciled model; higher duplicate/collision/rotation risk.</li>
+<li>Option 3: <strong>Pros:</strong> simplistic ingestion mapping. <strong>Cons:</strong> fundamentally unsafe for licensing correctness.</li>
+</ul>
+</li>
+<li><strong>Recommended option, with technical justification:</strong> <strong>Option 1 (Proposed).</strong> Treat fingerprints/aliases as non-permanent lookup/verification material and stable binding identity as the continuity anchor.</li>
+<li><strong>Dependencies and assumptions:</strong> Protected fingerprint algorithm/key versioning and custody; connector/source-device key normalization rules; authoritative/weak/conflict evidence taxonomy; tenant-inclusive FK/uniqueness design; TD-006/TD-007 transaction/idempotency boundaries.</li>
+<li><strong>Validation required:</strong> Concurrency and correctness tests for same-identity registration, multi-source attachment, alias overlap/rotation, interrupted/resumed migration, collision/conflict handling, merge/split reassignment, and &quot;no duplicate asset/binding/alias/licensed usage&quot; invariants.</li>
+<li><strong>Status:</strong> <strong>Proposed</strong>.</li>
+</ul>
+<h2>TD-006 — Operation-by-operation transaction-boundary map</h2>
+<ul>
+<li><strong>Problem statement:</strong> The reconciled architecture requires explicit atomicity for business state, idempotency/result, audit/lifecycle/licensing records, and outbox records, but operation boundaries are not fully specified across registration, attachment, merge, split, deactivation/reactivation/removal, fingerprint rotation, evidence transitions, and external-delivery workflows.</li>
+<li><strong>Security or correctness implications:</strong> Undefined boundaries create partial commits, duplicate side effects, lost audit/evidence linkage, counter/history divergence, and unsafe recovery after crashes/timeouts.</li>
+<li><strong>Available technical options:</strong>
+<ol>
+<li><strong>Explicit per-operation transaction matrix</strong> defining in-transaction artifacts, lock order, post-lock rechecks, commit outcomes, and compensating/reconciliation paths for out-of-transaction side effects.</li>
+<li><strong>Best-effort application sequencing without formal boundary matrix</strong> (faster to draft, error-prone).</li>
+<li><strong>Single generic transaction template for all operations</strong> (insufficient for differing external/evidence/replay semantics).</li>
+</ol>
+</li>
+<li><strong>Advantages and disadvantages:</strong>
+<ul>
+<li>Option 1: <strong>Pros:</strong> reviewable correctness/security basis for schema and code; clarifies unknown-commit handling. <strong>Cons:</strong> requires detailed analysis and owner/security inputs.</li>
+<li>Option 2: <strong>Pros:</strong> low upfront documentation effort. <strong>Cons:</strong> high implementation/review risk.</li>
+<li>Option 3: <strong>Pros:</strong> simple mental model. <strong>Cons:</strong> ignores operation-specific invariants and external effects.</li>
+</ul>
+</li>
+<li><strong>Recommended option, with technical justification:</strong> <strong>Option 1 (Proposed).</strong> Minimum required map should cover at least: registration/new asset, existing-asset attachment, pending identity creation/resolution, merge, split, deactivation, reactivation, removal/tombstone, fingerprint rotation/migration step, evidence controlled transition, ingestion acceptance, and outbox claim/reclaim/replay.</li>
+<li><strong>Dependencies and assumptions:</strong> TD-001–TD-005, TD-007–TD-009; approved state-to-counter mapping for owner-decided lifecycle semantics; provider/external side-effect characteristics.</li>
+<li><strong>Validation required:</strong> Failure-injection and unknown-commit tests per operation, rollback/atomicity verification, idempotent retry outcomes, concurrency/race tests, and reconciliation report correctness.</li>
+<li><strong>Status:</strong> <strong>Proposed</strong>.</li>
+</ul>
+<h2>TD-007 — Idempotency ledger scope and unknown-commit recovery</h2>
+<ul>
+<li><strong>Problem statement:</strong> Reconciliation identified three distinct idempotency domains (ingestion receipts, licensing/identity operation ledger, outbox attempt/replay records) that must be consistently defined and durably persisted.</li>
+<li><strong>Security or correctness implications:</strong> Conflated or memory-only idempotency can cause duplicate assets/licensed usage, duplicate external side effects, lost acknowledgments, or inconsistent replay after timeouts/unknown commit outcomes.</li>
+<li><strong>Available technical options:</strong>
+<ol>
+<li><strong>Unified taxonomy with separate durable mechanisms per scope</strong> (<code>event_receipt</code>, licensing/identity operation idempotency ledger, outbox attempt/replay records), each with clear keys/state/result semantics.</li>
+<li><strong>Single global idempotency table for all domains</strong> (possible but risks overloaded semantics and weaker constraints).</li>
+<li><strong>Rely on request retries without durable result records</strong> (unsafe).</li>
+</ol>
+</li>
+<li><strong>Advantages and disadvantages:</strong>
+<ul>
+<li>Option 1: <strong>Pros:</strong> matches reconciled documents, allows domain-specific uniqueness/atomicity rules, clearer recovery semantics. <strong>Cons:</strong> more schema objects and coordination rules.</li>
+<li>Option 2: <strong>Pros:</strong> one storage location. <strong>Cons:</strong> complex polymorphic design; easy to blur correctness boundaries.</li>
+<li>Option 3: <strong>Pros:</strong> minimal schema. <strong>Cons:</strong> unacceptable duplicate/ambiguity risk.</li>
+</ul>
+</li>
+<li><strong>Recommended option, with technical justification:</strong> <strong>Option 1 (Proposed).</strong> Preserve <code>event_receipt</code> for ingestion acceptance, add durable tenant-scoped licensing/identity operation ledger per ADR 0006, and maintain outbox attempt/replay history per final corrections.</li>
+<li><strong>Dependencies and assumptions:</strong> TD-005/TD-006/TD-008; request canonicalization/hash strategy; retention windows (owner/security/operations decision); reconciliation tooling/process design.</li>
+<li><strong>Validation required:</strong> Duplicate same-payload retries, same-key different-payload conflicts, response-lost-after-commit recovery, concurrent duplicate submissions, replay after lifecycle transitions, and outbox/operation reconciliation tests.</li>
+<li><strong>Status:</strong> <strong>Proposed</strong>.</li>
+</ul>
+<h2>TD-008 — Outbox scope, delivery ambiguity, reconciliation, and replay</h2>
+<ul>
+<li><strong>Problem statement:</strong> Event-processing outbox behavior and controlled external-side-effect/replay semantics are not fully harmonized. Final corrections define stricter attempt/generation/<code>delivery_unknown</code> handling that must be applied where appropriate.</li>
+<li><strong>Security or correctness implications:</strong> Ambiguous delivery handling without reconciliation/authorization can duplicate irreversible side effects, lose work, corrupt state transitions, or undermine auditability.</li>
+<li><strong>Available technical options:</strong>
+<ol>
+<li><strong>Two explicitly scoped outbox semantics/classes</strong>: lightweight event-processing outbox and controlled-delivery outbox with leases/fencing, cumulative attempts, generation-scoped replay controls, <code>delivery_unknown</code>, reconciliation evidence, and duplicate-risk authorization.</li>
+<li><strong>Single outbox model with optional advanced fields for all messages</strong> (flexible but can be over-complex/misapplied).</li>
+<li><strong>Synchronous external calls without durable outbox/replay state</strong> (poor resilience/recovery).</li>
+</ol>
+</li>
+<li><strong>Advantages and disadvantages:</strong>
+<ul>
+<li>Option 1: <strong>Pros:</strong> aligns semantics to risk profile; preserves clarity for ingestion processing and strictness for ambiguous external side effects. <strong>Cons:</strong> requires clear classification rules and possibly separate schemas/workers.</li>
+<li>Option 2: <strong>Pros:</strong> unified implementation substrate. <strong>Cons:</strong> risk of inconsistent use and harder validation.</li>
+<li>Option 3: <strong>Pros:</strong> simple request flow. <strong>Cons:</strong> fails durability/retry/reconciliation needs.</li>
+</ul>
+</li>
+<li><strong>Recommended option, with technical justification:</strong> <strong>Option 1 (Proposed), with shared primitives where safe.</strong> Apply final-corrections replay/ambiguity controls to workflows with external or non-idempotent/ambiguous side effects; keep event-processing idempotent and simpler but still durable and auditable.</li>
+<li><strong>Dependencies and assumptions:</strong> Provider/consumer idempotency capabilities and reconciliation evidence sources (owner/security/integration decision); TD-006/TD-007 boundaries; fencing/lease implementation; operational alerting/runbooks.</li>
+<li><strong>Validation required:</strong> Lease expiry/reclaim tests, duplicate worker claims, crash-before/after-send ambiguity cases, <code>delivery_unknown</code> reconciliation/replay authorization tests, generation-scoped attempt limits, and no exactly-once-external-delivery assumptions.</li>
+<li><strong>Status:</strong> <strong>Proposed</strong>.</li>
+</ul>
+<h2>TD-009 — Evidence storage metadata, custody, and controlled transitions</h2>
+<ul>
+<li><strong>Problem statement:</strong> Forensic evidence handling requires reconciled metadata/custody/authorization semantics, but storage architecture and some lifecycle controls remain unresolved.</li>
+<li><strong>Security or correctness implications:</strong> Weak immutability/authorization or ambiguous custody handling can compromise evidentiary integrity, tenant isolation, legal defensibility, and auditability.</li>
+<li><strong>Available technical options:</strong>
+<ol>
+<li><strong>DB-managed immutable evidence metadata + append-only custody events + protected transaction-bound controlled-transition authorization</strong>, with evidence objects in approved storage and hash verification (reconciled direction).</li>
+<li><strong>Application-only evidence state management</strong> (bypassable and hard to audit).</li>
+<li><strong>Full external evidence system dependency before core controls are designed</strong> (premature coupling; still needs CARES authorization/metadata model).</li>
+</ol>
+</li>
+<li><strong>Advantages and disadvantages:</strong>
+<ul>
+<li>Option 1: <strong>Pros:</strong> aligns with SECURITY_ARCHITECTURE and final corrections; clear tenant-scoped integrity model and controlled transitions. <strong>Cons:</strong> requires careful schema/procedure/role design and storage integration decisions.</li>
+<li>Option 2: <strong>Pros:</strong> minimal DB complexity. <strong>Cons:</strong> insufficient integrity and privilege separation.</li>
+<li>Option 3: <strong>Pros:</strong> may leverage specialized tooling. <strong>Cons:</strong> external dependency/approval risk; does not replace core authorization/custody semantics.</li>
+</ul>
+</li>
+<li><strong>Recommended option, with technical justification:</strong> <strong>Option 1 (Proposed).</strong> Use database-enforced metadata/custody/authorization boundaries as designed, and treat external immutable/WORM storage as an additional approved control rather than a substitute for correct DB authorization semantics.</li>
+<li><strong>Dependencies and assumptions:</strong> TD-001–TD-004; evidence object storage design; retention/legal-hold/purge approvals; hash algorithm/provenance standards; operational procedures for verification/restore/reconciliation.</li>
+<li><strong>Validation required:</strong> Immutability trigger/policy tests (<code>IS DISTINCT FROM</code> coverage), controlled-transition negative tests (including no-GUC-authorization), custody sequence/hash-chain concurrency tests, atomic authorization consume/update/custody append behavior, rollback/replay resistance, and integrity verification workflows.</li>
+<li><strong>Status:</strong> <strong>Proposed</strong>.</li>
+</ul>
+<hr />
+<h2>Unresolved owner decisions (clearly separated; NOT resolved by this document)</h2>
+<p>The following require commercial, privacy, legal, security, or operational owner approval. Technical recommendations above must not be interpreted as approval of these items.</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Pending owner decision</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Licensing/commercial</td>
+<td>Billing treatment of reserved slots/capacity</td>
+<td>Affects state-to-counter mapping and reporting; core identity structure must remain unchanged</td>
+</tr>
+<tr>
+<td>Licensing/commercial</td>
+<td>Whether pending identity cases reserve capacity</td>
+<td>Pending cases are not confirmed billable devices unless approved</td>
+</tr>
+<tr>
+<td>Licensing/commercial</td>
+<td>Pending reservation duration</td>
+<td>Requires product/commercial/privacy/security review</td>
+</tr>
+<tr>
+<td>Licensing/commercial</td>
+<td>Deactivation grace period</td>
+<td>Impacts reserved capacity and lifecycle transitions</td>
+</tr>
+<tr>
+<td>Licensing/commercial</td>
+<td>Immediate quota/capacity release exceptions</td>
+<td>Must be authorized/audited if approved</td>
+</tr>
+<tr>
+<td>Licensing/commercial</td>
+<td>Permanent removal authorization</td>
+<td>Includes who may approve and evidence requirements</td>
+</tr>
+<tr>
+<td>Identity governance</td>
+<td>Identity resolution governance and evidence standards</td>
+<td>Authoritative identifiers/catalog, confidence classes/rule versioning, weak/conflicting handling</td>
+</tr>
+<tr>
+<td>Identity governance</td>
+<td>Manual merge/split approval policy</td>
+<td>Includes privileged roles, reason/evidence requirements, and any multi-person approval</td>
+</tr>
+<tr>
+<td>Privacy/legal/security</td>
+<td>Retention periods and legal-hold periods</td>
+<td>Events, audit/lifecycle, evidence metadata/objects/custody, receipts/idempotency/outbox records, backups</td>
+</tr>
+<tr>
+<td>Evidence/operations</td>
+<td>Evidence storage/WORM/object-lock commitments</td>
+<td>External immutable storage is a potential additional control requiring approval/design/verification</td>
+</tr>
+<tr>
+<td>MELIRA policy</td>
+<td>Provider region, data-class, consent, and spending/budget policies</td>
+<td>Also vendor list, retention/training terms, credential ownership, custom endpoint approval</td>
+</tr>
+<tr>
+<td>Operations/product</td>
+<td>Production performance/SLO commitments and workload/profile acceptance</td>
+<td>Current capacity figures are proposed assumptions only</td>
+</tr>
+</tbody>
+</table>
+<h2>Cross-cutting dependencies and assumptions</h2>
+<ul>
+<li><strong>Dependencies:</strong> TD-001–TD-004 underpin tenant isolation, verified context, and protected controlled procedures; TD-005–TD-007 underpin licensing/identity correctness; TD-008/TD-009 depend on transaction boundaries and role/authorization design.</li>
+<li><strong>Assumptions (unresolved):</strong> selected PostgreSQL version/features; assertion cryptography/key management; pooling/session behavior; provider reconciliation/idempotency contracts; approved lifecycle/state-to-counter mappings; storage/retention/legal-hold architecture; representative workload/benchmark environment.</li>
+<li><strong>Constraint preservation:</strong> Python backend, PostgreSQL authoritative system of record, one unique monitored device = one licensed asset, multi-source no-duplicate-licensed-asset rule, asset licensing separate from technical resource quotas, external SaaS AI only/no local GPU, core independent of MELIRA, and original roadmap/commercial decisions preserved.</li>
+</ul>
+<h2>Readiness note (technical decision preparation)</h2>
+<p>This document prepares technical options and proposed recommendations but does <strong>not</strong> make the architecture schema-ready by itself. Formal PostgreSQL schema design should proceed only after reconciling source-document terminology/mechanisms per the review/changelog and resolving or explicitly tracking the required technical selections and owner decisions above. All recommendations remain <strong>Proposed/NOT IMPLEMENTED/NOT TESTED</strong>.</p>
+
+</article>
+</div>
+
+</body>
+</html>

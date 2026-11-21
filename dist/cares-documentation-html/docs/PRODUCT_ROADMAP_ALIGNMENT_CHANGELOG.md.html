@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Product and Roadmap Documentation Alignment Changelog</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Product and Roadmap Documentation Alignment Changelog</h1>
+<p><strong>Status:</strong> Documentation-only targeted alignment record. No ERD, PostgreSQL DDL, migration, application code, or implementation change was created. No proposed control is marked implemented. No security validation or production readiness is claimed.</p>
+<p><strong>Scope:</strong> Resolve remaining documentation inconsistencies identified during architecture review for AI deployment model, CARES backend technology wording, and Phase 0–10 / Phase 1–10 roadmap presentation, while preserving established architecture decisions, the approved original ten-phase product roadmap, ADR status, and owner-level decisions.</p>
+<h2>Files inspected (actual repository)</h2>
+<p>Primary documents inspected in full relevant sections:</p>
+<ul>
+<li><a href="CARES_PRODUCT_VISION.md.html">docs/CARES_PRODUCT_VISION.md</a> (intro/MELIRA/provider/technology-evaluation and Phase 1–10 roadmap sections)</li>
+<li><a href="DEVELOPMENT_ROADMAP.md.html">docs/DEVELOPMENT_ROADMAP.md</a> (complete document)</li>
+<li><a href="ARCHITECTURE.md.html">docs/ARCHITECTURE.md</a> (principles, boundary, and MELIRA-related sections)</li>
+<li><a href="../README.html">README.md</a></li>
+</ul>
+<p>Additional source documents inspected/searched for conflicting statements and cross-document verification:</p>
+<ul>
+<li><a href="TECHNOLOGY_SELECTION.md.html">docs/TECHNOLOGY_SELECTION.md</a></li>
+<li><a href="SECURITY_ARCHITECTURE.md.html">docs/SECURITY_ARCHITECTURE.md</a></li>
+<li><a href="DATA_ARCHITECTURE.md.html">docs/DATA_ARCHITECTURE.md</a></li>
+<li><a href="REQUIREMENTS_TRACEABILITY.md.html">docs/REQUIREMENTS_TRACEABILITY.md</a></li>
+<li><a href="PROJECT_STATUS.md.html">docs/PROJECT_STATUS.md</a></li>
+<li><a href="THREAT_MODEL.md.html">docs/THREAT_MODEL.md</a></li>
+<li><a href="ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md.html">docs/ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md</a></li>
+<li><a href="ARCHITECTURE_DECISION_PACKAGE.md.html">docs/ARCHITECTURE_DECISION_PACKAGE.md</a></li>
+<li><a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a></li>
+<li><a href="ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md</a></li>
+<li><a href="ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md</a></li>
+<li><a href="ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md</a></li>
+<li><a href="ARCHITECTURE_RECONCILIATION_CHANGELOG.md.html">docs/ARCHITECTURE_RECONCILIATION_CHANGELOG.md</a></li>
+<li><a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">docs/POSTGRESQL_TECHNICAL_DECISIONS.md</a></li>
+<li><a href="adr/0001-modular-monolith.md.html">docs/adr/0001-modular-monolith.md</a></li>
+<li><a href="adr/0002-postgresql-and-tenant-isolation.md.html">docs/adr/0002-postgresql-and-tenant-isolation.md</a></li>
+<li><a href="adr/0003-device-identity-and-asset-licensing.md.html">docs/adr/0003-device-identity-and-asset-licensing.md</a></li>
+<li><a href="adr/0004-external-ai-provider-boundary.md.html">docs/adr/0004-external-ai-provider-boundary.md</a></li>
+<li><a href="adr/0005-event-processing-and-broker-evolution.md.html">docs/adr/0005-event-processing-and-broker-evolution.md</a></li>
+<li><a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a></li>
+</ul>
+<p>Repository discovery/verification also considered all eligible CARES source Markdown files under <code>docs/</code> and root-level <code>README.md</code> (excluding generated <code>dist/</code> export artifacts from source-of-truth verification).</p>
+<h2>Exact inconsistencies found</h2>
+<table>
+<thead>
+<tr>
+<th>Location</th>
+<th>Exact/conflicting statement (summary)</th>
+<th>Why inconsistent</th>
+<th>Correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="CARES_PRODUCT_VISION.md.html">docs/CARES_PRODUCT_VISION.md</a> §2.4 / MELIRA description (around line 112)</td>
+<td>&quot;MELIRA menggunakan Large Language Model (LLM) eksternal maupun model lokal yang dapat dikonfigurasi sesuai kebutuhan pengguna.&quot;</td>
+<td>Presented local models as a supported/configurable deployment option, conflicting with established decision: external AI SaaS providers only, no local LLM inference/local AI compute/local GPU in CARES deployment model.</td>
+<td>Replaced with statement that MELIRA uses explicitly selected/configured external AI SaaS providers; local LLM inference, local models, and local GPU infrastructure are not part of the CARES deployment model.</td>
+</tr>
+<tr>
+<td><a href="CARES_PRODUCT_VISION.md.html">docs/CARES_PRODUCT_VISION.md</a> §13.1 AI Provider Management (around lines 799–808)</td>
+<td>Provider list included <code>Ollama</code> and listed <code>Custom API endpoint</code> without external-only/non-local qualification in a context that followed local-model wording.</td>
+<td><code>Ollama</code> is a local-model/runtime option and implied locally hosted AI as supported; provider section did not clearly exclude local inference/local GPU or restate no silent failover.</td>
+<td>Removed <code>Ollama</code>; reframed providers as supported/explicitly configured external AI SaaS providers (subject to approval) and limited custom endpoint to explicitly approved external compatible API endpoints meeting transport/egress/privacy/security policy; added explicit exclusion of local inference/local models/self-hosted runtimes/local GPU and prohibition on silent failover.</td>
+</tr>
+<tr>
+<td><a href="CARES_PRODUCT_VISION.md.html">docs/CARES_PRODUCT_VISION.md</a> §20 &quot;Arsitektur Pengembangan&quot; technology table (around lines 1209–1221)</td>
+<td>`Backend</td>
+<td>Go / Python`</td>
+<td>Presented Go and Python as equally open backend candidates, conflicting with established CARES backend decision (Python primary/established backend).</td>
+</tr>
+<tr>
+<td><a href="DEVELOPMENT_ROADMAP.md.html">docs/DEVELOPMENT_ROADMAP.md</a> baseline and Phase 0 presentation (lines 5, 23, 60, 64)</td>
+<td>Baseline text stated &quot;original Phase 0 through Phase 10 assignments...&quot; while <a href="CARES_PRODUCT_VISION.md.html">CARES_PRODUCT_VISION.md</a> defines the original approved product roadmap as Phase 1–Phase 10 (ten product-development phases). Roadmap introduced Revised Phase 0 but did not explicitly distinguish it from the ten original product-development phases.</td>
+<td>Inconsistent Phase 0–10 vs Phase 1–10 presentation and risk of implying Phase 0 is part of the original ten-phase product roadmap.</td>
+<td>Clarified baseline as the approved original product roadmap of ten product-development phases (Phase 1 through Phase 10); marked Revised Phase 0 as a proposed preparatory/documentation stage outside the ten original product-development phases; explicitly stated it must not alter original Phase 1–10 scope/numbering/assignments and that no additional authoritative Phase 0 product-definition is invented.</td>
+</tr>
+</tbody>
+</table>
+<h2>Files modified</h2>
+<ul>
+<li><a href="CARES_PRODUCT_VISION.md.html">docs/CARES_PRODUCT_VISION.md</a></li>
+<li><a href="DEVELOPMENT_ROADMAP.md.html">docs/DEVELOPMENT_ROADMAP.md</a></li>
+<li><a href="PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md.html">docs/PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md</a> (created)</li>
+</ul>
+<h2>Decisions preserved</h2>
+<ul>
+<li><strong>AI deployment model:</strong> MELIRA uses external AI SaaS providers only; local LLM inference/local AI compute are not part of CARES deployment; no local GPU infrastructure required for AI inference; customers may explicitly select supported/configured external providers/endpoints as approved by policy; CARES must never silently fail over to another provider/model/region/endpoint; CARES core functionality must remain operational when MELIRA is unavailable or disabled.</li>
+<li><strong>Backend technology:</strong> Python remains the established CARES backend decision. No new technology decision introduced. Legitimate component-specific references preserved (e.g. endpoint agent/component evaluations in other documents).</li>
+<li><strong>Roadmap:</strong> Original ten-phase product roadmap (Phase 1–Phase 10 in <a href="CARES_PRODUCT_VISION.md.html">CARES_PRODUCT_VISION.md</a>) preserved; no phases added, removed, merged, reordered, or reassigned in the approved original roadmap; no established phase scope changed.</li>
+<li><strong>Governance/integrity:</strong> All established CARES technical and commercial constraints preserved; no owner-level decisions changed or invented; ADR statuses unchanged; no proposed controls marked implemented; no security validation or production readiness claimed.</li>
+</ul>
+<h2>Ambiguities not resolved</h2>
+<ul>
+<li><strong>Phase 0 authority/scope:</strong> Revised/proposed Phase 0 is treated in <a href="DEVELOPMENT_ROADMAP.md.html">docs/DEVELOPMENT_ROADMAP.md</a> as a proposed preparatory/documentation stage. This alignment explicitly distinguishes it from the original ten Phase 1–10 product-development phases but does <strong>not</strong> invent an authoritative original Phase 0 product-definition. If future documents introduce Phase 0 terminology, they must preserve this distinction unless owner/architecture governance explicitly defines and approves otherwise.</li>
+<li><strong>Provider support/approval details:</strong> Supported external AI SaaS provider list, custom external compatible endpoint approval criteria, data-class/region/retention/training/consent/budget policies remain owner/privacy/legal/security decisions; documentation states eligibility/constraints only.</li>
+<li><strong>Historical sequencing language:</strong> Non-baseline historical/proposal/review documents may contain revised-sequencing or phase-mapping language in their original context. These were not rewritten except where targeted inconsistencies were identified; their historical rationale is preserved and should be interpreted together with the clarified baseline in <a href="CARES_PRODUCT_VISION.md.html">CARES_PRODUCT_VISION.md</a> and <a href="DEVELOPMENT_ROADMAP.md.html">DEVELOPMENT_ROADMAP.md</a>.</li>
+</ul>
+<h2>Cross-document verification (source Markdown, excluding generated <code>dist/</code> export)</h2>
+<p>Searches performed after corrections:</p>
+<ul>
+<li><strong>Local LLM / Ollama / <code>model lokal</code> as supported options:</strong> no remaining <code>Ollama</code> or &quot;local model/LLM as supported deployment option&quot; statements found. Remaining matches for <code>local inference/local GPU/local model</code> in source docs are prohibitions, exclusions, rejected alternatives, or clarified &quot;not part of deployment&quot; statements consistent with the external-SaaS-only decision (including <a href="adr/0004-external-ai-provider-boundary.md.html">docs/adr/0004-external-ai-provider-boundary.md</a> rejecting local model inference/local GPU service).</li>
+<li><strong>External AI SaaS:</strong> references remain present and consistent with external-SaaS-only/no local inference/no local GPU/no silent failover decisions in authoritative and aligned documents.</li>
+<li><strong>Go as backend / Go-Python backend candidates:</strong> no remaining <code>Go / Python</code>, &quot;Go and Python&quot; as equally open backend candidates, or &quot;Go as CARES backend&quot; candidate phrasing found in source docs. <a href="TECHNOLOGY_SELECTION.md.html">docs/TECHNOLOGY_SELECTION.md</a> retains &quot;Go could be efficient but violates the primary-backend language decision&quot; (consistent with established Python backend) and endpoint-agent/component references where applicable (not CARES backend).</li>
+<li><strong>Python as backend:</strong> references remain present and consistent with the established Python backend decision.</li>
+<li><strong>Phase 0 / Phase 1–10:</strong> <a href="CARES_PRODUCT_VISION.md.html">CARES_PRODUCT_VISION.md</a> remains the original ten-phase product roadmap (Phase 1–Phase 10). <a href="DEVELOPMENT_ROADMAP.md.html">DEVELOPMENT_ROADMAP.md</a> now explicitly distinguishes revised/preparatory Phase 0 from the ten original product-development phases and preserves original Phase 1–10 baseline/scope. <a href="ARCHITECTURE.md.html">docs/ARCHITECTURE.md</a> does not define conflicting roadmap numbering. Source-wide verification found no <code>Phase 0</code> references outside <a href="DEVELOPMENT_ROADMAP.md.html">DEVELOPMENT_ROADMAP.md</a> and this changelog.</li>
+</ul>
+<h2>Remaining contradictions</h2>
+<ul>
+<li><strong>No targeted AI-deployment or backend-candidate contradictions remain identified</strong> in source CARES Markdown documentation after this alignment pass.</li>
+<li><strong>No Phase 0–10 vs Phase 1–10 baseline contradiction remains identified</strong> in <a href="CARES_PRODUCT_VISION.md.html">CARES_PRODUCT_VISION.md</a>, <a href="DEVELOPMENT_ROADMAP.md.html">DEVELOPMENT_ROADMAP.md</a>, or <a href="ARCHITECTURE.md.html">docs/ARCHITECTURE.md</a>. Source-wide verification found no <code>Phase 0</code> references outside <a href="DEVELOPMENT_ROADMAP.md.html">DEVELOPMENT_ROADMAP.md</a> and this changelog.</li>
+<li><strong>Historical sequencing/mapping language</strong> in non-baseline proposal/review documents may still require contextual interpretation against the clarified baseline, but no additional targeted phase-baseline inconsistency was identified or corrected in this pass.</li>
+</ul>
+<h2>HTML export / ZIP regeneration note</h2>
+<p>This changelog must be included in the regenerated complete HTML export and <code>dist/CARES_DOCUMENTATION_HTML.zip</code>. Export/verification results are recorded in the task's final verification report and in the regenerated <code>dist/cares-documentation-html/EXPORT_MANIFEST.md</code>.</p>
+
+</article>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Cross-Document Architecture Consistency Review</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Cross-Document Architecture Consistency Review</h1>
+<p><strong>Status:</strong> Documentation review only (NOT IMPLEMENTED, NOT TESTED). This report records a bounded, evidence-based consistency review of inspected architecture documents. It does not implement application features, create database migrations, modify application source code, execute schema changes, or validate security controls.</p>
+<h2>1. Executive summary</h2>
+<p><strong>Confirmed fact (from inspected documentation):</strong> The inspected documents consistently preserve the mandatory CARES constraints: Python backend, PostgreSQL as primary/authoritative relational system of record, external SaaS AI providers only with no local AI/GPU infrastructure, one unique monitored device equals exactly one licensed asset, multiple data sources reporting the same physical device must not create duplicate licensed assets, asset licensing separate from technical resource quotas, CARES core must operate independently of MELIRA, and no automatic provider/model failover. <code>docs/SECURITY_ARCHITECTURE.md</code>, <code>docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</code>, and <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code> show substantial alignment on verified transaction-bound tenant context (not caller-controlled GUC authorization), protected evidence-transition authorization, explicit outbox replay/idempotency concerns, and stable binding/fingerprint-alias separation.</p>
+<p><strong>Technical interpretation:</strong> The documentation set is directionally converging but is <strong>not yet fully consistent</strong> for formal PostgreSQL schema design. The most important inconsistencies are: (1) <code>docs/DATA_ARCHITECTURE.md</code> and <code>docs/ARCHITECTURE.md</code> do not reflect the newer stable source-device binding model (<code>source_device_key_id</code>, <code>source_device_fingerprint_alias</code>) and transaction-bound trusted-context/evidence/outbox mechanics described in later documents; (2) role naming and privilege-boundary detail differ between <code>DATA_ARCHITECTURE.md</code> and <code>SECURITY_ARCHITECTURE.md</code>; (3) event-ingestion idempotency (<code>event_receipt</code>) and licensing/identity-operation idempotency are described in different scopes without one unified transaction-boundary model; and (4) several required technical and owner decisions remain open.</p>
+<p><strong>Recommendation:</strong> Resolve cross-document contradictions first by making <code>docs/DATA_ARCHITECTURE.md</code> and <code>docs/ARCHITECTURE.md</code> consistent with the latest approved technical direction (especially verified context, stable binding/alias identity model, role separation, evidence custody/authorization, and outbox/replay semantics) before formal PostgreSQL schema/security design review.</p>
+<p><strong>Unresolved assumption:</strong> This review assumes the current file contents inspected on 2026-11-21 are the intended latest working set. No repository version-control metadata (Git history/tags) was available or relied upon for document versions.</p>
+<h2>2. Documents actually inspected and their versions/dates</h2>
+<table>
+<thead>
+<tr>
+<th>Requested document</th>
+<th>Existence</th>
+<th>Inspected content / version-date evidence</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/ARCHITECTURE.md</code></td>
+<td><strong>Exists</strong> (inspected)</td>
+<td><code># CARES Architecture</code>; <code>**Status: proposed architecture; not implemented.**</code> (lines ~1-3). No explicit document version/date/last-reviewed field found in inspected header.</td>
+<td>Source document; not modified.</td>
+</tr>
+<tr>
+<td><code>docs/DATA_ARCHITECTURE.md</code></td>
+<td><strong>Exists</strong> (inspected)</td>
+<td><code># CARES Data Architecture</code>; <code>**Status: target design only.**</code> (lines ~1-3). No explicit document version/date/last-reviewed field found in inspected header.</td>
+<td>Source document; not modified.</td>
+</tr>
+<tr>
+<td><code>docs/SECURITY_ARCHITECTURE.md</code></td>
+<td><strong>Exists</strong> (inspected)</td>
+<td><code># CARES Security Architecture</code>; <code>**Status: proposed target controls only.**</code> describing NOT IMPLEMENTED/NOT TESTED controls unless actual repository evidence proves otherwise (header). No explicit document version/date/last-reviewed field found in inspected header.</td>
+<td>Source document; not modified.</td>
+</tr>
+<tr>
+<td><code>docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</code></td>
+<td><strong>Exists</strong> (inspected; exact requested filename)</td>
+<td><code># CARES Architecture Decision Package — Final Corrections</code>; <code>**Status:** Documentation-only architecture refinement... illustrative proposals—not production migrations, not implemented controls, and not verified behavior.</code>; includes status labels, Workstreams A–D, and <code>## 13. Final Technical Corrections and Remaining Decisions</code>. No explicit date/last-reviewed field found in inspected header.</td>
+<td>Source document; not modified.</td>
+</tr>
+<tr>
+<td><code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code></td>
+<td><strong>Exists</strong> (inspected)</td>
+<td><code># ADR 0006: Enforce per-tenant asset quota atomically in PostgreSQL</code>; <code>- **Status:** Proposed...</code>; <code>- **Date:** 2026-11-16</code>; <code>- **Last reviewed/updated:** 2026-11-21 (documentation-only consistency review; no implementation)</code>.</td>
+<td>Source document; not modified.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Confirmed fact:</strong> No requested file was missing and no silent substitution was made.</p>
+<h2>3. Cross-document consistency matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>ARCHITECTURE.md</th>
+<th>DATA_ARCHITECTURE.md</th>
+<th>SECURITY_ARCHITECTURE.md</th>
+<th>FINAL_CORRECTIONS.md</th>
+<th>ADR 0006</th>
+<th>Assessment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One-device-one-license &amp; multi-source no-duplicate invariant</td>
+<td>Consistent (principles, ingestion flow)</td>
+<td>Consistent (licensing/identity semantics)</td>
+<td>Consistent (asset identity &amp; licensing integrity)</td>
+<td>Consistent (preserved requirement)</td>
+<td>Consistent (confirmed requirement/invariant)</td>
+<td><strong>Consistent at principle level</strong></td>
+</tr>
+<tr>
+<td>Canonical asset / <code>asset_data_source</code> / <code>source_device_key_id</code> / <code>source_device_fingerprint_alias</code> separation</td>
+<td>Partial/ambiguous (mentions <code>asset_data_source</code> conceptually, not alias-table separation)</td>
+<td>Partial/ambiguous (<code>asset_data_source</code> includes protected fingerprint/key-version; no explicit <code>source_device_key_id</code>/<code>source_device_fingerprint_alias</code> separation)</td>
+<td>Aligned conceptually (mentions <code>asset_data_source</code> and versioned fingerprint aliases)</td>
+<td>Aligned in examples/context (<code>source_device_key_id</code> appears in evidence immutability context)</td>
+<td>Explicitly aligned/proposed separation and rules</td>
+<td><strong>Contradiction/ambiguity</strong></td>
+</tr>
+<tr>
+<td>Licensing accounting (active billable, reserved, pending, available, historical/tombstone)</td>
+<td>High-level only</td>
+<td>Partial/proposed (<code>active billable</code>, reserved slots, pending reservations, available; pending reserves slot but not billable count as proposal)</td>
+<td>High-level (counters/quota changes mentioned)</td>
+<td>Not primary focus</td>
+<td>Explicit proposed accounting model/equations/state mapping and owner decisions</td>
+<td><strong>Partial consistency; detail gap</strong></td>
+</tr>
+<tr>
+<td>Verified transaction-bound tenant context (not user-settable GUC authorization)</td>
+<td>Not specified</td>
+<td>Partial/older wording (<code>RLS should use a transaction-local tenant context established by trusted backend code...</code>)</td>
+<td>Aligned (signed assertion, protected transaction-bound verified context, GUC non-authoritative, pool cleanup/fail-closed)</td>
+<td>Aligned/detailed (Workstream A; no custom GUC as auth boundary)</td>
+<td>Requires verified tenant context for licensing operations</td>
+<td><strong>Contradiction/ambiguity in specificity</strong></td>
+</tr>
+<tr>
+<td>PostgreSQL roles/privilege separation</td>
+<td>Not specified</td>
+<td>Partial/generic (<code>Runtime role</code>, separate migration role)</td>
+<td>Aligned/detailed logical roles <code>cares_api_runtime</code>, <code>cares_ingest_runtime</code>, <code>cares_worker_runtime</code>, <code>cares_migration</code>, <code>cares_maintenance</code> and prohibitions</td>
+<td>Aligned in security-internal definer/role-boundary discussion</td>
+<td>Assumes production-equivalent runtime roles/least privilege in verification context</td>
+<td><strong>Partial consistency; naming/detail gap</strong></td>
+</tr>
+<tr>
+<td>RLS/FORCE RLS/action scopes/cross-tenant FK integrity</td>
+<td>Mentions tenant authorization at API/service and DB boundaries</td>
+<td>Mentions RLS as defense in depth; tenant-inclusive keys/constraints proposed</td>
+<td>Aligned (permissive gates, restrictive tenant boundary, action scopes, verified context, cross-tenant FK integrity via tenant-inclusive constraints)</td>
+<td>Aligned/detailed (RLS helper semantics, UPDATE/SELECT interaction, tenant boundary)</td>
+<td>References RLS/tenant isolation and tenant-inclusive constraints</td>
+<td><strong>Mostly consistent in intent; FORCE RLS and policy specifics not uniformly explicit</strong></td>
+</tr>
+<tr>
+<td>Transaction/concurrency/lock ordering/post-lock rechecks/idempotency</td>
+<td>Mentions serialized identity-resolution transaction/locks conceptually</td>
+<td>Partial (tenant licensing row lock, recheck aliases, registration idempotency key, <code>event_receipt</code> for events, outbox leases)</td>
+<td>High-level (atomic licensing/identity transitions, concurrency tests proposed)</td>
+<td>Detailed for outbox/reclaimer/replay/attempt semantics and evidence atomicity; references verified context/identity flows</td>
+<td>Detailed proposed lock ordering/post-lock rechecks/idempotency ledger for licensing/identity operations</td>
+<td><strong>Partial consistency; scope boundaries and undefined transaction boundaries remain</strong></td>
+</tr>
+<tr>
+<td>Evidence immutability/custody/controlled transitions</td>
+<td>Not detailed</td>
+<td>General evidence/export lifecycle and integrity metadata</td>
+<td>Aligned (immutable evidence metadata, controlled transitions, transaction-bound authorization, append-only custody, hash verification, DB hash chain limitation)</td>
+<td>Detailed (immutable inventory, <code>IS DISTINCT FROM</code>, custody sequence/hash chain, protected <code>evidence_transition_authorization</code>, atomic single-use consumption)</td>
+<td>Not primary focus (licensing/lifecycle evidence referenced)</td>
+<td><strong>SECURITY_ARCHITECTURE/FINAL_CORRECTIONS aligned; DATA_ARCHITECTURE/ARCHITECTURE less specific</strong></td>
+</tr>
+<tr>
+<td>Audit/evidence/outbox distinctions and delivery semantics</td>
+<td>Outbox/worker described; audit mentioned</td>
+<td>Distinguishes <code>audit_event</code>, <code>event_receipt</code>, <code>outbox</code>, evidence lifecycle; retries/dead-letter/replay concepts</td>
+<td>Distinguishes operational/security audit, forensic evidence metadata/objects, custody events; transactional outbox mentioned</td>
+<td>Detailed identity-operation outbox states/reclaimer/<code>delivery_unknown</code>/replay generation/attempt semantics; append-only custody</td>
+<td>Append-only licensing/lifecycle history and idempotency ledger/result persistence</td>
+<td><strong>Partial consistency; outbox scope and terminology differ</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>4. Confirmed consistent decisions</h2>
+<ol>
+<li>
+<p><strong>Core platform and AI boundary</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>ARCHITECTURE.md</code> §&quot;Architectural principles&quot; and system/deployment/MELIRA sections state Python primary backend, PostgreSQL required primary relational database, customer-selected external AI SaaS only, no local GPU, no silent/provider failover, and core/MELIRA optionality. <code>DATA_ARCHITECTURE.md</code> §&quot;Database decision and boundaries&quot; states PostgreSQL is the required primary relational database and system of record. <code>SECURITY_ARCHITECTURE.md</code> states external SaaS AI providers only and no local AI/GPU infrastructure; MELIRA optional and not an authorization/autonomous action authority. <code>FINAL_CORRECTIONS.md</code> §1 and ADR 0006 &quot;Confirmed requirements (preserved)&quot; preserve the same constraints.</li>
+<li><strong>Technical interpretation:</strong> The inspected documents agree on platform authority and AI boundary at the architectural principle level.</li>
+<li><strong>Recommendation:</strong> Preserve these statements as non-negotiable constraints in schema/security design.</li>
+<li><strong>Unresolved assumption:</strong> None identified for these constraints from inspected documents.</li>
+</ul>
+</li>
+<li>
+<p><strong>One-device-one-license invariant and multi-source non-duplication</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>ARCHITECTURE.md</code> states one unique monitored device is one licensed asset and identity resolution must not silently claim reliable deduplication/auto-merge on ambiguity. <code>DATA_ARCHITECTURE.md</code> §§&quot;Asset identity, deduplication, and licensing&quot; and lifecycle/usage descriptions preserve one canonical asset per unique monitored device and multiple source bindings without duplicate licensed usage. <code>SECURITY_ARCHITECTURE.md</code> §&quot;Device, agent, and asset identity and licensing integrity&quot; states the same. <code>FINAL_CORRECTIONS.md</code> §1 and ADR 0006 &quot;Problem&quot;/&quot;Confirmed requirements&quot; preserve the mandatory commercial invariant.</li>
+<li><strong>Technical interpretation:</strong> The invariant is consistently treated as a core correctness requirement across all inspected documents.</li>
+<li><strong>Recommendation:</strong> Any schema/constraint design must encode this invariant through tenant-scoped uniqueness, transactional serialization, and auditable state transitions.</li>
+<li><strong>Unresolved assumption:</strong> Final identity-resolution authority/evidence standards and some lifecycle/quota semantics remain owner decisions.</li>
+</ul>
+</li>
+<li>
+<p><strong>Asset licensing separate from technical resource quotas</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>DATA_ARCHITECTURE.md</code> distinguishes licensing/entitlement from quota/rate limits and performance/processing controls. <code>SECURITY_ARCHITECTURE.md</code> states &quot;Asset licensing is separate from technical resource quotas&quot; and quota/rate limiting is separate from licensing correctness. ADR 0006 explicitly preserves separation from technical resource quotas.</li>
+<li><strong>Technical interpretation:</strong> Documents consistently separate commercial/licensed asset accounting from technical capacity controls.</li>
+<li><strong>Recommendation:</strong> Maintain separate schema/entities/counters and policy enforcement paths for licensing vs technical quotas.</li>
+<li><strong>Unresolved assumption:</strong> Commercial billing treatment of reserved/pending/deactivated states is not decided.</li>
+</ul>
+</li>
+<li>
+<p><strong>Custom GUC not an authorization boundary / verified transaction-bound context direction (latest security-aligned docs)</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>SECURITY_ARCHITECTURE.md</code> states tenant authority must not be derived from user-settable custom GUC and describes signed tenant assertion verification, protected transaction-bound verified context, narrow trusted helpers, pool isolation/cleanup, and fail-closed behavior; it explicitly states &quot;No custom GUC is an authorization boundary.&quot; <code>FINAL_CORRECTIONS.md</code> §2 (Workstream A) provides detailed rationale, threat paths, preferred protected verifier-written transaction context, narrow <code>SECURITY DEFINER</code> helpers, ownership/privilege/<code>search_path</code>/cleanup guidance, and GUC-forgery prevention. ADR 0006 requires tenant-scoped authorization/verified context in merge/split and production-equivalent runtime roles in verification.</li>
+<li><strong>Technical interpretation:</strong> The most recent/corrected security and licensing documents are aligned that RLS/authorization decisions must rely on protected verified transaction context, not caller-settable GUC values.</li>
+<li><strong>Recommendation:</strong> Treat Workstream A and <code>SECURITY_ARCHITECTURE.md</code> as the authoritative direction and reconcile older/less-specific wording elsewhere.</li>
+<li><strong>Unresolved assumption:</strong> PostgreSQL version/mechanism for transaction binding, verifier implementation/cryptography/key custody, and exact role/grant model remain unresolved.</li>
+</ul>
+</li>
+<li>
+<p><strong>Evidence integrity direction in latest security-aligned docs</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>SECURITY_ARCHITECTURE.md</code> distinguishes operational/security audit records, forensic evidence metadata/objects, and append-only custody events; requires immutable evidence metadata, controlled transitions via protected transaction-bound authorization, append-only custody, evidence hash verification, tenant-scoped references, and states DB hash chain alone is not independently tamper-proof against privileged DB admins. <code>FINAL_CORRECTIONS.md</code> §4 details immutable-field inventory with <code>IS DISTINCT FROM</code>, controlled procedures, direct update/delete prohibitions, <code>security.evidence_transition_authorization</code> single-use atomic transaction-bound mechanism, custody sequencing/hash chain, and purge/restore/reconciliation concepts.</li>
+<li><strong>Technical interpretation:</strong> Latest security/correction documents consistently reject GUC-based evidence-transition authorization and align on append-only custody plus controlled, atomic, transaction-bound transitions.</li>
+<li><strong>Recommendation:</strong> Use <code>FINAL_CORRECTIONS.md</code> §4 and <code>SECURITY_ARCHITECTURE.md</code> as the baseline for any future evidence schema/security design; reconcile less-specific source docs.</li>
+<li><strong>Unresolved assumption:</strong> Storage backends, retention/legal-hold/purge approvals, external immutable/WORM controls, and operational procedures are unresolved owner/security decisions.</li>
+</ul>
+</li>
+</ol>
+<h2>5. Contradictions and ambiguities, with exact document and section references</h2>
+<ol>
+<li>
+<p><strong>Source-device identity model is not consistently decomposed across documents</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>docs/DATA_ARCHITECTURE.md</code> §&quot;Proposed logical data model&quot; table defines <code>asset_data_source</code> as &quot;tenant ID, asset ID, <code>data_source_id</code>, protected source-device key fingerprint and key-version, observed identity and link provenance&quot; (table row at ~line 27 in inspected content) and states &quot;A single <code>data_source_id</code> may have many source-device keys...&quot; but does not define <code>source_device_key_id</code> or <code>source_device_fingerprint_alias</code> as separate entities. <code>docs/DATA_ARCHITECTURE.md</code> §&quot;Tenant-isolated storage&quot; states &quot;Unique source-device binding on <code>(tenant_id, data_source_id, protected_source_device_key_fingerprint)</code> to one canonical asset...&quot; (end-of-file inspected section). <code>docs/ARCHITECTURE.md</code> §&quot;Data ingestion and processing flow&quot; and surrounding text describe identity resolution/source bindings at a high level without the stable-binding/alias separation. In contrast, <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code> §&quot;1. Stable source-device binding and fingerprint aliases...&quot; explicitly separates <code>asset_data_source</code>, <code>source_device_key_id</code>, and <code>source_device_fingerprint_alias</code>, states fingerprint is not permanent identity, and defines alias overlap/rotation/lookup/collision/migration rules. <code>docs/SECURITY_ARCHITECTURE.md</code> §&quot;Device, agent, and asset identity and licensing integrity&quot; aligns with &quot;asset_data_source and versioned fingerprint aliases&quot; and states aliases are not permanent identity. <code>docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</code> §4.1 includes <code>source_device_key_id</code> as an immutable evidence linkage field example.</li>
+<li><strong>Technical interpretation:</strong> <code>DATA_ARCHITECTURE.md</code> (and partially <code>ARCHITECTURE.md</code>) presents an older/simpler binding model that can be read as making fingerprint/key-version part of the binding record identity, while ADR 0006/SECURITY_ARCHITECTURE/final corrections expect a stable binding plus versioned alias records. This creates ambiguity about the authoritative logical source of truth for source-device identity and rotation semantics.</li>
+<li><strong>Recommendation:</strong> <strong>High severity.</strong> Update <code>DATA_ARCHITECTURE.md</code> (logical model, constraints, lookup/rotation/migration narrative) and <code>ARCHITECTURE.md</code> (identity-resolution description) to explicitly align with ADR 0006’s separation of <code>asset_data_source</code>, <code>source_device_key_id</code>, and <code>source_device_fingerprint_alias</code>, while preserving existing invariants and owner decisions.</li>
+<li><strong>Unresolved assumption:</strong> Exact approved schema/constraint names, alias uniqueness tuple dimensions, and overlap duration/retirement policy remain unresolved.</li>
+</ul>
+</li>
+<li>
+<p><strong>Verified tenant context mechanism is specified at different maturity levels</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>docs/SECURITY_ARCHITECTURE.md</code> §§&quot;Verified transaction context and tenant isolation&quot; and &quot;PostgreSQL privilege separation and RLS posture&quot; specify signed assertion verification, protected transaction-bound verified context, narrow helpers, <code>SET app.tenant_id</code>/custom GUC not authorization, pool isolation/cleanup/fail-closed. <code>docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</code> §2 specifies the same direction in detail and states &quot;Do not treat any custom PostgreSQL GUC as an authentication or authorization boundary.&quot; <code>docs/DATA_ARCHITECTURE.md</code> §&quot;Tenant-isolated storage&quot; states &quot;RLS should use a transaction-local tenant context established by trusted backend code...&quot; and describes access as application queries running under a limited runtime role but does not mention protected verifier-written records, signed assertions, or explicit prohibition of caller-settable GUC authorization. <code>docs/ARCHITECTURE.md</code> states tenant authorization at API/service and database boundaries but gives no mechanism.</li>
+<li><strong>Technical interpretation:</strong> The documents are not contradictory in intent, but <code>DATA_ARCHITECTURE.md</code>/<code>ARCHITECTURE.md</code> are underspecified and could be misread as permitting a simpler <code>SET LOCAL</code>/GUC-style tenant context if read without <code>SECURITY_ARCHITECTURE.md</code> and <code>FINAL_CORRECTIONS.md</code>.</li>
+<li><strong>Recommendation:</strong> <strong>High severity.</strong> Add explicit cross-references and mechanism-level language in <code>DATA_ARCHITECTURE.md</code> and <code>ARCHITECTURE.md</code> stating that tenant context must be verified and transaction-bound per <code>SECURITY_ARCHITECTURE.md</code>/<code>FINAL_CORRECTIONS.md</code>, and that custom GUCs are not authorization sources.</li>
+<li><strong>Unresolved assumption:</strong> Selected PostgreSQL transaction/binding mechanism, verifier cryptography, nonce/assertion lifecycle, and implementation details are unresolved.</li>
+</ul>
+</li>
+<li>
+<p><strong>PostgreSQL runtime role naming and responsibilities are inconsistent/incomplete across docs</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>docs/SECURITY_ARCHITECTURE.md</code> §&quot;PostgreSQL privilege separation and RLS posture&quot; defines logical roles <code>cares_api_runtime</code>, <code>cares_ingest_runtime</code>, <code>cares_worker_runtime</code>, <code>cares_migration</code>, and <code>cares_maintenance</code> with responsibilities and prohibitions (no SUPERUSER/BYPASSRLS/table ownership/security-function/policy ownership for ordinary runtime roles). <code>docs/DATA_ARCHITECTURE.md</code> §&quot;Tenant-isolated storage&quot; refers to &quot;Runtime role&quot; (singular) and &quot;a migration role separate from the runtime application role.&quot; <code>docs/ARCHITECTURE.md</code> does not define DB roles. ADR 0006 verification requires &quot;production-equivalent non-owner runtime roles&quot; (plural concept implied). <code>FINAL_CORRECTIONS.md</code> discusses security-internal definer ownership/<code>EXECUTE</code> grants and role boundaries generally.</li>
+<li><strong>Technical interpretation:</strong> Security architecture has moved to a more granular least-privilege model, while data architecture still reflects a simpler role abstraction. This is an ambiguity that can affect future schema grants, RLS testing, and migration design.</li>
+<li><strong>Recommendation:</strong> <strong>High severity.</strong> Normalize role vocabulary in <code>DATA_ARCHITECTURE.md</code> (and add a brief note in <code>ARCHITECTURE.md</code> if appropriate) to the <code>SECURITY_ARCHITECTURE.md</code> logical role set or explicitly map &quot;runtime role&quot; to that set.</li>
+<li><strong>Unresolved assumption:</strong> Final grant matrices, definer owners, break-glass/admin model, and partition-child-table direct-access exceptions are unresolved owner/security decisions.</li>
+</ul>
+</li>
+<li>
+<p><strong>FORCE ROW LEVEL SECURITY and RLS policy composition are not uniformly explicit</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>docs/SECURITY_ARCHITECTURE.md</code> states RLS is a mandatory second boundary, describes permissive gates/restrictive tenant boundary/action-scope model, and requires runtime roles to not bypass RLS; it does not explicitly state <code>FORCE ROW LEVEL SECURITY</code> in the inspected text. <code>docs/DATA_ARCHITECTURE.md</code> states &quot;RLS is a required defense in depth, not a substitute...&quot; and mentions unique constraints/tenant ID in keys/indexes/checks but not <code>FORCE RLS</code>. <code>docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</code> §5 discusses RLS <code>UPDATE</code>/<code>SELECT</code> interaction and policy implications in detail. <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code> requires RLS/security review and tenant isolation tests. <code>docs/ARCHITECTURE.md</code> states tenant authorization at DB boundary generally.</li>
+<li><strong>Technical interpretation:</strong> Intent is consistent that RLS is required and table ownership/bypass must be controlled, but explicit <code>FORCE ROW LEVEL SECURITY</code> and per-command policy composition details are not consistently documented across source docs.</li>
+<li><strong>Recommendation:</strong> <strong>Medium severity.</strong> State <code>FORCE ROW LEVEL SECURITY</code> (where applicable, subject to PostgreSQL/version/ownership review), table ownership, and policy-composition expectations consistently in <code>DATA_ARCHITECTURE.md</code>/<code>SECURITY_ARCHITECTURE.md</code> with cross-reference to final corrections/ADR.</li>
+<li><strong>Unresolved assumption:</strong> Exact tables requiring FORCE RLS, ownership model, and permissive/restrictive policy definitions remain to be designed/reviewed.</li>
+</ul>
+</li>
+<li>
+<p><strong>Idempotency scope and ledger terminology differ (event ingestion vs licensing/identity operations)</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>docs/DATA_ARCHITECTURE.md</code> §&quot;Proposed logical data model&quot; and §&quot;PostgreSQL storage, partitioning, retention&quot; define <code>event_receipt</code> as an unpartitioned/global idempotency guard for ingestion with unique <code>(tenant_id, source_id, source_event_key)</code>, payload-hash comparison, and atomic insert with partitioned event row and outbox row. <code>docs/DATA_ARCHITECTURE.md</code> §&quot;Tenant-isolated storage&quot; states &quot;Use an idempotency key for retried registration requests.&quot; <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code> §5 defines a proposed durable, tenant-scoped idempotency persistence model/ledger for licensing/identity operations (operation type, request hash, result/reference, processing/completed/failed semantics, duplicates/conflicting payloads, retries after unknown commit/merge/split/lifecycle transitions). <code>docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</code> §3 defines outbox replay/attempt/generation idempotency semantics for external delivery/replay workflows.</li>
+<li><strong>Technical interpretation:</strong> The documents address different idempotency domains (event ingestion, licensing registration/identity operations, outbox delivery/replay) but do not present one unified taxonomy or transaction-boundary map. This can create ambiguity in schema design about required ledgers/tables and which operation must persist which result atomically.</li>
+<li><strong>Recommendation:</strong> <strong>High severity.</strong> Document a unified idempotency model distinguishing <code>event_receipt</code> (ingestion acceptance), licensing/identity operation ledger (ADR 0006), and outbox attempt/replay records (final corrections), including when each is written/committed relative to business state.</li>
+<li><strong>Unresolved assumption:</strong> Exact schema names, retention periods, result serialization, and operation coverage for the licensing/identity ledger are unresolved.</li>
+</ul>
+</li>
+<li>
+<p><strong>Outbox semantics are detailed for delivery/replay in final corrections but not fully harmonized with ingestion/data-architecture descriptions</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>docs/DATA_ARCHITECTURE.md</code> §&quot;Worker concurrency, backpressure, retries, and dead letters&quot; describes PostgreSQL transactional outbox, leases/recoverable claims, idempotent processing by <code>(tenant_id, source_id, source_event_key)</code>, transient retries up to 10 attempts, terminal <code>dead_letter</code>, and authorized replay preserving original event/idempotency identity. <code>docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</code> §3 (Workstream B) proposes detailed semantics: cumulative <code>attempt_count</code>, unique <code>attempt_number</code>, <code>replay_generation</code>, per-generation <code>max_attempts</code> via generation-scoped counters, <code>delivery_unknown</code> safety state, reconciliation/authorization and <code>duplicate_risk_accepted</code> enforcement for ambiguous replay, preserved provider/request idempotency references, fenced leases/tokens, and explicit state transitions. <code>docs/SECURITY_ARCHITECTURE.md</code> mentions transactional outbox for decoupling and authorization checks but not delivery-ambiguity/replay-generation mechanics.</li>
+<li><strong>Technical interpretation:</strong> <code>DATA_ARCHITECTURE.md</code> describes a simpler event-processing outbox model; <code>FINAL_CORRECTIONS.md</code> adds materially stricter recovery/replay semantics (especially for ambiguous external delivery). It is ambiguous whether one outbox model applies to all event/identity/external-delivery workflows or whether separate outbox classes/tables are required.</li>
+<li><strong>Recommendation:</strong> <strong>Medium-High severity.</strong> Clarify in <code>DATA_ARCHITECTURE.md</code> and <code>SECURITY_ARCHITECTURE.md</code> which outbox semantics apply to event normalization/processing vs identity/external-provider side effects, and align with <code>FINAL_CORRECTIONS.md</code> where <code>delivery_unknown</code>/replay authorization is relevant.</li>
+<li><strong>Unresolved assumption:</strong> Provider reconciliation contracts, which workflows have external side effects, and exact replay authorization/owner policy are unresolved.</li>
+</ul>
+</li>
+<li>
+<p><strong>Evidence/custody model specificity differs across documents</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>docs/SECURITY_ARCHITECTURE.md</code> provides aligned distinctions and controls for operational/security audit records, forensic evidence metadata/objects, and append-only custody events, including protected transaction-bound authorization and DB hash-chain limitation. <code>docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</code> §4 provides detailed immutable-field inventory, <code>IS DISTINCT FROM</code> trigger logic concept, <code>security.evidence_transition_authorization</code> mechanism, custody sequencing/concurrency controls, and purge/restore notes. <code>docs/DATA_ARCHITECTURE.md</code> §&quot;Event and evidence lifecycle&quot; and retention sections discuss evidence exports, authorization/access logging/redaction/integrity metadata, and possible future object store but do not specify custody-event append-only sequencing, controlled transition authorization mechanism, or immutable metadata field governance. <code>docs/ARCHITECTURE.md</code> does not detail evidence custody controls.</li>
+<li><strong>Technical interpretation:</strong> No direct conflict in stated goals, but there is a specificity/coverage gap: <code>DATA_ARCHITECTURE.md</code> and <code>ARCHITECTURE.md</code> do not yet reflect the controlled-evidence-transition and custody model required by the latest security corrections.</li>
+<li><strong>Recommendation:</strong> <strong>Medium severity.</strong> Update <code>DATA_ARCHITECTURE.md</code> evidence/audit entities and lifecycle descriptions to align with <code>SECURITY_ARCHITECTURE.md</code>/<code>FINAL_CORRECTIONS.md</code> (immutable metadata, append-only custody events, controlled transitions, tenant-scoped evidence access, hash/provenance handling).</li>
+<li><strong>Unresolved assumption:</strong> Evidence storage architecture (DB/object store/WORM), retention/legal-hold implementation, and purge/restore procedures remain owner/security decisions.</li>
+</ul>
+</li>
+<li>
+<p><strong>Licensing accounting detail is strongest in ADR 0006 but only partially mirrored elsewhere</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code> §2 defines separated measures (Active billable usage, Reserved capacity, Pending identity reservation, Available capacity, Historical/tombstone records), proposed equations, and state-to-counter mapping with owner decisions labeled. <code>docs/DATA_ARCHITECTURE.md</code> §&quot;Tenant-isolated storage&quot; states &quot;Track separately: active billable monitored assets, temporarily reserved slots, pending identity reservations, and available quota&quot; and proposes <code>available = max(licensed_quota - active_assets - reserved_slots - pending_reservations, 0)</code> and pending policy proposal under owner approval. <code>docs/ARCHITECTURE.md</code> and <code>docs/SECURITY_ARCHITECTURE.md</code> mention licensing/quota/counters at higher level without the same formal mapping.</li>
+<li><strong>Technical interpretation:</strong> Directionally consistent but not fully harmonized in terminology and policy-mapping detail (e.g. &quot;temporarily reserved slots&quot;/<code>reserved_slots</code> vs <code>reserved_capacity</code>, billability of deactivated grace/reserved states explicitly left to owner decisions in ADR 0006 but described as proposal in DATA_ARCHITECTURE). Risk of divergent implementation interpretations exists.</li>
+<li><strong>Recommendation:</strong> <strong>Medium severity.</strong> Normalize accounting terminology and explicitly mark commercial/billing semantics as owner decisions in <code>DATA_ARCHITECTURE.md</code> and any related summaries, using ADR 0006 as the technical reference model.</li>
+<li><strong>Unresolved assumption:</strong> Owner decisions listed in ADR 0006 §2 remain pending.</li>
+</ul>
+</li>
+</ol>
+<h2>6. Missing technical decisions</h2>
+<ol>
+<li>
+<p><strong>Identity model and schema formalization</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>DATA_ARCHITECTURE.md</code> still models fingerprint/key-version inside <code>asset_data_source</code> while ADR 0006 requires stable binding/alias separation. Final corrections include <code>source_device_key_id</code> in evidence context but does not define the full identity schema. (Refs: <code>DATA_ARCHITECTURE.md</code> logical model/tenant-isolated storage; <code>ADR 0006</code> §1; <code>FINAL_CORRECTIONS.md</code> §4.1)</li>
+<li><strong>Technical interpretation:</strong> Missing a single reconciled, schema-ready logical definition of canonical asset, <code>asset_data_source</code>, <code>source_device_key_id</code>, <code>source_device_fingerprint_alias</code>, pending identity entities, and identity observation/resolution evidence.</li>
+<li><strong>Recommendation:</strong> Produce a reconciled identity/data-model decision before schema design.</li>
+<li><strong>Unresolved assumption:</strong> Which fields are authoritative, immutable, and tenant-keyed in each entity.</li>
+</ul>
+</li>
+<li>
+<p><strong>Verified transaction context implementation details</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>SECURITY_ARCHITECTURE.md</code> and <code>FINAL_CORRECTIONS.md</code> §2 require protected, verifier-written, transaction-bound verified context and prohibit GUC authorization but leave mechanism selection open. <code>FINAL_CORRECTIONS.md</code> §13 states PostgreSQL version, transaction/binding mechanism, verifier implementation, and role/grant model must be selected/validated.</li>
+<li><strong>Technical interpretation:</strong> The trust model is chosen in principle but not technically specified enough for schema/function design.</li>
+<li><strong>Recommendation:</strong> Decide binding identifiers/mechanism, verifier cryptography/format, nonce lifecycle, helper interfaces, and cleanup semantics.</li>
+<li><strong>Unresolved assumption:</strong> Availability of required PostgreSQL features/transaction identifiers and operational behavior under pooling.</li>
+</ul>
+</li>
+<li>
+<p><strong>Unified idempotency and transaction-boundary map</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>DATA_ARCHITECTURE.md</code> defines <code>event_receipt</code> and outbox behavior; ADR 0006 defines a licensing/identity idempotency ledger; <code>FINAL_CORRECTIONS.md</code> defines outbox attempt/replay/generation semantics and atomic evidence authorization/update/custody/consume. (Refs cited above)</li>
+<li><strong>Technical interpretation:</strong> Missing an end-to-end map of which records/outcomes must commit atomically for registration, attachment, merge, split, deactivation/reactivation/removal, fingerprint rotation, evidence transitions, and external-delivery workflows, including unknown-commit reconciliation boundaries.</li>
+<li><strong>Recommendation:</strong> Define operation-by-operation transaction boundaries and idempotency/result-persistence rules before schema design.</li>
+<li><strong>Unresolved assumption:</strong> External side-effect boundaries and result reference formats.</li>
+</ul>
+</li>
+<li>
+<p><strong>RLS/FORCE RLS policy catalog and role-grant matrix</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>SECURITY_ARCHITECTURE.md</code> defines logical roles and policy posture; <code>FINAL_CORRECTIONS.md</code> §5 identifies <code>UPDATE</code>/<code>SELECT</code>/<code>RETURNING</code> interaction; <code>DATA_ARCHITECTURE.md</code> is less specific. No document provides a concrete policy/catalog/grant matrix.</li>
+<li><strong>Technical interpretation:</strong> Missing concrete per-table/per-command RLS and privilege design required for formal PostgreSQL schema/security review.</li>
+<li><strong>Recommendation:</strong> Define FORCE RLS applicability, table ownership, grants, permissive/restrictive policies, and <code>asset:write</code>/<code>asset:read</code> behavior.</li>
+<li><strong>Unresolved assumption:</strong> Whether <code>asset:write</code> implies <code>asset:read</code> for row-addressed workflows (owner/security decision noted in <code>FINAL_CORRECTIONS.md</code> §5).</li>
+</ul>
+</li>
+<li>
+<p><strong>Evidence storage and controlled-transition operational design</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>SECURITY_ARCHITECTURE.md</code> and <code>FINAL_CORRECTIONS.md</code> §4 define integrity/authorization principles but leave storage backends, retention/legal-hold/purge/restore, external tamper-evidence, and operational authorizations unresolved.</li>
+<li><strong>Technical interpretation:</strong> Evidence metadata/custody schema cannot be finalized without storage/retention/legal control decisions.</li>
+<li><strong>Recommendation:</strong> Resolve storage architecture and controlled procedure authorization/operational workflow decisions.</li>
+<li><strong>Unresolved assumption:</strong> Object store/WORM usage, immutable storage scope, and jurisdictional retention requirements.</li>
+</ul>
+</li>
+<li>
+<p><strong>Outbox scope split and external delivery reconciliation contracts</strong></p>
+<ul>
+<li><strong>Confirmed fact:</strong> <code>DATA_ARCHITECTURE.md</code> and <code>FINAL_CORRECTIONS.md</code> describe outbox/retry/replay at different specificity levels; <code>FINAL_CORRECTIONS.md</code> requires reconciliation evidence for <code>delivery_unknown</code> and provider idempotency handling.</li>
+<li><strong>Technical interpretation:</strong> Missing decision on whether event-processing outbox and external-side-effect outbox share schema/semantics, and what provider reconciliation evidence/contracts are required.</li>
+<li><strong>Recommendation:</strong> Define outbox classes, state machines, and provider/consumer contracts before schema design.</li>
+<li><strong>Unresolved assumption:</strong> Which integrations/providers support idempotency and what evidence proves outcomes.</li>
+</ul>
+</li>
+</ol>
+<h2>7. Owner decisions that must remain pending</h2>
+<p><strong>Confirmed fact / Unresolved assumption (as documented):</strong> The following require owner/commercial/privacy/legal/security approval and must not be decided in this review:</p>
+<ul>
+<li>Commercial/billing and quota semantics from ADR 0006 §2 and <code>DATA_ARCHITECTURE.md</code>: whether reserved slots consume billable quota; whether pending identity cases reserve capacity; pending reservation duration; deactivation grace period; immediate quota release exceptions; permanent removal authorization; billable vs reserved vs tombstone treatment.</li>
+<li>Identity resolution governance from <code>DATA_ARCHITECTURE.md</code>/ADR 0006 context: authoritative identifiers by device/connector, confidence classes/matching rule versioning, weak/conflicting identity handling, pending identity review/quarantine defaults, manual merge/split authorization and possible multi-person approval, identity-equality key protection/rotation policy, and collision/dispute handling.</li>
+<li>Data/privacy/legal/operations: retention periods for events, audit/lifecycle, evidence metadata/objects/custody, backups, receipts/idempotency records, and legal holds; customer/jurisdiction-specific requirements.</li>
+<li>Security/operations: JIT support/cross-tenant access model, break-glass and administrative controls, evidence storage/WORM/external tamper-evidence controls, custom MELIRA endpoint approval policy, permitted provider regions/terms/data classes/consent granularity/spend ceilings, and provider reconciliation/ambiguous-delivery replay authorization policy.</li>
+<li>Capacity/product targets: reference workload/profile, performance/SLO targets, and infrastructure thresholds as commitments (currently proposed assumptions in <code>DATA_ARCHITECTURE.md</code>).</li>
+</ul>
+<p><strong>Technical interpretation:</strong> These decisions constrain schema fields, state transitions, retention, and authorization workflows but cannot be inferred from architecture principles alone.</p>
+<p><strong>Recommendation:</strong> Track them as explicit decision records/inputs to schema design; document provisional assumptions separately where needed.</p>
+<p><strong>Unresolved assumption:</strong> No owner approvals were evidenced in the inspected documents.</p>
+<h2>8. Recommended corrections, ranked by severity</h2>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Correction</th>
+<th>Affected documents/sections</th>
+<th>Rationale</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Critical</td>
+<td>Reconcile source-device identity model to a single authoritative definition: <code>canonical asset</code>, <code>asset_data_source</code> (stable binding), <code>source_device_key_id</code>, and <code>source_device_fingerprint_alias</code> (versioned aliases), with fingerprints not permanent identity and clear overlap/rotation/lookup/collision/migration behavior.</td>
+<td><code>docs/DATA_ARCHITECTURE.md</code> §§&quot;Proposed logical data model&quot;, &quot;Tenant-isolated storage&quot;; <code>docs/ARCHITECTURE.md</code> §§&quot;Proposed system boundary&quot;, &quot;Data ingestion and processing flow&quot;; align with <code>ADR 0006</code> §1, <code>SECURITY_ARCHITECTURE.md</code> identity section, <code>FINAL_CORRECTIONS.md</code> evidence linkage context.</td>
+<td>Prevents duplicate source-of-truth definitions that can lead to incompatible schema/constraint design and licensing/merge/rotation errors.</td>
+<td><strong>Recommendation</strong> based on <strong>confirmed fact</strong> of model divergence and <strong>technical interpretation</strong> of schema risk.</td>
+</tr>
+<tr>
+<td>Critical</td>
+<td>Make verified transaction-bound tenant context and non-GUC authorization explicit and consistent in all data/architecture source docs; cross-reference <code>SECURITY_ARCHITECTURE.md</code> and <code>FINAL_CORRECTIONS.md</code> Workstream A.</td>
+<td><code>docs/DATA_ARCHITECTURE.md</code> §&quot;Tenant-isolated storage&quot;; <code>docs/ARCHITECTURE.md</code> §§&quot;Architectural principles&quot;, boundary/deployment notes as needed.</td>
+<td>Prevents schema/RLS designs based on caller-settable <code>SET app.tenant_id</code>/custom GUC assumptions.</td>
+<td><strong>Recommendation</strong> based on <strong>confirmed fact</strong> of specificity gap.</td>
+</tr>
+<tr>
+<td>High</td>
+<td>Normalize PostgreSQL logical role model and least-privilege boundaries (<code>cares_api_runtime</code>, <code>cares_ingest_runtime</code>, <code>cares_worker_runtime</code>, <code>cares_migration</code>, <code>cares_maintenance</code>) and related prohibitions across docs.</td>
+<td><code>docs/DATA_ARCHITECTURE.md</code> §&quot;Tenant-isolated storage&quot;, migrations/retention notes; <code>docs/ARCHITECTURE.md</code> deployment/boundary notes as needed; align with <code>SECURITY_ARCHITECTURE.md</code> role section and <code>FINAL_CORRECTIONS.md</code> definer/EXECUTE guidance.</td>
+<td>Ensures consistent grant/RLS/test assumptions for production-equivalent non-owner roles.</td>
+<td><strong>Recommendation</strong> based on <strong>confirmed fact</strong> of role naming/detail inconsistency.</td>
+</tr>
+<tr>
+<td>High</td>
+<td>Define a unified idempotency taxonomy/transaction-boundary map covering ingestion <code>event_receipt</code>, licensing/identity operation idempotency ledger, and outbox attempt/replay/generation records.</td>
+<td><code>docs/DATA_ARCHITECTURE.md</code> §§logical model, storage/partitioning/retention, worker/outbox, licensing transaction; <code>ADR 0006</code> §5; <code>FINAL_CORRECTIONS.md</code> §3; <code>SECURITY_ARCHITECTURE.md</code> audit/evidence/outbox notes.</td>
+<td>Avoids ambiguous duplicate handling, unknown-commit recovery, and replay safety gaps in schema design.</td>
+<td><strong>Recommendation</strong> based on <strong>confirmed fact</strong> of differing scopes and <strong>technical interpretation</strong> of boundary ambiguity.</td>
+</tr>
+<tr>
+<td>Medium-High</td>
+<td>Harmonize outbox semantics and scope (event processing vs external/identity side effects), including <code>delivery_unknown</code>, reconciliation, replay authorization/generation, and idempotency preservation where applicable.</td>
+<td><code>docs/DATA_ARCHITECTURE.md</code> §&quot;Worker concurrency, backpressure, retries, and dead letters&quot;; <code>SECURITY_ARCHITECTURE.md</code> outbox mention; align with <code>FINAL_CORRECTIONS.md</code> §3.</td>
+<td>Prevents under-specified recovery/replay behavior for ambiguous deliveries.</td>
+<td><strong>Recommendation</strong> based on <strong>confirmed fact</strong> of differing detail and <strong>unresolved assumption</strong> about workflow/provider contracts.</td>
+</tr>
+<tr>
+<td>Medium</td>
+<td>Align evidence/audit/custody data-model language in <code>DATA_ARCHITECTURE.md</code> with <code>SECURITY_ARCHITECTURE.md</code> and <code>FINAL_CORRECTIONS.md</code> (immutable metadata, controlled transaction-bound transitions, append-only custody events, tenant-scoped evidence access).</td>
+<td><code>docs/DATA_ARCHITECTURE.md</code> §§logical model, &quot;Event and evidence lifecycle&quot;, retention/backup; cross-ref <code>SECURITY_ARCHITECTURE.md</code> and <code>FINAL_CORRECTIONS.md</code> §4.</td>
+<td>Ensures data architecture supports required integrity and authorization controls.</td>
+<td><strong>Recommendation</strong> based on <strong>confirmed fact</strong> of specificity gap.</td>
+</tr>
+<tr>
+<td>Medium</td>
+<td>Normalize licensing accounting terminology/state mapping and explicitly label owner-commercial decisions consistently across docs.</td>
+<td><code>docs/DATA_ARCHITECTURE.md</code> §&quot;Tenant-isolated storage&quot;; summaries in <code>docs/ARCHITECTURE.md</code>/<code>SECURITY_ARCHITECTURE.md</code> as needed; align with <code>ADR 0006</code> §2.</td>
+<td>Reduces risk of conflicting interpretations of active/reserved/pending/available/tombstone semantics.</td>
+<td><strong>Recommendation</strong> based on <strong>confirmed fact</strong> of partial/detail inconsistency and <strong>unresolved assumption</strong> on commercial policy.</td>
+</tr>
+<tr>
+<td>Medium</td>
+<td>Explicitly document <code>FORCE ROW LEVEL SECURITY</code> applicability, table ownership assumptions, and RLS policy composition/<code>UPDATE</code>-<code>SELECT</code>-<code>RETURNING</code> expectations consistently.</td>
+<td><code>docs/DATA_ARCHITECTURE.md</code> tenant-isolation section; <code>docs/SECURITY_ARCHITECTURE.md</code> RLS section; cross-ref <code>FINAL_CORRECTIONS.md</code> §5.</td>
+<td>Improves schema/security review readiness and testability.</td>
+<td><strong>Recommendation</strong> based on <strong>confirmed fact</strong> of uneven explicitness.</td>
+</tr>
+</tbody>
+</table>
+<h2>9. Explicit assessment of readiness for formal PostgreSQL schema design</h2>
+<p><strong>Confirmed fact:</strong> Core constraints and several important technical directions are documented and partially aligned (notably in <code>SECURITY_ARCHITECTURE.md</code>, <code>FINAL_CORRECTIONS.md</code>, and ADR 0006). However, inspected source documents contain unresolved contradictions/ambiguities in identity model decomposition, tenant-context mechanism specificity, role model, idempotency/outbox scope, and evidence/audit data-model detail.</p>
+<p><strong>Technical interpretation:</strong> CARES is <strong>not yet ready for formal PostgreSQL schema design as a finalized, unambiguous cross-document baseline</strong>. It is <strong>close to readiness for a conditional/preparatory schema-design review</strong> only if schema work is explicitly bounded by: (a) ADR 0006 as the identity/licensing transaction reference, (b) <code>SECURITY_ARCHITECTURE.md</code> and <code>FINAL_CORRECTIONS.md</code> as the authoritative security/context/evidence/outbox correction references, and (c) a tracked list of required reconciliations and unresolved technical/owner decisions.</p>
+<p><strong>Recommendation:</strong> Do <strong>not</strong> treat the current document set as schema-ready without first applying the critical/high corrections in Section 8 (or recording approved superseding decisions). A formal PostgreSQL schema/security design pass may proceed in parallel only as a draft/proposal exercise clearly marked NOT IMPLEMENTED/NOT TESTED and contingent on resolving the identified ambiguities.</p>
+<p><strong>Unresolved assumption:</strong> Readiness may improve if there are approved decisions outside the inspected documents; none were evidenced in this review.</p>
+<h2>Scope and evidence notes</h2>
+<ul>
+<li><strong>Confirmed fact:</strong> This review inspected the actual contents of the five requested documents listed in Section 2. Source architecture documents were not modified. No ERD, DDL, SQL migrations, application code, or tests were created. No schema changes were executed.</li>
+<li><strong>Technical interpretation:</strong> Findings are based on documentation text and cross-references only; absence of evidence in documentation is not evidence of implementation, security, correctness, or test coverage.</li>
+<li><strong>Recommendation:</strong> Validate all proposed controls/designs with production-equivalent PostgreSQL roles/RLS/transaction/concurrency and security testing only after formal design and owner/security decisions.</li>
+<li><strong>Unresolved assumption:</strong> Some section references are based on observed headings/line-adjacent content in the inspected files at review time; documents may be renumbered during reconciliation edits.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

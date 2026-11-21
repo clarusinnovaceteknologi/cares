@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Logical Model — Round 1.1 Changelog</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Logical Model — Round 1.1 Changelog</h1>
+<p><strong>Status:</strong> Documentation correction/changelog for Round 1.1 targeted consistency and relational-integrity review; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. No PostgreSQL physical schema, DDL, migration, database implementation, or application code was created.</p>
+<h2>Scope and baseline</h2>
+<ul>
+<li><strong>Baseline:</strong> completed CARES PostgreSQL Formal Schema Design — Round 1 logical model (<code>docs/POSTGRESQL_LOGICAL_DATA_MODEL.md</code>, <code>docs/POSTGRESQL_LOGICAL_ERD.md</code>, <code>docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md</code>, <code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code>, <code>docs/POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md</code>).</li>
+<li><strong>Round 1.1 objective:</strong> targeted consistency and relational-integrity review with minimal documentation corrections only (no restart of architecture design, no wholesale rewrite).</li>
+<li><strong>Preserved:</strong> all established CARES architecture constraints and owner-level decision boundaries. <strong>ADR 0006 remains Proposed</strong> (not promoted). No product roadmap or commercial licensing policy changed. No owner, finance, privacy, legal, or security approvals invented.</li>
+</ul>
+<h2>Documents inspected (Round 1.1)</h2>
+<ul>
+<li><code>docs/POSTGRESQL_LOGICAL_DATA_MODEL.md</code></li>
+<li><code>docs/POSTGRESQL_LOGICAL_ERD.md</code></li>
+<li><code>docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md</code></li>
+<li><code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code></li>
+<li><code>docs/POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md</code></li>
+<li><code>docs/DATA_ARCHITECTURE.md</code></li>
+<li><code>docs/SECURITY_ARCHITECTURE.md</code></li>
+<li><code>docs/POSTGRESQL_TECHNICAL_DECISIONS.md</code></li>
+<li>Relevant ADRs: <code>docs/adr/0003-device-identity-and-asset-licensing.md</code>, <code>docs/adr/0005-event-processing-and-broker-evolution.md</code>, <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code></li>
+<li><code>docs/PROJECT_STATUS.md</code></li>
+</ul>
+<h2>Findings from Round 1 review and corrections applied</h2>
+<h3>1. Source-device binding model and authoritative ownership (OD-002)</h3>
+<p><strong>Finding:</strong> Round 1 documented <code>asset_data_source</code> and <code>source_device_key</code> as related concepts but left ownership/cardinality ambiguous and allowed an interpretation with competing authority.</p>
+<p><strong>Alternatives evaluated:</strong> (A) <code>asset_data_source</code> authoritative binding entity owning immutable stable binding identity (<code>source_device_key_id</code>), with aliases referencing that stable identity and any separate <code>source_device_key</code> record only as 1:1 dependent/non-authoritative projection; (B) <code>source_device_key</code> authoritative stable identity entity with <code>asset_data_source</code> referencing it through a strictly defined relationship.</p>
+<p><strong>Evaluation criteria:</strong> single source of truth, cardinality, ownership/lifecycle, fingerprint alias references, multiple sources reporting one canonical asset, merge/split effects, key rotation and alias overlap, historical binding preservation, referential integrity and tenant-inclusive FK feasibility.</p>
+<p><strong>Recommendation (Proposed, not approved):</strong> <strong>Alternative A</strong>. <code>asset_data_source</code> is the authoritative stable source-device binding entity and owns immutable <code>source_device_key_id</code>, binding provenance, and lifecycle; <code>source_device_fingerprint_alias</code> references this stable binding identity; a separate <code>source_device_key</code> entity, if materialized, must be 1:1, same-lifecycle, dependent/non-authoritative, and contain no competing attributes. Alternative B increases dual-authority/lifecycle split risk unless exhaustively constrained.</p>
+<p><strong>Corrections applied:</strong> updated entity catalogue, relationship analysis (R4/R5), identity notes, ERDs (binding relationships/entities/labels), and transaction boundaries to reflect the recommended single-source-of-truth model while preserving OD-002 as an open decision requiring technical approval.</p>
+<p><strong>Status:</strong> <strong>Proposed / Open Decision (OD-002).</strong> No technical approval or ADR acceptance granted.</p>
+<h3>2. Identity/licensing idempotency contract (OD-008 / TD-007)</h3>
+<p><strong>Finding:</strong> <code>identity_operation_idempotency_ledger</code> and transaction operations lacked a complete logical contract for key scope, canonicalization/hash, state semantics, concurrent/retry behavior, unknown-commit handling, and coupling model.</p>
+<p><strong>Alternatives evaluated:</strong> (A) single-transaction coupling of ledger claim/state/result with database-local business state, audit/history/licensing, and required outbox records; (B) staged/multi-transaction tracking with <code>in_progress</code> claims, leases/fencing, and recovery.</p>
+<p><strong>Recommendation (Proposed, not approved):</strong> define a durable logical contract (tenant + operation type + idempotency key scope; deterministic request canonicalization/hash; states <code>in_progress</code>, <code>committed</code>, <code>failed_terminal</code>, <code>timeout_unknown_commit</code>; replay/conflict/concurrency/unknown-commit rules; retention/reconciliation requirement). <strong>Default for database-local identity/licensing operations: Alternative A</strong> (single-transaction coupling). Staged tracking (B) only where single DB-local transaction is infeasible and explicit leases/fencing/recovery are approved. Database-local atomicity remains separate from external side effects coordinated through outbox; <strong>no exactly-once external delivery claimed</strong>.</p>
+<p><strong>Corrections applied:</strong> updated idempotency ledger entity definition, transaction global principles and identity/licensing operation semantics, and ERD idempotency fields/notes.</p>
+<p><strong>Status:</strong> <strong>Proposed / Open Decision (OD-008).</strong> Contract approval, operation scope, retention, and any staged exceptions require technical approval.</p>
+<h3>3. Event receipt deduplication namespace</h3>
+<p><strong>Finding:</strong> <code>event_receipt</code> uniqueness/namespace guidance was insufficiently explicit for connectors where upstream event IDs are globally unique within a data source, unique only within a device, or unreliable/missing; this risked cross-device collisions in multi-device connectors.</p>
+<p><strong>Alternatives evaluated:</strong> tenant+data source namespace, tenant+stable source-device binding namespace, and explicitly modeled event namespace (type + namespace id + normalized key + provenance).</p>
+<p><strong>Recommendation (Proposed):</strong> use an <strong>explicitly modeled deduplication namespace/provenance</strong> on <code>event_receipt</code>. Data-source-global upstream IDs may use tenant+<code>data_source_id</code> namespace; device-scoped upstream IDs must use tenant+authoritative stable source-device binding identity namespace; unreliable/missing upstream IDs require deterministic approved fallback or reject/quarantine policy. Raw source identifiers are not DB uniqueness keys. <code>event_receipt</code> remains distinct from <code>identity_operation_idempotency_ledger</code>.</p>
+<p><strong>Corrections applied:</strong> updated <code>event_receipt</code> entity, relationship/matrix references, ERDs, and transaction operation 10 (atomic acceptance, uniqueness, concurrency, unresolved connector-specific behavior).</p>
+<p><strong>Status:</strong> namespace model <strong>Proposed</strong>; connector-specific fallback/unreliable-ID behavior recorded as <strong>Open Decision (OD-013)</strong> where necessary.</p>
+<h3>4. Asset lineage relational integrity</h3>
+<p><strong>Finding:</strong> <code>asset_lineage_link</code> used a polymorphic generic reference (<code>from_asset_or_op_ref</code>) that cannot be guaranteed by a conventional relational foreign key; application-only validation is insufficient where structural integrity is possible.</p>
+<p><strong>Alternatives evaluated:</strong> typed source/target asset references only, explicit operation-to-lineage entities, separate merge/split lineage associations, and a single typed lineage table with nullable operation FKs by link type.</p>
+<p><strong>Recommendation (Proposed):</strong> adopt <strong>typed, relationally enforceable lineage associations</strong>. <code>asset_lineage_link</code> (or equivalent typed associations) must carry typed <code>from_asset_id</code>/<code>to_asset_id</code> FKs and typed operation FKs (<code>merge_operation_id</code> / <code>split_operation_id</code>) with link-type-valid exclusivity/constraints, preserving canonical asset identity, non-reusable IDs, merge survivor/losing history, split source/result history, tenant boundaries, auditability, and referential integrity.</p>
+<p><strong>Corrections applied:</strong> replaced polymorphic lineage entity/attributes in catalogue and ERD; updated merge/split transaction boundaries and lineage notes.</p>
+<p><strong>Status:</strong> <strong>Proposed correction</strong> documented in logical model; physical constraint syntax remains future schema design.</p>
+<h3>5. Entity naming and responsibility normalization</h3>
+<p><strong>Findings and dispositions (Proposed, traceability preserved):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Candidate(s)</th>
+<th>Disposition</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>permission_assignment</code> vs <code>role_permission</code></td>
+<td><strong>Normalized:</strong> <code>role_permission</code> canonical (role→capability); <code>membership_role_assignment</code> retained separately (membership→role); <code>permission_assignment</code> not separately modeled</td>
+<td>Removes ambiguous grant target; distinct RBAC responsibilities</td>
+</tr>
+<tr>
+<td><code>tenant_configuration</code> vs <code>tenant_policy_reference</code></td>
+<td><strong>Normalized:</strong> <code>tenant_configuration</code> canonical (includes policy/version references); <code>tenant_policy_reference</code> not separate competing entity</td>
+<td>Single tenant-scoped config authority</td>
+</tr>
+<tr>
+<td><code>audit_event</code> vs <code>ai_interaction_audit</code></td>
+<td><strong>Retained as separate</strong> (specialization/association via correlation, not duplicate truth)</td>
+<td>Distinct responsibilities: operational/security audit vs AI privacy/provider decision metadata (no full prompt/response by default)</td>
+</tr>
+<tr>
+<td><code>asset_tombstone</code> vs terminal asset lifecycle representation</td>
+<td><strong>Retained as distinct optional representation</strong> (tombstone separate from mutable lifecycle state/history)</td>
+<td>Preserves non-reusable terminal-history semantics without conflating routine state transitions</td>
+</tr>
+<tr>
+<td><code>processing_work_item</code></td>
+<td><strong>Optional / intentionally not core</strong>; omitted from core ERDs unless justified</td>
+<td>Avoids speculative pipeline schema and competing state truth with outbox/event records</td>
+</tr>
+<tr>
+<td><code>outbox_message</code> vs <code>outbox_attempt</code></td>
+<td><strong>Retained as separate</strong></td>
+<td>Work intent/state vs attempt/lease/ambiguity/replay history</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Corrections applied:</strong> catalogue rows, ERD labels/entities/omission notes, relationship matrix entry, and classification matrix naming aligned.</p>
+<h2>Documents changed</h2>
+<ul>
+<li><code>docs/POSTGRESQL_LOGICAL_DATA_MODEL.md</code> — binding ownership recommendation and entity/relationship/matrix corrections, idempotency contract, event receipt namespace/provenance, typed lineage, naming normalization, Round 1.1 review section.</li>
+<li><code>docs/POSTGRESQL_LOGICAL_ERD.md</code> — ERD relationships/entities/attributes/explanations updated for binding, idempotency, event namespace, typed lineage, and intentionally omitted entities noted.</li>
+<li><code>docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md</code> — global principles and operations updated for binding recommendation, idempotency contract/coupling, event dedup namespace/collision prevention, typed lineage integrity, and Round 1.1 consistency notes.</li>
+<li><code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> — OD-002/OD-008 refined with Round 1.1 recommendations (still open), OD-013 added for connector-specific event dedup namespace/fallback behavior, lineage correction note, blockers/readiness/order updated.</li>
+<li><code>docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md</code> — created (this document).</li>
+</ul>
+<h2>Documents not changed (unless separately reported)</h2>
+<ul>
+<li><code>docs/PROJECT_STATUS.md</code> — no necessary correction identified for Round 1.1 (Round 1 logical artifacts already reflected; no status claim upgrade required).</li>
+<li>ADR files — unchanged; <strong>ADR 0006 status preserved as Proposed</strong>.</li>
+<li><code>docs/DATA_ARCHITECTURE.md</code>, <code>docs/SECURITY_ARCHITECTURE.md</code>, <code>docs/POSTGRESQL_TECHNICAL_DECISIONS.md</code> — reviewed for consistency; not modified in this targeted correction (Round 1 logical docs carry the detailed Round 1.1 model corrections/recommendations and open decisions).</li>
+</ul>
+<h2>Decisions still Proposed / Open decisions retained</h2>
+<ul>
+<li><strong>Proposed (not approved):</strong> authoritative binding ownership recommendation (Alternative A), idempotency ledger contract and default single-transaction coupling for DB-local operations, explicit event dedup namespace model, typed lineage association structure, and naming normalizations above.</li>
+<li><strong>Open decisions retained/refined:</strong> OD-001–OD-012 remain; OD-002 and OD-008 refined with recommendations but still require technical approval; <strong>OD-013</strong> added for connector-specific event dedup namespace/fallback behavior.</li>
+<li><strong>Owner/approval boundaries preserved:</strong> no commercial, finance, privacy, legal, or security approvals invented or implied.</li>
+</ul>
+<h2>Explicit confirmation</h2>
+<ul>
+<li><strong>No PostgreSQL DDL, migration, SQL constraint/index/RLS policy, trigger, function, procedure, or database role was created.</strong></li>
+<li><strong>No application code was modified.</strong></li>
+<li><strong>No database implementation was created.</strong></li>
+<li>Round 1.1 outputs are documentation corrections/recommendations only and do not constitute implementation, testing, or security validation evidence.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

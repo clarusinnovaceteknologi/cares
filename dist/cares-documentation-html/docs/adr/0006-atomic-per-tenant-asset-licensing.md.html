@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADR 0006: Enforce per-tenant asset quota atomically in PostgreSQL</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>ADR 0006: Enforce per-tenant asset quota atomically in PostgreSQL</h1>
+<ul>
+<li><strong>Status:</strong> Proposed (mandatory licensing semantics preserved; transactional/licensing design proposed pending owner approval and formal schema/security review)</li>
+<li><strong>Date:</strong> 2026-11-16</li>
+<li><strong>Last reviewed/updated:</strong> 2026-11-21 (documentation-only consistency review; no implementation)</li>
+</ul>
+<h2>Problem</h2>
+<p>The one-device-one-asset rule is not reliable if concurrent enrollments both pass an in-memory quota check, if a retry creates another asset, if source attachment increments usage, or if fingerprint rotation/merge/split operations create duplicate bindings, assets, or licensed usage. Licensing must be per tenant, authoritative in PostgreSQL, and remain consistent through registration, attachment, conflict resolution, merge, split, deactivation, reactivation, removal, fingerprint rotation, and recovery.</p>
+<h2>Confirmed requirements (preserved)</h2>
+<ul>
+<li><strong>Mandatory commercial invariant:</strong> every unique monitored device consumes exactly one licensed asset. Multiple data sources reporting the same device must <strong>not</strong> create duplicate licensed assets.</li>
+<li>Python backend.</li>
+<li>PostgreSQL is the authoritative licensing database/system of record for licensing and identity enforcement.</li>
+<li>SaaS-only external AI providers; no local GPU requirement. (AI is not an authority for licensing, identity, merge/split, or quota decisions.)</li>
+<li>Asset licensing is separate from technical resource quotas (ingestion, storage, agent count, API capacity, AI usage, etc.).</li>
+<li>Each tenant has licensed asset entitlement/quota, licensing state/history, and auditable lifecycle/removal evidence.</li>
+<li>Licensing enforcement and commercial reporting must agree across backend, API, and Dashboard when implemented.</li>
+<li>All controls described here are <strong>proposed, NOT IMPLEMENTED, and NOT TESTED</strong> unless actual repository evidence proves otherwise.</li>
+</ul>
+<h2>Alternatives considered</h2>
+<ol>
+<li><strong>Process-local counter/check.</strong> Simple but lost on restart and vulnerable to concurrent races and duplicate billing; rejected.</li>
+<li><strong>Count database rows on every registration without locking/serialization.</strong> A concurrent check-then-insert can exceed quota or race with merge/split; rejected.</li>
+<li><strong>Per-tenant serialized licensing transaction in PostgreSQL with tenant-inclusive uniqueness constraints, stable binding/alias separation, idempotency ledger, and append-only history.</strong> Correctness-oriented and compatible with PostgreSQL as reference implementation at the proposed initial scale; selected as the proposed direction.</li>
+<li><strong>Distributed lock or external quota service.</strong> Adds infrastructure and failure modes before there is evidence that PostgreSQL transaction/locking design is insufficient; deferred pending measured contention evidence.</li>
+</ol>
+<h2>Proposed decision</h2>
+<h3>1. Stable source-device binding and fingerprint aliases (conceptual alignment)</h3>
+<p>Align with the latest <code>docs/DATA_ARCHITECTURE.md</code> and architecture decision packages: a fingerprint is evidence/lookup material, <strong>not</strong> the permanent identity of a binding.</p>
+<p><strong>Conceptual separation (proposed):</strong></p>
+<ul>
+<li><strong><code>asset_data_source</code></strong>: stable relationship between a canonical CARES asset and a data-source/device identity context (tenant-scoped). It represents that a specific source/device binding is attached to a canonical asset; it is not itself a billable asset count.</li>
+<li><strong><code>source_device_key_id</code></strong>: stable internal identity for the source-device binding (CARES-generated, tenant/source-scoped as designed). It remains stable across fingerprint algorithm/key-version rotations and alias overlap for that same binding.</li>
+<li><strong><code>source_device_fingerprint_alias</code></strong>: versioned fingerprint aliases associated with the stable binding (<code>source_device_key_id</code> / binding identity). Multiple aliases may be active/valid during an approved overlap window and must resolve to the same stable binding.</li>
+</ul>
+<p><strong>Binding uniqueness (proposed):</strong></p>
+<ul>
+<li>One <code>source_device_key_id</code> identifies one stable source-device binding within its tenant/data-source context and maps to at most one canonical CARES asset at a time per approved lifecycle/invariant rules.</li>
+<li><code>asset_data_source</code> / binding records must be tenant-inclusive and must prevent the same stable source-device binding from being attached to multiple canonical assets or duplicated as a conflicting active binding.</li>
+<li>A single <code>data_source_id</code>/connector instance may report many devices (many bindings/<code>source_device_key_id</code> values); one canonical asset may have bindings from many sources. Adding/attaching bindings to an already-resolved canonical asset does <strong>not</strong> create another licensed asset or increment licensed usage.</li>
+</ul>
+<p><strong>Alias uniqueness (proposed):</strong></p>
+<ul>
+<li>Alias uniqueness must be tenant-scoped and include, at minimum, the dimensions required by the approved design: tenant, data source/binding context, algorithm, key version, and protected fingerprint value (or equivalent approved uniqueness tuple). Exact DDL/constraint names are illustrative and subject to formal schema review.</li>
+<li>No uniqueness constraint may use an unprotected raw source identifier as the key. Raw identifiers, if retained by approved policy, are protected sensitive data and not identity keys.</li>
+<li>A fingerprint/alias row must be tenant- and source/binding-consistent via tenant-inclusive foreign keys/constraints so aliases cannot be attached across tenants or to the wrong binding.</li>
+</ul>
+<p><strong>Multiple active/overlap aliases mapping to one stable binding (proposed):</strong></p>
+<ul>
+<li>During approved overlap, multiple active aliases (for example old and new algorithm/key-version fingerprints) may reference the same stable <code>source_device_key_id</code>/binding.</li>
+<li>All such aliases must resolve to the same canonical asset/binding; overlap does not authorize creation of a second binding, second asset, or additional licensed usage.</li>
+</ul>
+<p><strong>Atomic registration and fingerprint rotation (proposed):</strong></p>
+<ul>
+<li>Registration must atomically: verify tenant context/authorization, resolve identity/aliases, lock required licensing rows in defined order, recheck uniqueness/state after lock, create or attach binding/aliases/asset/lifecycle records as applicable, apply licensing counter/history effects, and persist idempotency outcome/result in one PostgreSQL transaction.</li>
+<li>Fingerprint rotation must atomically per approved batch/step: add new alias/version material, preserve required overlap state, verify lookup/uniqueness/binding consistency, update alias state/retirement markers as approved, and record audit/history. Rotation must not rewrite identity history in place.</li>
+</ul>
+<p><strong>Lookup behavior during overlap (proposed):</strong></p>
+<ul>
+<li>Lookup accepts any currently valid/active alias for the approved overlap window and resolves to the same stable binding/canonical asset.</li>
+<li>If lookup finds no valid binding, treat as unresolved/new-candidate per identity rules (not automatic merge). If lookup finds conflicting bindings/assets, fail closed to conflict/pending review; do not create or merge assets automatically.</li>
+</ul>
+<p><strong>Collision handling (proposed):</strong></p>
+<ul>
+<li>A uniqueness violation or conflicting alias-to-binding/asset resolution is a conflict, not permission to create a duplicate binding/asset. The transaction must roll back or transition to an explicit conflict/pending-resolution path per approved design; no duplicate licensed usage may be committed.</li>
+<li>Fingerprint collisions or ambiguous mappings require investigation/review controls as approved; weak/corroborating attributes never authorize automatic merge.</li>
+</ul>
+<p><strong>Migration behavior (proposed):</strong></p>
+<ul>
+<li>Migration/re-fingerprinting/reprocessing must be idempotent, resumable, and auditable.</li>
+<li>It must <strong>not</strong> create duplicate assets, duplicate active bindings, duplicate aliases violating uniqueness, or duplicate/inflated licensed usage.</li>
+<li>Old and new aliases may overlap only for the approved period and must map to the same stable binding. Retirement/deactivation of old aliases/keys must preserve required audit history and follow approved retention/security policy.</li>
+</ul>
+<h3>2. Explicit licensing accounting model (proposed technical model)</h3>
+<p>This section defines a <strong>proposed technical model</strong> to support owner-approved commercial decisions. It does <strong>not</strong> invent commercial decisions.</p>
+<p><strong>Separated measures:</strong></p>
+<ul>
+<li><strong>Active billable usage:</strong> count of canonical monitored assets currently in billable/active licensed state per tenant, as defined by approved policy mapping. One unique monitored device = one licensed asset when active/billable.</li>
+<li><strong>Reserved capacity:</strong> quota capacity held/reserved by approved lifecycle or policy states (for example grace/reservation mechanics) that is not necessarily the same as active billable usage.</li>
+<li><strong>Pending identity reservation:</strong> provisional capacity reserved for an unresolved/pending identity case, if owner-approved; it does not by itself confirm a billable monitored device.</li>
+<li><strong>Available capacity:</strong> remaining capacity that may be allocated/reserved for new billable assets or approved reservations according to approved policy.</li>
+<li><strong>Historical/tombstone records:</strong> retained lifecycle/licensing/audit identity records for deactivated/merged/removed/resolved cases; they preserve history and do not imply active billable usage or available capacity unless an approved state mapping explicitly states otherwise.</li>
+</ul>
+<p><strong>Proposed accounting equations (illustrative, subject to owner policy mapping):</strong></p>
+<ul>
+<li><code>available_capacity = entitled_quota - active_billable_usage - reserved_capacity - pending_identity_reservation_adjustment</code>
+<ul>
+<li>where <code>pending_identity_reservation_adjustment</code> is included only to the extent pending cases reserve capacity under approved policy (possibly equal to pending reservation count/slots, possibly zero).</li>
+</ul>
+</li>
+<li><code>entitled_quota</code> is the effective tenant entitlement/quota at the time of the transaction (effective-dated/audited as designed).</li>
+<li>All counters are tenant-scoped, non-negative by invariant, and updated only by authorized atomic transactions with append-only licensing/lifecycle history.</li>
+</ul>
+<p><strong>Proposed state-to-counter mapping (technical support model; commercial meaning owner-approved):</strong></p>
+<table>
+<thead>
+<tr>
+<th>State / record</th>
+<th style="text-align:right">Active billable usage</th>
+<th style="text-align:right">Reserved capacity</th>
+<th style="text-align:right">Pending identity reservation</th>
+<th>Available capacity effect</th>
+<th>Historical/tombstone record</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Active canonical asset (billable)</td>
+<td style="text-align:right">+1 (if policy maps active as billable)</td>
+<td style="text-align:right">0 unless separately reserved</td>
+<td style="text-align:right">0</td>
+<td>Consumes available capacity</td>
+<td>Current active record plus history</td>
+</tr>
+<tr>
+<td>Deactivated with approved grace reservation</td>
+<td style="text-align:right">0 or policy-defined (owner decision)</td>
+<td style="text-align:right">+1 or policy-defined (owner decision)</td>
+<td style="text-align:right">0</td>
+<td>May consume/reserve capacity during grace</td>
+<td>Retained lifecycle history</td>
+</tr>
+<tr>
+<td>Pending identity reservation</td>
+<td style="text-align:right">0 (not a confirmed billable monitored device)</td>
+<td style="text-align:right">0 unless policy defines otherwise</td>
+<td style="text-align:right">+1 if owner approves reservation; else 0</td>
+<td>May consume capacity only if owner approves</td>
+<td>Pending-resolution history</td>
+</tr>
+<tr>
+<td>Merged losing asset (tombstone)</td>
+<td style="text-align:right">0</td>
+<td style="text-align:right">0</td>
+<td style="text-align:right">0</td>
+<td>Released only per approved merge accounting; survivor remains billable as applicable</td>
+<td>Retained tombstone/history (never reused ID)</td>
+</tr>
+<tr>
+<td>Removed/tombstone after approved removal</td>
+<td style="text-align:right">0</td>
+<td style="text-align:right">0 unless policy defines otherwise</td>
+<td style="text-align:right">0</td>
+<td>Released only per approved removal/grace policy</td>
+<td>Retained tombstone/history</td>
+</tr>
+<tr>
+<td>Reactivated to active</td>
+<td style="text-align:right">becomes +1 per policy</td>
+<td style="text-align:right">releases applicable reservation</td>
+<td style="text-align:right">0</td>
+<td>Recomputed atomically</td>
+<td>Append-only lifecycle history</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Owner decisions required (must be clearly labeled):</strong></p>
+<ul>
+<li>Whether reserved slots consume billable quota.</li>
+<li>Whether pending identity cases reserve capacity.</li>
+<li>Pending reservation duration.</li>
+<li>Deactivation grace period.</li>
+<li>Immediate quota release exceptions.</li>
+<li>Permanent removal authorization.</li>
+</ul>
+<p>The database model must support these decisions through explicit state mapping, effective-dated entitlements/policy versions (as designed), and counter/history fields <strong>without redesigning the core identity structure</strong> (<code>canonical asset</code>, <code>asset_data_source</code>/stable binding, <code>source_device_key_id</code>, versioned fingerprint aliases).</p>
+<h3>3. Atomic merge and split (proposed, NOT IMPLEMENTED)</h3>
+<p><strong>Authorization and evidence requirements (proposed):</strong></p>
+<ul>
+<li>Tenant-scoped, privileged, authenticated/authorized operation with explicit reason, evidence references, and audit record.</li>
+<li>Required approvals (including any multi-person approval) are <strong>owner/security decisions</strong>.</li>
+<li>Manual/assisted actions must never be authorized by untrusted input or AI output.</li>
+</ul>
+<p><strong>Stable canonical asset selection (proposed):</strong></p>
+<ul>
+<li>Merge explicitly selects a surviving canonical asset; losing canonical asset IDs become tombstones/merged records and are never reused.</li>
+<li>Split creates a new canonical asset UUID (never reused) while preserving the original asset/binding/event lineage as required.</li>
+</ul>
+<p><strong>Source-binding reassignment (proposed):</strong></p>
+<ul>
+<li>Merge: eligible <code>asset_data_source</code> bindings (and associated stable <code>source_device_key_id</code> contexts as applicable) are reassigned to the survivor only when tenant/uniqueness/conflict checks pass; ineligible/conflicting bindings remain blocked for review.</li>
+<li>Split: specified bindings/claims are moved to the new canonical asset per approved evidence; ambiguous bindings remain with the appropriate asset or pending review, never silently duplicated.</li>
+</ul>
+<p><strong>Fingerprint alias reassignment (proposed):</strong></p>
+<ul>
+<li>All versioned <code>source_device_fingerprint_alias</code> records associated with reassigned stable bindings move with those bindings and must continue to satisfy tenant/data-source/algorithm/key-version/fingerprint uniqueness and resolve to the correct stable binding/canonical asset.</li>
+<li>No alias may map to multiple bindings/assets; no rotation/merge/split may create duplicate aliases or licensed usage.</li>
+</ul>
+<p><strong>Licensing counter effects (proposed):</strong></p>
+<ul>
+<li>Merge: net licensed usage must not increase because two records represent one device; decrement/reconciliation occurs only when approved invariants prove duplicate representation and counters/history are updated atomically (survivor remains one billable asset as applicable).</li>
+<li>Split: licensed usage/capacity impact is applied atomically. If split creates an additional active billable asset, required capacity must be verified and reserved/consumed in the same transaction; if capacity is unavailable, reject/fail without partial effects.</li>
+<li>All counter changes append licensing/lifecycle/audit history with before/after values, entitlement/policy version context, actor, reason, and idempotency/result linkage.</li>
+</ul>
+<p><strong>Lifecycle history (proposed):</strong></p>
+<ul>
+<li>Append-only lifecycle and licensing events record state transitions, merges, splits, binding/alias reassignment, and counter deltas. Original history is preserved; corrections use compensating/auditable actions, not silent rewrites.</li>
+</ul>
+<p><strong>Audit and identity-resolution evidence (proposed):</strong></p>
+<ul>
+<li>Record actor/service identity, authorization basis, reason, evidence/provenance references, matched rules/confidence context, affected tenants/assets/bindings/aliases, timestamps, and before/after linkage. Evidence references must remain tenant-scoped and immutable per approved evidence architecture.</li>
+</ul>
+<p><strong>Idempotent retries (proposed):</strong></p>
+<ul>
+<li>Merge/split operations require idempotency keys and durable result recording. Retries with the same tenant/operation/idempotency key and same request hash return the original committed outcome; unknown-commit outcomes require reconciliation against recorded results.</li>
+</ul>
+<p><strong>Conflict and rollback behavior (proposed):</strong></p>
+<ul>
+<li>Any uniqueness conflict, stale state, quota/capacity failure, authorization failure, or invariant violation aborts the transaction with no partial counter/binding/alias/lifecycle mutation.</li>
+<li>Conflicting identity evidence or concurrent incompatible changes produce explicit conflict/review states as designed; no automatic merge/split completion on ambiguity.</li>
+</ul>
+<p><strong>Concurrent registration or attachment during merge/split (proposed):</strong></p>
+<ul>
+<li>Registration/attachment/rotation/merge/split/deactivation/reactivation/removal targeting overlapping tenant/assets/bindings must serialize or conflict safely using the defined lock ordering and post-lock rechecks.</li>
+<li>Operations that observe stale pre-merge/pre-split state must retry/revalidate and must not attach/create duplicates or misapply counters.</li>
+</ul>
+<p><strong>Tenant isolation (proposed):</strong></p>
+<ul>
+<li>All merge/split reads/writes are tenant-scoped, protected by verified transaction context and RLS/policy design (per latest architecture), and must never affect another tenant's assets, bindings, aliases, counters, or history.</li>
+</ul>
+<h3>4. Lock ordering and concurrency (PostgreSQL reference, proposed)</h3>
+<p><strong>Consistent lock-order strategy (proposed):</strong></p>
+<ol>
+<li>Establish and verify protected tenant transaction context (fail closed; no untrusted tenant/GUC authority).</li>
+<li>Acquire/process durable idempotency ledger record for the operation/request as applicable (to detect duplicates/conflicting payloads safely).</li>
+<li>Lock the tenant licensing/entitlement-usage row (<code>SELECT ... FOR UPDATE</code>) for any operation that may read/modify quota, active billable usage, reserved capacity, pending reservation accounting, or licensed state transitions.</li>
+<li>Lock affected canonical asset rows in deterministic order (for example ascending canonical asset UUID) when merge/split/deactivation/reactivation/removal/attachment requires asset-level serialization.</li>
+<li>Lock/recheck affected stable binding rows (<code>asset_data_source</code> / <code>source_device_key_id</code> context) and relevant alias/identity rows in a deterministic order (for example binding UUID then alias uniqueness dimensions/IDs) as required.</li>
+<li>Perform all uniqueness/state/capacity rechecks <strong>after locks are held</strong>; then apply mutations, append history/licensing/audit/idempotency result records, and commit.</li>
+</ol>
+<p><strong>Operation-specific application (proposed):</strong></p>
+<ul>
+<li><strong>Registration:</strong> tenant licensing row + identity/binding/alias rechecks; create or attach without duplicate usage.</li>
+<li><strong>Existing asset attachment:</strong> tenant licensing row (if policy/counter/lifecycle may change) + target asset/binding/alias locks/rechecks; no licensed-usage increment for additional sources on same canonical asset.</li>
+<li><strong>Merge:</strong> tenant licensing row + both/all affected asset rows in deterministic order + affected bindings/aliases; atomic reassignment/counter/history.</li>
+<li><strong>Split:</strong> tenant licensing row + source asset row (+ new asset creation context) + affected bindings/aliases; verify/reserve capacity atomically before commit.</li>
+<li><strong>Deactivation/reactivation/removal:</strong> tenant licensing row + asset row + affected bindings/lifecycle records; apply approved counter/state mapping atomically.</li>
+<li><strong>Fingerprint rotation:</strong> tenant licensing row if licensing/capacity state can be affected (normally no usage change) or as required by approved serialization scope; lock binding/alias rows for the rotated binding and recheck uniqueness/resolution.</li>
+</ul>
+<p><strong>Concurrency handling (proposed):</strong></p>
+<ul>
+<li><strong>Concurrent registrations for the same identity:</strong> uniqueness constraints and post-lock alias/binding rechecks allow at most one canonical creation/attachment outcome; duplicates return the idempotent/original result or conflict as defined.</li>
+<li><strong>Concurrent registrations for different identities in the same tenant:</strong> serialized by the tenant licensing row when quota/counters may change; may contend but must preserve correctness.</li>
+<li><strong>Unique-constraint conflicts:</strong> treated as concurrency/conflict signals requiring rollback/retry or conflict handling; never ignored or converted into duplicate assets/bindings/licensed usage.</li>
+<li><strong>Deadlocks:</strong> possible under multi-row locking; callers must retry safely using idempotency keys and bounded retry policy.</li>
+<li><strong>Serialization failures:</strong> retryable only with idempotency/recheck semantics; non-retryable invariant/authorization/capacity failures must fail explicitly.</li>
+<li><strong>Transaction retries:</strong> require same operation idempotency key, same request hash for duplicate intent, and post-lock revalidation of state/capacity/identity.</li>
+<li><strong>Lock contention:</strong> expected on tenant licensing row for quota-affecting operations; measure with representative PostgreSQL load tests before changing design.</li>
+</ul>
+<p><strong>Role of tenant licensing row and post-lock identity rechecks (proposed):</strong></p>
+<ul>
+<li>The tenant licensing row is the per-tenant serialization point for quota/counter correctness and state-to-counter transitions; it is not a substitute for identity uniqueness constraints or RLS/authorization.</li>
+<li>Post-lock identity rechecks are mandatory because pre-lock reads are racy: after acquiring locks, re-resolve aliases/bindings/assets, confirm target state still permits the operation, verify uniqueness/capacity/invariants, and only then mutate.</li>
+</ul>
+<h3>5. Idempotency ledger (proposed persistence model)</h3>
+<p>Idempotency must <strong>not</strong> depend only on application memory. The licensing/identity operation idempotency ledger described here is a proposed durable PostgreSQL record consulted/updated within the same transactional discipline as licensing operations. It is distinct from ingestion <code>event_receipt</code> idempotency (durable acceptance of source events) and from outbox attempt/replay records (delivery/recovery semantics); see <a href="../DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a> and <a href="../POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a> for the unified taxonomy and operation boundaries.</p>
+<p><strong>Proposed model:</strong></p>
+<ul>
+<li><strong>Tenant-scoped uniqueness:</strong> unique per tenant and operation/request identity (for example <code>(tenant_id, operation_type, idempotency_key)</code> and/or approved equivalent), with request hash/payload digest for integrity.</li>
+<li><strong>Operation type and request hash:</strong> explicit operation type (registration, attachment, merge, split, deactivation, reactivation, removal, fingerprint rotation, etc.) and canonical request hash; same key with different payload is a conflict/error (no silent reuse).</li>
+<li><strong>Source/actor context where appropriate:</strong> store authenticated actor/service identity, source/connector context, target references, and correlation/request identifiers as approved (sanitized/audited).</li>
+<li><strong>Processing/completed/failed state semantics:</strong> durable states such as <code>processing</code>/<code>started</code>, <code>completed</code>, <code>failed</code> (terminal or retryable as defined), with timestamps, attempt metadata, and error classification/result code as approved.</li>
+<li><strong>Stored operation result or result reference:</strong> store sufficient result data or immutable result reference to return the original committed outcome after retry/response loss (for example created/attached asset ID, binding IDs, counter deltas, conflict disposition), subject to security/privacy constraints.</li>
+<li><strong>Concurrent duplicate requests:</strong> first transaction establishes/locks the ledger entry for the key; concurrent duplicates wait/conflict/retry and must observe the committed outcome without duplicating side effects.</li>
+<li><strong>Same key with different payload:</strong> reject as idempotency conflict; do not execute with mismatched request hash.</li>
+<li><strong>Response lost after commit:</strong> retry with same key and same payload returns stored committed result/reference.</li>
+<li><strong>Retry after merge/split or lifecycle transitions:</strong> recheck current state under locks; if the idempotency key already completed, return recorded result; if operation is no longer valid, return the recorded terminal failure/conflict without creating duplicates.</li>
+<li><strong>Retention period and owner decision where applicable:</strong> retention/pruning window for idempotency records is an <strong>owner/security/operations decision</strong>; pruning must not occur before supported retry/reconciliation windows and must preserve required auditability.</li>
+</ul>
+<h3>6. Verification requirements (proposed tests; NOT EXECUTED)</h3>
+<p>All PostgreSQL concurrency and RLS tests must run against PostgreSQL using production-equivalent non-owner runtime roles (and separately controlled migration/maintenance roles as applicable). No tests below are claimed executed.</p>
+<p><strong>Required proposed coverage:</strong></p>
+<ul>
+<li>Concurrent registration at quota boundary: no over-allocation; committed count/effects respect remaining capacity; rejected attempts leave no partial rows/counter changes.</li>
+<li>Same source-device identity submitted concurrently: exactly one stable binding/canonical asset outcome and no duplicate licensed usage; idempotent/conflict behavior as specified.</li>
+<li>Multiple sources reporting one already-resolved asset: bindings attach to the same canonical asset with no licensed-usage increment.</li>
+<li>Fingerprint rotation with old/new aliases: overlap lookup resolves to same stable binding/asset; no duplicate binding/asset/usage.</li>
+<li>Rotation interrupted and resumed: idempotent/resumable completion with no duplicates or missing audit/history.</li>
+<li>Merge and split under concurrent ingestion/registration/attachment: deterministic locking, no duplicate assets/bindings/licensed usage, correct lineage/counter effects or safe conflict/rejection.</li>
+<li>Idempotent retries after unknown commit outcome: same key/payload returns original result or reconciled outcome; no duplicate side effects.</li>
+<li>Deadlock and serialization failure recovery: safe bounded retries with idempotency and post-lock rechecks; correctness preserved.</li>
+<li>Counter reconciliation: compare counters to authoritative state/history; discrepancies detected/reported (and corrected only by approved audited procedure, if designed).</li>
+<li>Cross-tenant isolation: tenant A cannot read/mutate/affect tenant B assets, bindings, aliases, counters, idempotency records, or history under RLS/verified context.</li>
+<li>Deactivation and reactivation under concurrent registration: state-to-counter mapping and lock ordering prevent double-counting, lost updates, or unauthorized capacity release/consumption.</li>
+<li>Removal and tombstone preservation: approved removal preserves required tombstone/history/evidence; canonical IDs not reused; licensing/capacity effects follow approved policy.</li>
+</ul>
+<p>Representative contention/load tests must measure lock wait, retry/deadlock rates, and registration/merge/split throughput before changing the locking design. SQLite, in-memory, or process-local tests are insufficient evidence of PostgreSQL concurrency safety.</p>
+<h2>Trade-offs</h2>
+<ul>
+<li><strong>Benefits:</strong> correctness-oriented enforcement of the one-device-one-asset invariant, protection against duplicate billing/over-allocation under concurrency, auditable/idempotent lifecycle operations, and no separate allocator service initially.</li>
+<li><strong>Costs:</strong> tenant licensing-row serialization can contend for quota-affecting operations; merge/split/rotation add transactional complexity; precise state-to-counter mapping and idempotency semantics are required.</li>
+<li><strong>Failure handling:</strong> callers must handle deadlocks/serialization failures/timeouts with bounded retries and idempotency; unknown commit outcomes require durable result reconciliation.</li>
+<li><strong>Operational risk:</strong> stale/corrupted counters, retention misconfiguration, or incorrect role/RLS/context setup can undermine enforcement; reconciliation, monitoring, and audited procedures are required (proposed).</li>
+</ul>
+<h2>Consistency Review and Remaining Owner Decisions</h2>
+<h3>Corrections made</h3>
+<ul>
+<li>Aligned ADR with latest <code>DATA_ARCHITECTURE.md</code> and architecture decision packages by separating stable <code>asset_data_source</code> binding relationships, stable <code>source_device_key_id</code> identity, and versioned <code>source_device_fingerprint_alias</code> records; clarified that fingerprints/aliases are not permanent binding identities.</li>
+<li>Added proposed binding/alias uniqueness, overlap, atomic registration/rotation, overlap lookup, collision handling, and migration requirements that prohibit duplicate assets, bindings, aliases, or licensed usage.</li>
+<li>Replaced implicit licensing language with an explicit proposed accounting model separating active billable usage, reserved capacity, pending identity reservation, available capacity, and historical/tombstone records, including equations and state-to-counter mapping.</li>
+<li>Specified proposed atomic merge/split behavior (authorization/evidence, canonical selection, binding/alias reassignment, counter effects, lifecycle/audit evidence, idempotency, conflict/rollback, concurrency, tenant isolation).</li>
+<li>Defined proposed PostgreSQL lock-ordering/concurrency strategy and mandatory post-lock identity rechecks across registration, attachment, merge, split, deactivation, reactivation, removal, and fingerprint rotation.</li>
+<li>Defined a proposed durable, tenant-scoped idempotency ledger model with operation type/request hash, processing/completed/failed semantics, stored results/references, duplicate/conflict handling, and retry behavior after unknown commit/lifecycle transitions.</li>
+<li>Expanded verification requirements to required proposed PostgreSQL concurrency/RLS/idempotency/rotation/merge-split/reconciliation scenarios using production-equivalent non-owner runtime roles; explicitly distinguished proposed tests from executed tests.</li>
+</ul>
+<h3>Remaining technical uncertainties</h3>
+<ul>
+<li>Final PostgreSQL schema/DDL, constraint names, index strategy, partitioning interactions, and exact uniqueness tuples for bindings/aliases/idempotency records require formal schema review.</li>
+<li>Exact transaction boundaries, lock granularity, deadlock/retry policy, and contention behavior under representative workloads are unmeasured.</li>
+<li>Final mapping of lifecycle states to counters under owner-approved commercial policy (especially reserved/pending/deactivation/removal semantics) requires policy-to-schema validation.</li>
+<li>Interaction details with verified transaction context/RLS helper design, background workers, outbox/reconciliation jobs, and controlled evidence/approval workflows require end-to-end design and security review.</li>
+<li>Fingerprint algorithm/key management, rotation batch sizing, overlap duration mechanics, collision investigation workflow, and retention/deletion of old aliases/raw identifiers remain design/operational uncertainties.</li>
+</ul>
+<h3>Owner decisions still required</h3>
+<ul>
+<li>Whether reserved slots consume billable quota.</li>
+<li>Whether pending identity cases reserve capacity.</li>
+<li>Pending reservation duration.</li>
+<li>Deactivation grace period.</li>
+<li>Immediate quota release exceptions.</li>
+<li>Permanent removal authorization.</li>
+<li>Commercial billing semantics for active assets versus reserved slots and any grace/reservation period.</li>
+<li>Merge/split/removal approval model (including any multi-person approval), evidence sufficiency, and authorized roles.</li>
+<li>Idempotency ledger retention/pruning period and audit/reconciliation requirements.</li>
+</ul>
+<h3>Consistency with DATA_ARCHITECTURE.md and the latest architecture decision package</h3>
+<ul>
+<li><strong>Consistent/preserved:</strong> one unique monitored device = one licensed asset; multiple sources reporting the same device must not create duplicate licensed assets; PostgreSQL as authoritative licensing database; Python backend; SaaS-only external AI/no local GPU; licensing separated from technical resource quotas; tenant-scoped atomic/idempotent enforcement; append-only history/tombstones; no automatic merge on weak/conflicting identity.</li>
+<li><strong>Aligned in this ADR:</strong> stable binding/alias separation (<code>asset_data_source</code>, <code>source_device_key_id</code>, <code>source_device_fingerprint_alias</code>), fingerprint as non-permanent identity, tenant-inclusive uniqueness/recheck concepts, merge/split/rotation need for atomicity and no duplicate usage, and PostgreSQL reference concurrency/idempotency expectations.</li>
+<li><strong>Remaining alignment work (documentation/schema review):</strong> exact terminology/field names and constraint details must continue to be reconciled across <code>DATA_ARCHITECTURE.md</code>, architecture decision packages/final corrections, and future formal schema/security review (especially final alias/binding table definitions, verified-context/RLS integration details, approved state-to-counter mappings, and operation-by-operation transaction boundaries). Proposed technical options and dependencies are prepared in <a href="../POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a>. This ADR remains a proposed consistency/reference update, not a schema or implementation specification. Status remains <strong>Proposed</strong> (not accepted).</li>
+</ul>
+<h3>Confirmation</h3>
+<ul>
+<li>No application source code, PostgreSQL schema files, migrations, or test files were modified.</li>
+<li>ADR remains <strong>proposed</strong> until approved through the required architecture/owner/security review process.</li>
+<li>No PostgreSQL tests have been run or claimed as passed; all verification requirements above are proposed.</li>
+</ul>
+<h2>Revisit when</h2>
+<p>Measured per-tenant registration contention violates declared objectives, owner-approved lifecycle/commercial policy requires different state mapping, or formal schema/security review identifies required structural changes. Any revision must preserve the one-device-one-asset invariant, no-duplicate-licensed-asset rule, historical licensing evidence, and tenant isolation.</p>
+
+</article>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Logical ERD (Round 1)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_LOGICAL_ERD.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Logical ERD (Round 1)</h1>
+<p><strong>Status:</strong> Logical ERD documented; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. Mermaid diagrams represent proposed logical relationships only (no PostgreSQL DDL, indexes, policies, triggers, or implementation syntax). Entity definitions, cardinalities, and constraints must be read together with <a href="POSTGRESQL_LOGICAL_DATA_MODEL.md.html">POSTGRESQL_LOGICAL_DATA_MODEL.md</a>.</p>
+<h2>ERD conventions and limitations</h2>
+<ul>
+<li>Diagrams use Mermaid <code>erDiagram</code> syntax and focus on key entities/relationships for readability; not every attribute is shown.</li>
+<li>Relationship labels indicate logical nature; optionality/cardinality details are normative in the entity catalogue and relationship analysis.</li>
+<li><code>asset_data_source</code> ↔ <code>source_device_key_id</code>/dependent <code>source_device_key</code> projection: <strong>Round 1.1 recommendation (Proposed, not approved; OD-002 open)</strong> is authoritative <code>asset_data_source</code> owning immutable stable binding identity with 1:1 dependent/non-authoritative projection only if materialized; diagrams show this recommended association and must not be read as approved physical design.</li>
+<li>Tenant scoping is implied for tenant-owned entities; physical tenant-inclusive FK enforcement and RLS are future design concerns (not shown as SQL).</li>
+<li>Global reference entities (e.g. shared threat intelligence catalog) are included only where needed to clarify boundaries.</li>
+</ul>
+<h2>ERD 1 — Core logical data model</h2>
+<pre class="mermaid">erDiagram
+    TENANT ||--o{ TENANT_MEMBERSHIP : &quot;owns memberships&quot;
+    EXTERNAL_IDENTITY_SUBJECT ||--o{ TENANT_MEMBERSHIP : &quot;has memberships&quot;
+    TENANT ||--o{ SUPPORT_ACCESS_GRANT : &quot;scopes&quot;
+    SUPPORT_ACCESS_GRANT ||--o{ SUPPORT_ACCESS_APPROVAL : &quot;may require&quot;
+    TENANT ||--o{ ASSET : &quot;owns&quot;
+    TENANT ||--o{ DATA_SOURCE : &quot;owns&quot;
+    DATA_SOURCE ||--o{ ASSET_DATA_SOURCE : &quot;reports devices via&quot;
+    ASSET ||--o{ ASSET_DATA_SOURCE : &quot;bound to&quot;
+    ASSET_DATA_SOURCE ||--|| SOURCE_DEVICE_KEY : &quot;stable key 1:1 dependent projection (recommended proposed)&quot;
+    SOURCE_DEVICE_KEY ||--o{ SOURCE_DEVICE_FINGERPRINT_ALIAS : &quot;dependent identity ref for aliases&quot;
+    TENANT ||--o{ SECURITY_EVENT : &quot;owns&quot;
+    DATA_SOURCE ||--o{ EVENT_RECEIPT : &quot;emits&quot;
+    EVENT_RECEIPT ||--o| SECURITY_EVENT : &quot;accepted event&quot;
+    EVENT_RECEIPT ||--o{ OUTBOX_MESSAGE : &quot;may enqueue&quot;
+    OUTBOX_MESSAGE ||--o{ OUTBOX_ATTEMPT : &quot;attempted by&quot;
+    TENANT ||--o{ AUDIT_EVENT : &quot;records&quot;
+    TENANT ||--o{ INCIDENT_CASE : &quot;owns&quot;
+    INCIDENT_CASE ||--o{ FORENSIC_EVIDENCE_RECORD : &quot;contains&quot;
+    FORENSIC_EVIDENCE_RECORD ||--o{ EVIDENCE_OBJECT_VERSION : &quot;has versions&quot;
+    FORENSIC_EVIDENCE_RECORD ||--o{ EVIDENCE_CUSTODY_EVENT : &quot;custody trail&quot;
+    TENANT ||--o{ TENANT_AI_PROVIDER_CONFIGURATION : &quot;configures&quot;
+    TENANT ||--o{ ALERT : &quot;owns&quot;
+    ASSET ||--o{ ALERT : &quot;associated with&quot;
+    TENANT ||--o{ VULNERABILITY_FINDING : &quot;owns&quot;
+    ASSET ||--o{ VULNERABILITY_FINDING : &quot;affects&quot;
+
+    TENANT {
+      uuid tenant_id PK
+      string tenant_state &quot;proposed&quot;
+    }
+    EXTERNAL_IDENTITY_SUBJECT {
+      uuid subject_id PK
+      string issuer_subject_ref &quot;logical&quot;
+    }
+    TENANT_MEMBERSHIP {
+      uuid membership_id PK
+      uuid tenant_id FK
+      uuid subject_id FK
+      string membership_state &quot;proposed&quot;
+    }
+    SUPPORT_ACCESS_GRANT {
+      uuid grant_id PK
+      uuid tenant_id FK
+      string scope_time_bounds &quot;logical&quot;
+      string grant_state &quot;proposed&quot;
+    }
+    SUPPORT_ACCESS_APPROVAL {
+      uuid approval_id PK
+      uuid grant_id FK
+      string decision &quot;proposed&quot;
+    }
+    ASSET {
+      uuid asset_id PK
+      uuid tenant_id FK
+      string canonical_identity &quot;immutable, non-reusable&quot;
+      string lifecycle_state &quot;proposed&quot;
+    }
+    DATA_SOURCE {
+      uuid data_source_id PK
+      uuid tenant_id FK
+      string source_type &quot;connector/agent instance&quot;
+    }
+    ASSET_DATA_SOURCE {
+      uuid asset_data_source_id PK
+      uuid tenant_id FK
+      uuid asset_id FK
+      uuid data_source_id FK
+      uuid source_device_key_id &quot;immutable stable identity owned by binding (proposed)&quot;
+      string binding_state &quot;proposed authoritative binding&quot;
+    }
+    SOURCE_DEVICE_KEY {
+      uuid source_device_key_id PK
+      uuid tenant_id FK
+      uuid asset_data_source_id FK &quot;1:1 same lifecycle if materialized&quot;
+      string stable_binding_identity &quot;dependent projection, no competing authority&quot;
+    }
+    SOURCE_DEVICE_FINGERPRINT_ALIAS {
+      uuid fingerprint_alias_id PK
+      uuid tenant_id FK
+      uuid source_device_key_id &quot;stable binding identity ref&quot;
+      string algorithm_key_version &quot;logical&quot;
+      string protected_fingerprint &quot;logical, no raw ID key&quot;
+      string alias_state &quot;overlap possible&quot;
+    }
+    EVENT_RECEIPT {
+      uuid receipt_id PK
+      uuid tenant_id FK
+      uuid data_source_id FK
+      uuid asset_data_source_id FK &quot;nullable device scope&quot;
+      string dedup_namespace &quot;explicit type+id&quot;
+      string source_event_key_normalized &quot;provenance&quot;
+      string outcome &quot;accepted/duplicate/conflict&quot;
+    }
+    SECURITY_EVENT {
+      uuid event_id PK
+      uuid tenant_id FK
+      uuid receipt_id FK
+      uuid asset_id FK &quot;optional&quot;
+      string event_time_ingest_time &quot;logical&quot;
+    }
+    OUTBOX_MESSAGE {
+      uuid outbox_message_id PK
+      uuid tenant_id FK
+      string message_type_state &quot;logical&quot;
+    }
+    OUTBOX_ATTEMPT {
+      uuid attempt_id PK
+      uuid outbox_message_id FK
+      string attempt_outcome &quot;incl. unknown possible&quot;
+    }
+    AUDIT_EVENT {
+      uuid audit_event_id PK
+      uuid tenant_id FK &quot;conditional by scope&quot;
+      string action_metadata &quot;append-only preferred&quot;
+    }
+    INCIDENT_CASE {
+      uuid case_id PK
+      uuid tenant_id FK
+      string case_state &quot;proposed&quot;
+    }
+    FORENSIC_EVIDENCE_RECORD {
+      uuid evidence_record_id PK
+      uuid tenant_id FK
+      uuid case_id FK
+      string evidence_state &quot;proposed&quot;
+    }
+    EVIDENCE_OBJECT_VERSION {
+      uuid evidence_object_version_id PK
+      uuid evidence_record_id FK
+      string integrity_hash_ref &quot;logical&quot;
+    }
+    EVIDENCE_CUSTODY_EVENT {
+      uuid custody_event_id PK
+      uuid evidence_record_id FK
+      string custody_action &quot;append-only&quot;
+    }
+    TENANT_AI_PROVIDER_CONFIGURATION {
+      uuid ai_provider_config_id PK
+      uuid tenant_id FK
+      string provider_model_region &quot;explicit, no silent failover&quot;
+    }
+    ALERT {
+      uuid alert_id PK
+      uuid tenant_id FK
+      uuid asset_id FK &quot;optional&quot;
+      string alert_state &quot;proposed&quot;
+    }
+    VULNERABILITY_FINDING {
+      uuid finding_id PK
+      uuid tenant_id FK
+      uuid asset_id FK &quot;optional&quot;
+      string finding_state &quot;proposed&quot;
+    }
+</pre>
+<p><strong>Explanation:</strong> Shows major tenant boundary, identity/access, identity/licensing anchors, ingestion/outbox, audit/evidence separation, AI configuration, and representative SOC entities. Many-to-many or detailed workflow entities (roles, lineage tables, reservation representation, detailed AI consent/usage records) are simplified for readability and fully described in the logical data model.</p>
+<h2>ERD 2 — Asset identity and licensing</h2>
+<pre class="mermaid">erDiagram
+    TENANT ||--o{ ASSET : &quot;owns canonical assets&quot;
+    TENANT ||--o{ DATA_SOURCE : &quot;owns connector instances&quot;
+    TENANT ||--o{ SUBSCRIPTION_ENTITLEMENT : &quot;has entitlement&quot;
+    TENANT ||--|| TENANT_LICENSE_USAGE_STATE : &quot;tracks usage state&quot;
+    TENANT ||--o{ IDENTITY_OPERATION_IDEMPOTENCY_LEDGER : &quot;records idempotent ops&quot;
+    DATA_SOURCE ||--o{ ASSET_DATA_SOURCE : &quot;binds reported devices&quot;
+    ASSET ||--o{ ASSET_DATA_SOURCE : &quot;one asset, many bindings&quot;
+    ASSET_DATA_SOURCE ||--|| SOURCE_DEVICE_KEY : &quot;stable key 1:1 dependent projection (recommended proposed)&quot;
+    SOURCE_DEVICE_KEY ||--o{ SOURCE_DEVICE_FINGERPRINT_ALIAS : &quot;versioned aliases&quot;
+    DATA_SOURCE ||--o{ ASSET_IDENTITY_CLAIM : &quot;produces claims&quot;
+    ASSET_DATA_SOURCE ||--o{ ASSET_IDENTITY_CLAIM : &quot;context for claims&quot;
+    ASSET ||--o{ ASSET_IDENTITY_CLAIM : &quot;resolved link (optional)&quot;
+    IDENTITY_RESOLUTION_CASE ||--o{ ASSET_IDENTITY_CLAIM : &quot;aggregates evidence&quot;
+    IDENTITY_RESOLUTION_CASE ||--o| ASSET_LICENSE_RESERVATION : &quot;may reserve capacity&quot;
+    ASSET ||--o{ ASSET_LIFECYCLE_EVENT : &quot;history&quot;
+    ASSET ||--o{ ASSET_LICENSE_EVENT : &quot;licensing history&quot;
+    ASSET_MERGE_OPERATION ||--o{ ASSET_LINEAGE_LINK : &quot;typed merge lineage&quot;
+    ASSET_SPLIT_OPERATION ||--o{ ASSET_LINEAGE_LINK : &quot;typed split lineage&quot;
+    ASSET ||--o{ ASSET_LINEAGE_LINK : &quot;from/to asset (typed)&quot;
+    ASSET ||--o| ASSET_TOMBSTONE : &quot;terminal historical record&quot;
+
+    TENANT {
+      uuid tenant_id PK
+    }
+    ASSET {
+      uuid asset_id PK
+      uuid tenant_id FK
+      string canonical_uuid &quot;immutable, non-reusable&quot;
+      string lifecycle_state &quot;proposed&quot;
+    }
+    DATA_SOURCE {
+      uuid data_source_id PK
+      uuid tenant_id FK
+      string connector_instance &quot;not billable&quot;
+    }
+    ASSET_DATA_SOURCE {
+      uuid asset_data_source_id PK
+      uuid tenant_id FK
+      uuid asset_id FK
+      uuid data_source_id FK
+      uuid source_device_key_id FK
+      string binding_provenance &quot;logical&quot;
+    }
+    SOURCE_DEVICE_KEY {
+      uuid source_device_key_id PK
+      uuid tenant_id FK
+      uuid asset_data_source_id FK &quot;1:1 dependent projection&quot;
+      string stable_identity &quot;owned by authoritative binding&quot;
+    }
+    SOURCE_DEVICE_FINGERPRINT_ALIAS {
+      uuid fingerprint_alias_id PK
+      uuid tenant_id FK
+      uuid source_device_key_id &quot;stable binding identity ref&quot;
+      string protected_fingerprint &quot;lookup only&quot;
+      string validity_overlap &quot;proposed&quot;
+    }
+    ASSET_IDENTITY_CLAIM {
+      uuid identity_claim_id PK
+      uuid tenant_id FK
+      uuid data_source_id FK
+      uuid asset_id FK &quot;optional&quot;
+      string namespace_confidence &quot;provenance&quot;
+    }
+    IDENTITY_RESOLUTION_CASE {
+      uuid resolution_case_id PK
+      uuid tenant_id FK
+      string case_state &quot;pending/conflict/review&quot;
+    }
+    ASSET_LICENSE_RESERVATION {
+      uuid reservation_id PK
+      uuid tenant_id FK
+      uuid resolution_case_id FK &quot;policy-dependent&quot;
+      string reservation_state &quot;open decision&quot;
+    }
+    ASSET_LIFECYCLE_EVENT {
+      uuid lifecycle_event_id PK
+      uuid tenant_id FK
+      uuid asset_id FK
+      string transition_reason &quot;append-only&quot;
+    }
+    ASSET_LICENSE_EVENT {
+      uuid license_event_id PK
+      uuid tenant_id FK
+      uuid asset_id FK
+      string usage_effect &quot;no double-count&quot;
+    }
+    IDENTITY_OPERATION_IDEMPOTENCY_LEDGER {
+      uuid ledger_id PK
+      uuid tenant_id FK
+      string operation_type &quot;scope component&quot;
+      string idempotency_key &quot;scope component&quot;
+      string request_hash &quot;canonical&quot;
+      string state &quot;in_progress/committed/failed/unknown&quot;
+      string committed_result_ref &quot;durable outcome&quot;
+    }
+    SUBSCRIPTION_ENTITLEMENT {
+      uuid entitlement_id PK
+      uuid tenant_id FK
+      string capacity_terms &quot;open decision&quot;
+    }
+    TENANT_LICENSE_USAGE_STATE {
+      uuid tenant_id PK_FK
+      string counters &quot;active_reserved_pending_available semantics open&quot;
+    }
+    ASSET_MERGE_OPERATION {
+      uuid merge_operation_id PK
+      uuid tenant_id FK
+      uuid survivor_asset_id FK
+      string evidence_reason &quot;auditable&quot;
+    }
+    ASSET_SPLIT_OPERATION {
+      uuid split_operation_id PK
+      uuid tenant_id FK
+      uuid source_asset_id FK
+      uuid new_asset_id FK &quot;if created&quot;
+      string authorization &quot;auditable&quot;
+    }
+    ASSET_LINEAGE_LINK {
+      uuid lineage_link_id PK
+      uuid tenant_id FK
+      string link_type &quot;merge|split role&quot;
+      uuid from_asset_id FK &quot;typed&quot;
+      uuid to_asset_id FK &quot;typed&quot;
+      uuid merge_operation_id FK &quot;nullable by type&quot;
+      uuid split_operation_id FK &quot;nullable by type&quot;
+    }
+    ASSET_TOMBSTONE {
+      uuid tombstone_id PK
+      uuid tenant_id FK
+      uuid asset_id FK
+      string terminal_history &quot;non-reusable&quot;
+    }
+</pre>
+<p><strong>Explanation (how multiple sources do not create duplicate licensed assets):</strong> One canonical <code>ASSET</code> (one unique monitored device, one licensed asset) may have many <code>ASSET_DATA_SOURCE</code> bindings, each representing a distinct reporting <code>DATA_SOURCE</code> device context. Each authoritative binding owns a stable binding identity (<code>source_device_key_id</code>, with any separate <code>SOURCE_DEVICE_KEY</code> record modeled only as a 1:1 dependent projection, Proposed) and may have one-or-more versioned <code>SOURCE_DEVICE_FINGERPRINT_ALIAS</code> records for lookup/rotation (aliases may overlap temporarily but resolve to the same stable binding identity/asset). <code>ASSET_IDENTITY_CLAIM</code> records preserve provenance and drive deterministic resolution or <code>IDENTITY_RESOLUTION_CASE</code> without auto-merge on ambiguity. License/accounting effects are represented through <code>TENANT_LICENSE_USAGE_STATE</code>, <code>ASSET_LICENSE_EVENT</code>, optional <code>ASSET_LICENSE_RESERVATION</code>, and <code>IDENTITY_OPERATION_IDEMPOTENCY_LEDGER</code> so retries/conflicts do not duplicate assets, bindings, or licensed usage. Merge/split operations preserve lineage and canonical ID non-reuse through typed, relationally enforceable lineage associations (no generic polymorphic asset/operation reference).</p>
+<h2>ERD 3 — Event processing, audit, and evidence</h2>
+<pre class="mermaid">erDiagram
+    TENANT ||--o{ DATA_SOURCE : &quot;owns&quot;
+    DATA_SOURCE ||--o{ EVENT_RECEIPT : &quot;submits&quot;
+    EVENT_RECEIPT ||--o| SECURITY_EVENT : &quot;accepts&quot;
+    EVENT_RECEIPT ||--o{ OUTBOX_MESSAGE : &quot;coordinates async work&quot;
+    OUTBOX_MESSAGE ||--o{ OUTBOX_ATTEMPT : &quot;records attempts&quot;
+    SECURITY_EVENT }o--o| ASSET : &quot;may attribute to&quot;
+    EVENT_SCHEMA_REFERENCE ||--o{ EVENT_RECEIPT : &quot;validates against (optional)&quot;
+    TENANT ||--o{ AUDIT_EVENT : &quot;operational/security audit&quot;
+    TENANT ||--o{ INCIDENT_CASE : &quot;case context&quot;
+    INCIDENT_CASE ||--o{ FORENSIC_EVIDENCE_RECORD : &quot;holds evidence metadata&quot;
+    FORENSIC_EVIDENCE_RECORD ||--o{ EVIDENCE_OBJECT_VERSION : &quot;immutable versions&quot;
+    FORENSIC_EVIDENCE_RECORD ||--o{ EVIDENCE_CUSTODY_EVENT : &quot;chain of custody&quot;
+    FORENSIC_EVIDENCE_RECORD ||--o{ EVIDENCE_TRANSITION_AUTHORIZATION : &quot;controlled transitions&quot;
+
+    DATA_SOURCE {
+      uuid data_source_id PK
+      uuid tenant_id FK
+    }
+    EVENT_RECEIPT {
+      uuid receipt_id PK
+      uuid tenant_id FK
+      uuid data_source_id FK
+      uuid asset_data_source_id FK &quot;nullable device scope&quot;
+      string dedup_namespace_type_id &quot;explicit namespace&quot;
+      string source_event_key_normalized &quot;connector provenance&quot;
+      string receipt_outcome &quot;logical&quot;
+    }
+    SECURITY_EVENT {
+      uuid event_id PK
+      uuid tenant_id FK
+      uuid receipt_id FK
+      string normalized_payload_ref &quot;logical&quot;
+    }
+    EVENT_SCHEMA_REFERENCE {
+      uuid schema_ref_id PK
+      string schema_version &quot;global/ref proposed&quot;
+    }
+    OUTBOX_MESSAGE {
+      uuid outbox_message_id PK
+      uuid tenant_id FK
+      string outbox_state &quot;pending/claimed/unknown etc&quot;
+    }
+    OUTBOX_ATTEMPT {
+      uuid attempt_id PK
+      uuid outbox_message_id FK
+      string lease_fence_outcome &quot;logical&quot;
+    }
+    AUDIT_EVENT {
+      uuid audit_event_id PK
+      uuid tenant_id FK &quot;scope-dependent&quot;
+      string actor_action_target &quot;metadata&quot;
+    }
+    INCIDENT_CASE {
+      uuid case_id PK
+      uuid tenant_id FK
+    }
+    FORENSIC_EVIDENCE_RECORD {
+      uuid evidence_record_id PK
+      uuid tenant_id FK
+      uuid case_id FK
+      string integrity_provenance &quot;metadata&quot;
+    }
+    EVIDENCE_OBJECT_VERSION {
+      uuid evidence_object_version_id PK
+      uuid evidence_record_id FK
+      string object_locator_hash &quot;immutable ref&quot;
+    }
+    EVIDENCE_CUSTODY_EVENT {
+      uuid custody_event_id PK
+      uuid evidence_record_id FK
+      string custody_action_time &quot;append-only&quot;
+    }
+    EVIDENCE_TRANSITION_AUTHORIZATION {
+      uuid transition_authorization_id PK
+      uuid evidence_record_id FK
+      string approval_decision &quot;conditional&quot;
+    }
+    ASSET {
+      uuid asset_id PK
+      uuid tenant_id FK
+    }
+</pre>
+<p><strong>Explanation:</strong> <code>EVENT_RECEIPT</code> provides ingestion idempotency/acceptance truth with explicit deduplication namespace/provenance (tenant + namespace type/id + normalized source event key), separate from time-partitioned <code>SECURITY_EVENT</code> storage (physical partitioning deferred). <code>OUTBOX_MESSAGE</code>/<code>OUTBOX_ATTEMPT</code> model asynchronous processing and delivery ambiguity/replay metadata. <code>AUDIT_EVENT</code> (operational/security) is distinct from forensic evidence metadata (<code>FORENSIC_EVIDENCE_RECORD</code>), immutable object/version references (<code>EVIDENCE_OBJECT_VERSION</code>), and append-only custody history (<code>EVIDENCE_CUSTODY_EVENT</code>), with optional controlled transition authorization.</p>
+<h2>ERD 4 — Tenant and authorization boundary</h2>
+<pre class="mermaid">erDiagram
+    TENANT ||--o{ TENANT_MEMBERSHIP : &quot;tenant-scoped membership&quot;
+    EXTERNAL_IDENTITY_SUBJECT ||--o{ TENANT_MEMBERSHIP : &quot;global subject&quot;
+    TENANT_MEMBERSHIP ||--o{ MEMBERSHIP_ROLE_ASSIGNMENT : &quot;assigned roles&quot;
+    ROLE ||--o{ MEMBERSHIP_ROLE_ASSIGNMENT : &quot;granted via&quot;
+    ROLE ||--o{ ROLE_PERMISSION : &quot;contains&quot;
+    TENANT ||--o{ SUPPORT_ACCESS_GRANT : &quot;target tenant&quot;
+    SUPPORT_ACCESS_GRANT ||--o{ SUPPORT_ACCESS_APPROVAL : &quot;approval context&quot;
+    EXTERNAL_IDENTITY_SUBJECT ||--o{ SUPPORT_ACCESS_GRANT : &quot;requester/actor refs&quot;
+    TENANT ||--o{ TENANT_CONFIGURATION : &quot;policy/config refs&quot;
+    TENANT ||--o{ TENANT_AI_PROVIDER_CONFIGURATION : &quot;AI config (optional)&quot;
+    TENANT ||--o{ ASSET : &quot;tenant-owned records&quot;
+    TENANT ||--o{ SECURITY_EVENT : &quot;tenant-owned records&quot;
+    TENANT ||--o{ AUDIT_EVENT : &quot;tenant-scoped audit&quot;
+
+    TENANT {
+      uuid tenant_id PK
+      string isolation_boundary &quot;required&quot;
+    }
+    EXTERNAL_IDENTITY_SUBJECT {
+      uuid subject_id PK
+      string idp_issuer_subject &quot;global identity&quot;
+    }
+    TENANT_MEMBERSHIP {
+      uuid membership_id PK
+      uuid tenant_id FK
+      uuid subject_id FK
+      string state &quot;proposed&quot;
+    }
+    ROLE {
+      uuid role_id PK
+      string role_key &quot;global or scoped catalog&quot;
+    }
+    ROLE_PERMISSION {
+      uuid role_permission_id PK
+      uuid role_id FK
+      string capability &quot;logical&quot;
+    }
+    MEMBERSHIP_ROLE_ASSIGNMENT {
+      uuid assignment_id PK
+      uuid membership_id FK
+      uuid role_id FK
+    }
+    SUPPORT_ACCESS_GRANT {
+      uuid grant_id PK
+      uuid tenant_id FK
+      string time_bound_scope &quot;required concept&quot;
+      string audited &quot;required&quot;
+    }
+    SUPPORT_ACCESS_APPROVAL {
+      uuid approval_id PK
+      uuid grant_id FK
+      string decision &quot;policy-dependent&quot;
+    }
+    TENANT_CONFIGURATION {
+      uuid config_id PK
+      uuid tenant_id FK
+      string domain_version &quot;logical&quot;
+    }
+    TENANT_AI_PROVIDER_CONFIGURATION {
+      uuid ai_provider_config_id PK
+      uuid tenant_id FK
+      string explicit_provider_selection &quot;no silent failover&quot;
+    }
+    ASSET {
+      uuid asset_id PK
+      uuid tenant_id FK
+    }
+    SECURITY_EVENT {
+      uuid event_id PK
+      uuid tenant_id FK
+    }
+    AUDIT_EVENT {
+      uuid audit_event_id PK
+      uuid tenant_id FK
+      string action_outcome &quot;append-only preferred&quot;
+    }
+</pre>
+<p><strong>Explanation:</strong> Global identity (<code>EXTERNAL_IDENTITY_SUBJECT</code>) is separated from tenant-scoped access (<code>TENANT_MEMBERSHIP</code>, role assignments). <code>SUPPORT_ACCESS_GRANT</code> (and optional approval) models explicitly scoped, time-bound, auditable support access—never blanket cross-tenant access. Tenant-owned records (examples shown: asset, event, audit, configuration, AI config) require access only under verified transaction-bound tenant context and application authorization; PostgreSQL RLS is a future defense-in-depth control (not depicted as SQL). Role/permission granularity is proposed/assumption-level where not fully specified.</p>
+<h2>Intentionally omitted or simplified in ERDs</h2>
+<p>The following catalogue entities are intentionally not drawn in every ERD (or are simplified) to preserve readability; they remain part of the authoritative logical catalogue and must be considered in cross-document consistency:</p>
+<ul>
+<li><code>AI_INTERACTION_AUDIT</code> — specialized AI audit record, distinct from and correlatable/cross-referenced with <code>AUDIT_EVENT</code>.</li>
+<li><code>PROCESSING_WORK_ITEM</code> — optional/non-core pipeline work item; intentionally not a competing source of truth with <code>event_receipt</code>/<code>outbox_message</code>.</li>
+<li><code>AI_PROVIDER_POLICY_CONSENT_REFERENCE</code>, <code>AI_PROVIDER_SECRET_REFERENCE</code>, <code>AI_USAGE_BUDGET_ACCOUNTING</code> — AI configuration/policy/consent/budget references represented conceptually (ERD 4 shows tenant AI provider configuration context).</li>
+<li><code>DETECTION_RULE</code>, <code>DETECTION_RULE_VERSION</code>, <code>INTEGRATION_CONFIGURATION</code>, <code>THREAT_INTELLIGENCE_REFERENCE</code> — detection/integration/reference catalogue entities.</li>
+<li><code>ASSET_INVENTORY_OBSERVATION</code> — supporting observation records; core identity/licensing flow is represented via bindings/claims/ledger/assets.</li>
+<li>Some RBAC/evidence/support detail multiplicities and optional workflow entities are simplified; the logical data model remains authoritative.</li>
+</ul>
+<h2>Assumptions and limitations</h2>
+<ul>
+<li>ERDs are intentionally simplified logical views; authoritative entity definitions, invariants, and full relationship analysis are in <a href="POSTGRESQL_LOGICAL_DATA_MODEL.md.html">POSTGRESQL_LOGICAL_DATA_MODEL.md</a>.</li>
+<li>Some entities are represented by simplified names in diagrams (e.g. membership/assignment tables) to keep Mermaid readable; logical intent is unchanged.</li>
+<li>Physical concerns intentionally omitted: SQL types, nullability DDL, indexes, partitioning, RLS policies, grants, triggers, functions, sequences, and migration artifacts.</li>
+<li>Binding ownership recommendation is documented (Proposed, OD-002 requires approval). Reservation accounting, approval workflows, outbox attempt/lease-fencing details, and connector-specific dedup namespace fallback behavior remain <strong>Proposed</strong> or <strong>Open Decision</strong> and may block parts of Round 2 physical design.</li>
+</ul>
+
+</article>
+</div>
+<script src="../assets/mermaid.min.js"></script>
+<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,securityLevel:'loose'});}</script>
+</body>
+</html>

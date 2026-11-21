@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Technology Selection</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/TECHNOLOGY_SELECTION.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Technology Selection</h1>
+<p><strong>Decision status:</strong> the mandatory choices are fixed by the project prompt; the other selections below are recommendations for the target design only. None of these technologies is integrated in the current repository. Revisit selections through ADRs as requirements and operational evidence mature.</p>
+<h2>Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Proposed selection</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backend</td>
+<td>Python 3, FastAPI, modular monolith</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>Relational database</td>
+<td>PostgreSQL, SQLAlchemy 2, Alembic</td>
+<td>PostgreSQL mandatory; integration not implemented</td>
+</tr>
+<tr>
+<td>Dashboard</td>
+<td>React + TypeScript + Vite</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>API</td>
+<td>Versioned REST/JSON with generated OpenAPI</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>Authentication</td>
+<td>OIDC-compatible identity provider; backend RBAC/tenant authorization</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>Ingestion and work</td>
+<td>HTTPS adapters + PostgreSQL transactional outbox + Python worker initially</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>Go, with per-OS capability adapters</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>AI</td>
+<td>External provider adapters behind CARES privacy gate</td>
+<td>Mandatory direction; no provider client implemented</td>
+</tr>
+<tr>
+<td>Deployment</td>
+<td>OCI containers; single-host composition for development, managed services for SaaS</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>Observability</td>
+<td>OpenTelemetry instrumentation; compatible metrics/logs/traces backend</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>Secrets</td>
+<td>Cloud/KMS-backed secret manager in SaaS; deployment-provided equivalent for self-hosted</td>
+<td>Planned</td>
+</tr>
+</tbody>
+</table>
+<h2>Backend: Python and FastAPI</h2>
+<p><strong>Recommendation:</strong> Python remains the primary backend language. Use FastAPI for the REST boundary and a modular-monolith application core, with typed request/response schemas and generated OpenAPI. Keep routing, authorization, domain services, persistence, and provider adapters separated by module rather than splitting them into microservices.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> consistent with the mandatory language; mature ecosystem for integrations and security data parsing; type hints and OpenAPI reduce API drift; async I/O is useful for external provider and integration calls.</li>
+<li><strong>Disadvantages:</strong> CPU-heavy parsing can block event loops; Python packaging and runtime management require discipline; asynchronous code adds complexity.</li>
+<li><strong>Alternatives:</strong> Django/DRF offers more built-in administration and ORM conventions but is a larger framework; Flask is smaller but requires more decisions for API validation and documentation; Go could be efficient but violates the primary-backend language decision.</li>
+<li><strong>Security implications:</strong> enforce authentication, tenant resolution, schema validation, bounded payloads, rate limits, and explicit error handling at the API boundary. Use dependency injection carefully so test overrides cannot bypass production authorization.</li>
+<li><strong>Operational considerations:</strong> pin and scan dependencies; run API and workers with least privilege; use multiple worker processes only with bounded DB connections and timeouts; isolate CPU-intensive work from request handlers.</li>
+</ul>
+<h2>Primary database: PostgreSQL</h2>
+<p><strong>Recommendation:</strong> PostgreSQL is the authoritative relational store for tenant records, user and role mappings, asset/source identities, license usage, configuration, audit metadata, and initially normalized security events. Use SQLAlchemy 2 and Alembic as the proposed Python persistence/migration stack.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> mandatory relational database; transactions and unique constraints are central to enforcing quota and deduplication atomically; JSONB supports heterogeneous event payloads while retaining relational controls; row-level security can provide defense in depth.</li>
+<li><strong>Disadvantages:</strong> high-volume event analytics and long retention can challenge a single operational database; schema and partition management require care; RLS can be misconfigured and does not replace application authorization.</li>
+<li><strong>Alternatives:</strong> other relational databases are disallowed as primary storage; ClickHouse or OpenSearch may later complement PostgreSQL for analytics/search but must not become the authority for licensing, users, or tenant access.</li>
+<li><strong>Security implications:</strong> non-owner runtime role, no <code>BYPASSRLS</code>, forced RLS on tenant tables, tenant context set transaction-locally from authenticated server identity, parameterized SQL, encrypted transport/backups, least-privilege migrations, and tested backup restoration. RLS based on a mutable session variable is a backstop against missed filters, not a defense against arbitrary SQL execution or compromised application authority.</li>
+<li><strong>Operational considerations:</strong> managed PostgreSQL is preferred for SaaS; monitor connections, storage, replication, vacuum, slow queries, and partition growth. Define backup RPO/RTO and test restore. Do not claim production integration until migrations, connection handling, RLS tests, and failure/restore tests run against PostgreSQL.</li>
+</ul>
+<h2>Dashboard: React and TypeScript</h2>
+<p><strong>Recommendation:</strong> React with TypeScript and Vite for the browser UI; the UI is a client of the backend API and never an authorization boundary.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> mature ecosystem for a complex monitoring dashboard; TypeScript improves maintainability across API models and interactive workflows; Vite supports a straightforward build.</li>
+<li><strong>Disadvantages:</strong> frontend dependencies and supply-chain exposure; client state can become complex; accessibility and security require deliberate implementation.</li>
+<li><strong>Alternatives:</strong> server-rendered templates reduce client complexity; Vue or Svelte are viable but offer no requirement-driven advantage here.</li>
+<li><strong>Security implications:</strong> avoid storing long-lived credentials in browser storage; apply CSP, output encoding, CSRF protections appropriate to session strategy, and secure cookies where used. Never expose cross-tenant records and rely on backend checks.</li>
+<li><strong>Operational considerations:</strong> serve static assets through a CDN or controlled web tier; test supported browsers, accessibility, and API compatibility. Not implemented.</li>
+</ul>
+<h2>API: REST/JSON and OpenAPI</h2>
+<p><strong>Recommendation:</strong> versioned HTTPS REST/JSON for user, integration, and agent management APIs, with OpenAPI as the contract. Agent batches should use bounded, compressed request payloads and idempotency/sequence identifiers.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> interoperable with dashboards, agents, and partner integrations; debuggable; fits FastAPI and typed validation.</li>
+<li><strong>Disadvantages:</strong> large batches require limits and careful retry semantics; long-lived streams are less suitable for basic REST.</li>
+<li><strong>Alternatives:</strong> gRPC may suit high-volume agent streaming later but increases client/tooling complexity; Kafka protocol is not a public agent API.</li>
+<li><strong>Security implications:</strong> per-client auth, replay resistance, strict body and decompression limits, rate limits, version validation, and no credentials in URLs.</li>
+<li><strong>Operational considerations:</strong> define compatibility windows, pagination, idempotency, and deprecation policy before releasing clients. Not implemented.</li>
+</ul>
+<h2>Identity and authorization: OIDC plus CARES policy</h2>
+<p><strong>Recommendation:</strong> integrate an OIDC-compliant identity provider for authentication; maintain CARES roles, tenant memberships, support-access grants, and resource authorization in the backend. The identity provider is not the source of truth for asset licensing.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> avoid implementing passwords, MFA, and federation protocols from scratch; supports managed or self-hosted identity.</li>
+<li><strong>Disadvantages:</strong> availability and configuration become dependencies; identity claims can become stale; OIDC does not define CARES tenant authorization.</li>
+<li><strong>Alternatives:</strong> a self-hosted identity suite such as Keycloak is an option if operating it is justified; bespoke authentication is not recommended.</li>
+<li><strong>Security implications:</strong> validate issuer, audience, signature, expiry, nonce/state; use short-lived sessions/tokens; deny by default; derive tenant memberships from trusted server-side records; privileged cross-tenant access must be scoped, time-bound, justified, and audited.</li>
+<li><strong>Operational considerations:</strong> plan account lifecycle, recovery, MFA, signing key rotation, identity-provider outage handling, and audit retention. Not implemented.</li>
+</ul>
+<h2>Ingestion and asynchronous work: PostgreSQL outbox first</h2>
+<p><strong>Recommendation:</strong> write accepted events and an outbox record in the same PostgreSQL transaction, then process through a separately deployed Python worker with bounded polling, concurrency, retry, and dead-letter/error state. Apply per-tenant ingestion and storage limits separately from asset quotas. The initial proposed benchmark is 25 EPS sustained / 100 EPS for five minutes and is an unapproved planning assumption; see <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a> and <a href="adr/0005-event-processing-and-broker-evolution.md.html">ADR 0005</a>.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> avoids introducing a broker before throughput is known; transactional outbox avoids losing work between database writes and queue publication; worker capacity can scale separately.</li>
+<li><strong>Disadvantages:</strong> database polling adds load; it is not a substitute for an unbounded high-throughput streaming system; backpressure and poison-event handling need design.</li>
+<li><strong>Alternatives:</strong> NATS or Kafka may become appropriate if measured throughput, replay, or fan-out needs exceed the outbox design. Redis is not selected as a required component.</li>
+<li><strong>Security implications:</strong> authenticate sources before accepting data, bind sources to tenant and asset identity, prevent tenant values from payloads overriding authenticated context, and cap message sizes/retries.</li>
+<li><strong>Operational considerations:</strong> expose queue age, processing lag, retries, and per-tenant throughput; establish retention and backpressure procedures. Broker adoption requires a separate ADR. Not implemented.</li>
+</ul>
+<h2>CARES Agent: Go</h2>
+<p><strong>Recommendation:</strong> implement the endpoint agent in Go with platform-specific capability adapters and explicit feature matrices. This is separate from the Python backend decision.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> static and relatively straightforward distribution, good networking and concurrency support, and a single codebase can target common desktop/server platforms.</li>
+<li><strong>Disadvantages:</strong> OS-specific security collection still needs native APIs and elevated privileges; static binaries need careful signing and update provenance; Go does not remove compatibility testing.</li>
+<li><strong>Alternatives:</strong> Rust offers memory-safety and low-level control at greater implementation complexity; Python is not a suitable default for a privileged cross-platform system agent; one agent per platform is possible but duplicates more logic.</li>
+<li><strong>Security implications:</strong> minimize privileges, use unique device credentials, signed releases/configuration/commands, bounded offline queues, secure update verification, and avoid arbitrary command execution.</li>
+<li><strong>Operational considerations:</strong> build and test per OS/architecture, sign and publish reproducible artifacts, define capability compatibility, and stage rollouts with rollback. Not implemented.</li>
+</ul>
+<h2>MELIRA: selected external SaaS with provider adapters</h2>
+<p><strong>Recommendation:</strong> implement a provider-neutral interface whose adapters call explicitly configured external SaaS APIs. The CARES privacy gate, tenant authorization, evidence retrieval, and audit are provider-independent and execute before the adapter. A tenant explicitly selects an enabled provider, model, and approved region; use only that selection. Do not provide local inference/GPU or implicit alternate-provider/region fallback.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> meets the mandatory SaaS choice; lets customers choose supported vendors/models/endpoints; avoids local GPU operations; limits provider coupling to adapters.</li>
+<li><strong>Disadvantages:</strong> external service outages, cost, data residency and retention obligations, provider API drift, and customer key management remain concerns.</li>
+<li><strong>Alternatives:</strong> local GPU hosting and silent cross-provider failover are explicitly excluded. A customer-managed external compatible endpoint may be supported only under validated transport/egress policy and provider configuration.</li>
+<li><strong>Security implications:</strong> require explicit customer consent; classify and minimize context; enforce policy before network calls; validate provider residency, retention/deletion, and training/data-use terms; redact with tested structured transformations; protect per-tenant credentials in a secret manager with rotation/revocation; validate HTTPS endpoints and DNS/egress against SSRF; defend against prompt injection; and make each tool authorization independent of model output. Unknown/incompatible provider terms, missing consent, or denied policy means no call.</li>
+<li><strong>Operational considerations:</strong> customer-level enablement, supported-provider catalog, hard per-tenant request/token/spend/concurrency budgets, usage reconciliation, latency/timeouts, explicit provider errors, and no sensitive prompt logging. No silent failover; core functions continue if AI is unavailable. Initial vendor list, BYOK versus CARES-managed billing, residency choices, consent granularity, retention/training policy, and spend ceilings require owner approval. See <a href="adr/0004-external-ai-provider-boundary.md.html">ADR 0004</a>. Not implemented.</li>
+</ul>
+<h2>Deployment: containers; avoid premature Kubernetes</h2>
+<p><strong>Recommendation:</strong> OCI-compatible containers. Use a simple local development composition and an initial single-host profile where appropriate; use managed PostgreSQL and managed secret/key services for SaaS. Keep API and worker process types separately scalable.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> repeatable builds, process isolation, broad hosting support, and no Kubernetes requirement for initial delivery.</li>
+<li><strong>Disadvantages:</strong> container runtime and image supply-chain maintenance; single-host profile is not highly available; managed services can create provider lock-in.</li>
+<li><strong>Alternatives:</strong> direct DEB/RPM/TGZ installs are product distribution requirements to plan, not a reason to run every SaaS component without containers; Kubernetes is a future option when operational needs justify it.</li>
+<li><strong>Security implications:</strong> minimal images, non-root processes, read-only filesystems where possible, signed images, SBOMs, secret injection at runtime, network egress controls, and timely patching.</li>
+<li><strong>Operational considerations:</strong> define liveness/readiness, resource requests/limits, backup/restore, upgrades and migrations. Not implemented.</li>
+</ul>
+<h2>Observability: OpenTelemetry</h2>
+<p><strong>Recommendation:</strong> instrument traces, metrics, and structured logs using OpenTelemetry APIs/SDKs; choose a compatible collection and backend as part of deployment.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> vendor-neutral instrumentation across API, worker, database, and external calls.</li>
+<li><strong>Disadvantages:</strong> collection/storage backends add cost and operational work; high-cardinality tenant labels can leak identifiers or inflate cost.</li>
+<li><strong>Alternatives:</strong> provider-specific instrumentation can be simpler but harder to replace; do not introduce a full observability platform before a deployment target is selected.</li>
+<li><strong>Security implications:</strong> redact secrets and sensitive event content, constrain access and retention, and avoid tenant data in metric labels.</li>
+<li><strong>Operational considerations:</strong> establish service-level indicators, sampling, retention, alert ownership, and telemetry failure behavior. Not implemented.</li>
+</ul>
+<h2>Secret management</h2>
+<p><strong>Recommendation:</strong> store SaaS provider credentials, signing keys, and service credentials in a managed secret manager/KMS-backed store. For self-hosted deployments, define an operator-supplied secret backend and encrypted-at-rest option; do not expose secrets after write.</p>
+<ul>
+<li><strong>Rationale / advantages:</strong> central rotation, access auditing, key separation, and reduced risk compared with source files or ordinary configuration.</li>
+<li><strong>Disadvantages:</strong> service dependency and deployment-specific integration; secret-store outage must fail closed for dependent operations.</li>
+<li><strong>Alternatives:</strong> environment variables are acceptable only for local development or controlled secret injection, not as the customer-facing long-term credential store; never commit secrets.</li>
+<li><strong>Security implications:</strong> least privilege, envelope encryption where appropriate, rotation and revocation, redaction from logs/errors, and no plaintext retrieval to dashboard clients.</li>
+<li><strong>Operational considerations:</strong> document bootstrap, backup/recovery, access review, and key rotation. Not implemented.</li>
+</ul>
+<h2>Deliberately deferred</h2>
+<p>ClickHouse, OpenSearch, Redis, Kafka/NATS, Kubernetes, and a separately operated microservice fleet are not baseline requirements. Add them only after a measured bottleneck or product requirement is documented, the tenant/security model is preserved, and operational ownership is funded.</p>
+
+</article>
+</div>
+
+</body>
+</html>

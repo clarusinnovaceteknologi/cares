@@ -1,0 +1,1161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Architecture Decision Package — Critical Gap Analysis</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Architecture Decision Package — Critical Gap Analysis</h1>
+<p><strong>Status:</strong> Architecture analysis and proposed design only. This document does not approve commercial policy, implement PostgreSQL, or authorize migrations.</p>
+<h2>Status labels</h2>
+<ul>
+<li><strong>EXISTING APPROVED REQUIREMENT</strong> — an established CARES constraint that this document preserves.</li>
+<li><strong>EXISTING PROPOSAL</strong> — a design already present in repository documentation, not an implemented feature or approved commercial policy.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION</strong> — a technical recommendation for owner and engineering review.</li>
+<li><strong>OWNER DECISION REQUIRED</strong> — a commercial, privacy, security, or product decision that cannot be made by this document.</li>
+<li><strong>NOT IMPLEMENTED</strong> — no corresponding working implementation exists in the repository.</li>
+<li><strong>NOT TESTED</strong> — no PostgreSQL integration or behavior test establishes the design.</li>
+</ul>
+<p>All DDL, pseudocode, diagrams, recommendations, and lifecycle rules below are proposals. They are not schemas, migrations, production behavior, or test evidence.</p>
+<hr />
+<h2>1. Executive summary</h2>
+<h3>Findings</h3>
+<ul>
+<li><strong>EXISTING APPROVED REQUIREMENT:</strong> Python is the backend language; PostgreSQL is the primary relational database; MELIRA uses external SaaS AI providers only; CARES requires no local GPU; AI is optional; tenant isolation is strict; and each unique monitored device is exactly one licensed asset regardless of source count. Connectors are not billable assets.</li>
+<li><strong>EXISTING PROPOSAL:</strong> CARES uses a tenant-scoped canonical asset, a source-device binding, and versioned HMAC fingerprint aliases. The proposed binding namespace is <code>(tenant_id, data_source_id, protected_source_device_key_fingerprint)</code>.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Treat <code>source_device_key_id</code> as a server-generated, stable internal identifier for one source-device binding, not as a fingerprint, source identifier, or client-supplied identity. Keep it unchanged as aliases rotate.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Prefer a hybrid recovery strategy. Retain the source identifier encrypted with authenticated encryption only for source types and tenants where operational need, consent, and retention policy justify it. For sources without a recoverable identifier, add aliases on re-observation or controlled re-enrollment; never attempt to convert an old HMAC digest to a new one.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> A versioned alias uniqueness key must include the key identity (or the equivalent immutable <code>(algorithm, key_version)</code> tuple) as well as tenant, data source, and digest. A key ID is sufficient only if it immutably determines algorithm, version, purpose, and tenant scope.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Replace a cursor-only rotation design with persistent per-binding work items, lease/claim semantics, transactional alias insertion and item completion, and final anti-join verification. A cursor may aid progress display, but cannot prove completeness under concurrent registration.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Keep unresolved identity cases separate from canonical assets until an identity is verified. Quarantined payloads must not be attributed to an asset or enter normal analysis until resolved. Any pending quota reservation remains an owner decision.</li>
+<li><strong>OWNER DECISION REQUIRED:</strong> Grace periods, reservation quota and billing semantics, permanent-removal authority, quarantine duration, identity retention, and key custody are not resolved here.</li>
+</ul>
+<h3>Readiness and implementation status</h3>
+<p><strong>NOT IMPLEMENTED:</strong> The repository contains no PostgreSQL client or persistence layer, tenant RLS, trusted database tenant context, source-device binding tables, fingerprint-key service, encryption/KMS integration, rotation worker, licensing ledger, or durable merge/split workflow.</p>
+<p><strong>NOT TESTED:</strong> Rotation races and recovery, quota concurrency, cross-tenant enforcement, merge/split, key recovery, backup restoration, or any of the illustrative constraints below have not been tested against PostgreSQL.</p>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Do not begin production migrations for source bindings, fingerprints, asset lifecycle, or quota until the DDL has been reviewed and the specific owner decisions marked below are recorded. A disposable schema spike is not production readiness.</p>
+<hr />
+<h2>2. Critical architectural gaps</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Finding in current documents</th>
+<th>Gap to close</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fingerprint rotation</td>
+<td>Old/new aliases and a <code>last_binding_id</code> checkpoint are proposed</td>
+<td>HMAC is one-way; no exact recoverability rule; a cursor alone misses inserts/races; batch ownership and durable item results are absent</td>
+</tr>
+<tr>
+<td>Source identifier retention</td>
+<td>Data Architecture says to protect the original when retention is necessary</td>
+<td>No field-level encryption design, KMS/key-recovery model, tenant binding, deletion policy, or behavior when the HMAC key is lost</td>
+</tr>
+<tr>
+<td>Alias uniqueness</td>
+<td>The earlier example has both a primary key and an identical unique constraint</td>
+<td>Redundant constraint; algorithm/version/key scope are not part of explicit alias identity</td>
+</tr>
+<tr>
+<td>Key-state control</td>
+<td>Key states are listed, but no database rule limits concurrent active/overlap keys</td>
+<td>Multiple keys can accidentally be treated as current; rotation run and key registry can disagree</td>
+</tr>
+<tr>
+<td>Stable source identity</td>
+<td><code>source_device_key_id</code> is named but not defined as generated, stable, or trusted</td>
+<td>Clarify it as an internal UUID bound to one source-device binding and never as an external/raw identity</td>
+</tr>
+<tr>
+<td>Licensing lifecycle</td>
+<td>Active, pending, reserved, deactivated, and removed states are described, sometimes as defaults</td>
+<td>Slot/billing/count semantics are not approved; a reservation must not be counted twice</td>
+</tr>
+<tr>
+<td>Merge/split</td>
+<td>Privileged transactional operations are proposed</td>
+<td>No durable operation/idempotency model, explicit source assignment, event lineage schema, or compensating recovery boundary</td>
+</tr>
+<tr>
+<td>Tenant isolation</td>
+<td>Tenant-inclusive FKs and RLS are proposed</td>
+<td>Trusted tenant context, runtime-role grants, support access, and pooled-connection reset behavior need concrete design</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Separate three concepts in the model:</p>
+<ol>
+<li><strong>Canonical asset identity</strong> — immutable tenant-scoped CARES UUID representing a verified monitored device.</li>
+<li><strong>Source-device binding</strong> — stable internal relationship between an authenticated connector instance, one source-local device identity, and exactly one canonical asset.</li>
+<li><strong>Fingerprint alias</strong> — a versioned lookup token that may change without changing the source binding or canonical asset.</li>
+</ol>
+<p>Do not use a raw source identifier, a fingerprint digest, or a connector ID as a canonical asset ID.</p>
+<hr />
+<h2>3. Source identifier protection and recovery design</h2>
+<h3>3.1 HMAC is not reversible</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Treat an HMAC fingerprint as a non-reversible lookup value. Given <code>HMAC(old_key, normalized_identifier)</code>, the system cannot calculate <code>HMAC(new_key, normalized_identifier)</code> without the original normalized identifier (or another independently retained representation of it). Re-HMACing the digest produces a fingerprint of the digest, not a fingerprint of the source identifier, and is not equivalent.</p>
+<p>Consequences:</p>
+<ul>
+<li>If the old HMAC key is unavailable but an encrypted normalized identifier is recoverable, decrypt the identifier under a separately managed encryption key and compute the new HMAC directly from that identifier. The binding ID remains unchanged.</li>
+<li>If neither the original identifier nor the old HMAC key is available, the old digest cannot be converted. Preserve the existing alias as historical evidence, but do not use it to authenticate or resolve a newly presented raw identifier.</li>
+<li>In the latter case, create a new alias only when the device re-reports its identifier under the new key and the system has a trustworthy way to associate that report with the existing binding (for example, authenticated re-enrollment tied to that binding). Otherwise quarantine it for reviewed reconciliation. Do not create a second billable asset automatically.</li>
+<li>Revocation or loss of the old key can interrupt online lookup for devices whose new alias has not yet been created. This must be an explicit incident/recovery condition, not a silent fallback to weak attributes.</li>
+</ul>
+<h3>3.2 Source identifier storage alternatives</h3>
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Confidentiality and key-compromise impact</th>
+<th>Tenant isolation</th>
+<th>Operations, offline devices, migration</th>
+<th>Changes, retention, backup, compatibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A. Recoverable identifier encrypted with AEAD; KMS/envelope key management</strong></td>
+<td>Database-only compromise reveals ciphertext, not identifiers. Plaintext is exposed to authorized decrypting services and during use. KMS or data-key compromise can expose the identifiers in its scope; minimize scope, privileges, and plaintext lifetime. AEAD detects ciphertext/AAD tampering.</td>
+<td>Bind ciphertext to tenant, <code>data_source_id</code>, and stable <code>source_device_key_id</code> using authenticated associated data (AAD); use tenant-scoped data keys or per-tenant envelope-encryption context. Enforce tenant-aware FKs and authorization on decrypt operations.</td>
+<td>Supports offline-device rotation because the server can re-fingerprint stored identifiers. Requires KMS availability, key versioning, backup/restore coordination, decrypt authorization, and operational handling for KMS outages.</td>
+<td>Identifier changes require retaining old encrypted values/aliases only as long as policy permits, and recording the current value separately. Deletion must cover ciphertext, wrapped keys, replicas/backups per retention policy. Existing bindings remain compatible if secrets are added without changing IDs.</td>
+</tr>
+<tr>
+<td><strong>B. No recoverable identifier; aliases generated only on re-observation</strong></td>
+<td>Stronger data minimization; compromise of the database does not reveal the original identifier. HMAC key compromise still enables equality testing/re-identification against candidate values for the key's scope.</td>
+<td>Alias rows remain tenant-scoped. Key access and lookup must still be tenant-authorized; keyed digest does not itself enforce isolation.</td>
+<td>Avoids recoverable-secret storage and KMS decrypt path. Offline devices cannot be re-fingerprinted; coverage depends on re-observation and a stable authenticated re-enrollment path. Rotation can take an unbounded time or require manual exceptions.</td>
+<td>Identifier changes may look like a new identity unless a trusted enrollment/binding link or reviewed reconciliation exists. Retention is simpler, but backups preserve old digests. Existing aliases remain stored; an old digest cannot be transformed.</td>
+</tr>
+<tr>
+<td><strong>C. Hybrid by source capability and approved retention</strong></td>
+<td>Limits recoverable material to selected source types. The recoverable subset has Approach A's compromise risks; nonrecoverable sources retain Approach B's limitations. Must not imply equal migration guarantees across all connectors.</td>
+<td>Encryption/decryption permission is constrained by tenant, source type, and purpose; all rows remain tenant-scoped. Audit each decrypt/migration operation.</td>
+<td>Gives offline migration to sources with protected identifiers while allowing data minimization for others. Requires source capability metadata, per-source policy, and two recovery paths.</td>
+<td>Identifier changes follow the same two-path distinction. Retention/deletion must be explicit per source. Old bindings can coexist with both encrypted and nonrecoverable histories.</td>
+</tr>
+</tbody>
+</table>
+<h3>3.3 Recommendation and key-lost behavior</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Use Approach C as the default design, subject to security/privacy and owner approval:</p>
+<ol>
+<li>For a source with a durable, operationally necessary identifier and an approved retention purpose, store the normalized identifier encrypted with an AEAD construction using envelope encryption. A KMS/secret-management service protects key-encryption keys; the database stores ciphertext, nonce, algorithm/version, and a key reference or wrapped data key, never plaintext encryption keys.</li>
+<li>For sources where identifier recovery is unnecessary or not approved, store no recoverable identifier. Depend on re-observation plus authenticated re-enrollment, or on an explicit operator reconciliation path.</li>
+<li>Record per source whether recovery is supported and the retention policy. Do not infer this from availability of a KMS secret at runtime.</li>
+<li><code>source_device_key_id</code> is a CARES-generated, cryptographically random UUID minted when the binding is first accepted. It is stable and immutable for the life of that binding; it is not derived from source material, not selected by the connector, and not a credential. It remains associated through the binding row and all alias/secret rows' tenant- and source-inclusive foreign keys. A binding merge or re-enrollment must be an audited relationship change, not an ID rewrite.</li>
+<li>If backwards compatibility requires the field name <code>source_device_key_id</code>, retain it as the stable internal binding identifier. Do not generate a second redundant <code>binding_id</code> unless it has a distinct lifecycle purpose.</li>
+</ol>
+<p><strong>Exact behavior when old HMAC key is unavailable:</strong></p>
+<ul>
+<li><strong>Encrypted identifier available:</strong> authorize a rotation job; retrieve/decrypt the identifier using its recorded encryption-key version; normalize with the recorded normalization version; calculate the digest using the new fingerprint key; insert the new alias referencing the same <code>source_device_key_id</code>; verify that the alias is unique and no other binding owns it. The old HMAC key is not needed for this operation. If decryption fails, record a retryable or terminal item error; do not make a new asset.</li>
+<li><strong>No encrypted identifier, but source is online:</strong> wait for a fresh identifier. Resolve it to the old binding only through a trustworthy authenticated binding proof or an explicitly reviewed mapping; compute and insert the new alias. Merely seeing an equal hostname, IP, or other weak field is insufficient.</li>
+<li><strong>No encrypted identifier and source is offline / no binding proof:</strong> mark the item <code>awaiting_observation</code> or <code>conflict</code>; leave the binding and asset untouched. The run cannot be declared fully migrated while an in-scope binding lacks a new usable alias unless the owner explicitly approves an exception and old-key loss recovery policy.</li>
+<li><strong>Old key is revoked unexpectedly:</strong> stop work that needs the key, alert security/operations, retain existing database rows, and continue only if the independent encrypted-identifier path is available. If not, do not claim successful rotation. Do not try <code>HMAC(new_key, old_digest)</code>.</li>
+</ul>
+<h3>3.4 Identifier encryption and key custody requirements</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong></p>
+<ul>
+<li>Use an approved AEAD mode (for example, AES-256-GCM or ChaCha20-Poly1305) with unique nonces and a reviewed library. Store algorithm and encryption-key version.</li>
+<li>Bind ciphertext to immutable context using AAD: tenant ID, data-source ID, source-device key ID, identifier record ID, identifier type, and normalization version.</li>
+<li>Prefer envelope encryption with tenant-scoped cryptographic context. Limit decrypt permission to a narrowly scoped identity-migration service; application API roles should not receive broad KMS decrypt rights.</li>
+<li>Avoid plaintext in logs, traces, exception messages, metrics, queues, and SQL parameters visible to operators. Decrypt only in memory for the minimum period.</li>
+<li>Keep HMAC keys separate from encryption keys and use separate purposes/key hierarchies. Record key references, not key bytes, in PostgreSQL.</li>
+<li>Plan for KMS outage and disaster recovery: encrypted backups are unusable without the corresponding managed keys. Backup/restore runbooks must verify key-version recovery and access-control restoration before claiming recoverability.</li>
+<li>Treat key destruction as an irreversible data-erasure and migration decision. Do not destroy an encryption key while retained ciphertext is still required for recovery, legal retention, or an approved migration.</li>
+<li>On deletion, remove or crypto-shred the per-record/per-tenant encryption material as the approved retention policy requires, and preserve only minimum audited deletion evidence.</li>
+</ul>
+<p><strong>OWNER DECISION REQUIRED:</strong> Approve which source types may retain recoverable identifiers, the lawful purpose and retention period, KMS tenancy/scope, key custodians, and whether two-person authorization is required for decryption and rotation.</p>
+<hr />
+<h2>4. HMAC fingerprint rotation alternatives and recommendation</h2>
+<h3>4.1 Alias identity and rotation invariants</h3>
+<p><strong>EXISTING APPROVED REQUIREMENT:</strong> One source can report many devices; one device may be reported by many sources; source attachment must not create another licensed asset.</p>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> A source-device key is namespaced by <code>(tenant_id, data_source_id)</code>. Each alias is a versioned lookup token for one stable internal source-device key. The logical uniqueness is:</p>
+<pre><code class="hljs language-text">(tenant_id, data_source_id, fingerprint_key_identity, fingerprint_digest)
+    -&gt; exactly one source_device_key_id
+</code></pre>
+<p><code>fingerprint_key_identity</code> must uniquely identify the immutable tuple <code>(purpose, algorithm, key_version, tenant/key scope)</code>. If the schema uses a surrogate <code>fingerprint_key_id</code>, the alias key can include that ID instead of repeating algorithm and version, provided the referenced key row makes those values immutable and unique within the tenant/purpose.</p>
+<p><code>key_version</code> therefore belongs in the <em>logical</em> alias identity. It need not be a repeated physical column if <code>fingerprint_key_id</code> uniquely represents it. Do not key aliases on digest alone: different key versions intentionally produce different digests for the same source identity. Do not allow a fingerprint-key row's algorithm, version, scope, or purpose to be edited after aliases reference it.</p>
+<p>An alias lookup must also be qualified by authenticated tenant and data source. A connector ID is never unique per device. HMAC input should include a domain separator and versioned normalization context (for example, purpose + tenant/source context + normalized identifier); do not rely on the digest alone to carry namespace.</p>
+<h3>4.2 Alternatives</h3>
+<table>
+<thead>
+<tr>
+<th>Design</th>
+<th>Advantages</th>
+<th>Disadvantages / risk</th>
+<th>Assessment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Replace the old digest in place</td>
+<td>Small table and simple lookup</td>
+<td>Loses old lookup during migration; cannot recover input from HMAC; unsafe for offline devices and concurrent registration</td>
+<td>Reject</td>
+</tr>
+<tr>
+<td>Keep multiple versioned aliases per stable binding</td>
+<td>Resolves old/new tokens to the same binding; preserves asset ID and quota</td>
+<td>Requires unambiguous key metadata, uniqueness constraints, lifecycle state, cleanup policy, and migration process</td>
+<td>Recommend</td>
+</tr>
+<tr>
+<td>Derive the canonical asset ID from a fingerprint</td>
+<td>Avoids a separate binding table</td>
+<td>Key rotation changes identity; source aliases are not canonical device identity; cross-source matching and split/merge become unsafe</td>
+<td>Reject</td>
+</tr>
+<tr>
+<td>HMAC the old digest with the new key</td>
+<td>Appears to avoid raw identifier storage</td>
+<td>Produces a different value than HMAC of the original identifier; cannot support normal lookup from a newly observed raw ID</td>
+<td>Reject</td>
+</tr>
+</tbody>
+</table>
+<h3>4.3 Coexistence and lookup</h3>
+<p>During overlap, old and new alias rows coexist as separate rows with different key identities. Both reference the same stable <code>source_device_key_id</code>, whose binding references the same canonical asset. A digest collision or existing alias with the same <code>(tenant, data_source, key identity, digest)</code> owned by another source-device key is a conflict, not an automatic merge.</p>
+<p>Registration computes aliases only for key versions authorized by the tenant's fingerprint policy and available to the registration service. The request cannot choose arbitrary key versions. The lookup service:</p>
+<ol>
+<li>Resolves tenant and data source from authenticated credentials, not request payload.</li>
+<li>Loads the tenant's current fingerprint policy under the prescribed transaction isolation/locking.</li>
+<li>Computes eligible digests from the presented normalized identifier.</li>
+<li>Looks up each <code>(tenant_id, data_source_id, fingerprint_key_id, digest)</code> alias.</li>
+<li>If all matches point to one source-device key, uses that binding without changing asset usage.</li>
+<li>If matches resolve to different source-device keys, stops and opens a conflict case.</li>
+<li>If no alias resolves, follows the approved source-identity match or pending-resolution flow; it does not infer a duplicate or create an asset based on weak attributes.</li>
+</ol>
+<h3>4.4 Registration and migration overlap</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> During a planned rotation, make the new key current and the old key overlap in one transaction that locks the tenant fingerprint-policy row. A registration transaction obtains a shared lock on that policy before creating or resolving aliases. While both keys are available, registration writes both aliases for a newly observed source device in the same transaction. Existing bindings are backfilled asynchronously. This prevents a registration committed during backfill from being missed.</p>
+<p>If the old HMAC secret is unavailable, dual-computation of the old digest is impossible. Registration still writes the new alias. Existing bindings are migrated from encrypted identifiers where available; otherwise they await source re-observation with binding proof. Finalization must identify unresolved bindings and require explicit disposition.</p>
+<h3>4.5 Alias retirement</h3>
+<p>An old alias can be marked non-resolvable only after the new alias is verified and the approved overlap condition is met. Keep old alias metadata/digest for the audit-retention interval only if policy permits; an old digest row must never imply that the old key can be used. Key revocation, alias status, data retention, and alias deletion are separate controls and must be audited.</p>
+<p><strong>OWNER DECISION REQUIRED:</strong> Define overlap duration, old-alias retention, source-specific migration completion criteria, and whether incomplete offline sources block rotation completion.</p>
+<hr />
+<h2>5. Corrected conceptual PostgreSQL relational model</h2>
+<h3>5.1 Schema goals</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Use composite tenant-aware foreign keys for every tenant-owned relationship. Enforce alias-to-binding uniqueness and binding-to-one-asset relationships in the database. Keep key metadata, source-binding identity, encrypted source identifiers, alias identity, and rotation work in distinct tables.</p>
+<p>The DDL below is illustrative and intentionally omits unrelated tenant membership, RLS policy, grants, audit partitioning, triggers, and production-specific extensions. UUID values are supplied/generated by a trusted application or reviewed database function. It is not a migration.</p>
+<h3>5.2 Illustrative DDL</h3>
+<pre><code class="hljs language-sql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tenant</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">data_source</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">tenant</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">),</span>
+<span class="w">    </span><span class="n">data_source_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">source_kind</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;disabled&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;removed&#39;</span><span class="p">)),</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">asset</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">tenant</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">),</span>
+<span class="w">    </span><span class="n">asset_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lifecycle_state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="n">lifecycle_state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inactive&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;deactivated&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;reserved&#39;</span><span class="p">,</span>
+<span class="w">                            </span><span class="s1">&#39;removed&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;merged&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">merged_into_asset_id</span><span class="w"> </span><span class="n">uuid</span><span class="p">,</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">asset_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">merged_into_asset_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">asset</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">asset_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">merged_into_asset_id</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="n">merged_into_asset_id</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">asset_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="p">(</span><span class="n">lifecycle_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;merged&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">merged_into_asset_id</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="k">OR</span>
+<span class="w">        </span><span class="p">(</span><span class="n">lifecycle_state</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="s1">&#39;merged&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">merged_into_asset_id</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">fingerprint_key</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">tenant</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">),</span>
+<span class="w">    </span><span class="n">fingerprint_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">purpose</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">purpose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;source-device-identity&#39;</span><span class="p">),</span>
+<span class="w">    </span><span class="n">key_version</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">key_version</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">algorithm</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;HMAC-SHA-256&#39;</span><span class="p">),</span>
+<span class="w">    </span><span class="n">normalization_version</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">scope</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="k">scope</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;tenant&#39;</span><span class="p">)),</span>
+<span class="w">    </span><span class="n">secret_ref</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;staged&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;overlap&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retiring&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retired&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;revoked&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">UNIQUE</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">purpose</span><span class="p">,</span><span class="w"> </span><span class="n">key_version</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">fingerprint_key_one_active</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">fingerprint_key</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">purpose</span><span class="p">)</span>
+<span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;active&#39;</span><span class="p">;</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">fingerprint_key_one_overlap</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">fingerprint_key</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">purpose</span><span class="p">)</span>
+<span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;overlap&#39;</span><span class="p">;</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tenant_fingerprint_policy</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">tenant</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">),</span>
+<span class="w">    </span><span class="n">purpose</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">purpose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;source-device-identity&#39;</span><span class="p">),</span>
+<span class="w">    </span><span class="n">active_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">overlap_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="p">,</span>
+<span class="w">    </span><span class="n">generation</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">generation</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">purpose</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">active_key_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">fingerprint_key</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">overlap_key_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">fingerprint_key</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">overlap_key_id</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="n">overlap_key_id</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">active_key_id</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">source_device_binding</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_source_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">source_device_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">asset_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inactive&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;conflict&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;removed&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">first_seen_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_seen_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">data_source</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">asset_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">asset</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">asset_id</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">source_device_identifier_secret</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_source_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">source_device_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">identifier_record_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">identifier_type</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">normalization_version</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">encryption_algorithm</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span>
+<span class="w">        </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">encryption_algorithm</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;AES-256-GCM&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;CHACHA20-POLY1305&#39;</span><span class="p">)),</span>
+<span class="w">    </span><span class="n">encryption_key_ref</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">nonce</span><span class="w"> </span><span class="n">bytea</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ciphertext</span><span class="w"> </span><span class="n">bytea</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;current&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;superseded&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;deleted&#39;</span><span class="p">)),</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">retired_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">identifier_record_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">source_device_binding</span>
+<span class="w">            </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;superseded&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">retired_at</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="k">OR</span><span class="w"> </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;current&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;deleted&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">source_device_one_current_secret</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">source_device_identifier_secret</span>
+<span class="w">        </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">)</span>
+<span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;current&#39;</span><span class="p">;</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">source_device_fingerprint_alias</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_source_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">fingerprint_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">fingerprint_digest</span><span class="w"> </span><span class="n">bytea</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="k">octet_length</span><span class="p">(</span><span class="n">fingerprint_digest</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">32</span><span class="p">),</span>
+<span class="w">    </span><span class="n">source_device_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;overlap&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;deprecated&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retired&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">retired_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_key_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_digest</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">source_device_binding</span>
+<span class="w">            </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_key_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">fingerprint_key</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;deprecated&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retired&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">retired_at</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="k">OR</span><span class="w"> </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;overlap&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">source_device_alias_by_binding</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">source_device_fingerprint_alias</span>
+<span class="w">        </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">fingerprint_rotation_run</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">run_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">purpose</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">purpose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;source-device-identity&#39;</span><span class="p">),</span>
+<span class="w">    </span><span class="n">old_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="p">,</span>
+<span class="w">    </span><span class="n">new_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;preparing&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;running&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;paused&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;verifying&#39;</span><span class="p">,</span>
+<span class="w">                  </span><span class="s1">&#39;completed&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;failed&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cancelled&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">authorized_by</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">authorization_ref</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">started_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">completed_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_progress_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">conflict_count</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">conflict_count</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">verification_report_ref</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">run_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">UNIQUE</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">new_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">old_key_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">fingerprint_key</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">new_key_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">fingerprint_key</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_key_id</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">fingerprint_rotation_item</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">run_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_source_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">source_device_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;queued&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;leased&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;complete&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;awaiting_observation&#39;</span><span class="p">,</span>
+<span class="w">                  </span><span class="s1">&#39;conflict&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;failed&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;skipped&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">attempt_count</span><span class="w"> </span><span class="nb">integer</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">attempt_count</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">lease_owner</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lease_until</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_error_code</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">old_identifier_record_id</span><span class="w"> </span><span class="n">uuid</span><span class="p">,</span>
+<span class="w">    </span><span class="n">new_alias_created_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">updated_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">run_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">run_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">fingerprint_rotation_run</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">run_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">source_device_binding</span>
+<span class="w">            </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">old_identifier_record_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">source_device_identifier_secret</span>
+<span class="w">            </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">identifier_record_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;leased&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">lease_owner</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">lease_until</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="k">OR</span>
+<span class="w">        </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="s1">&#39;leased&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">lease_owner</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">lease_until</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+</code></pre>
+<h3>5.3 Constraint analysis</h3>
+<ul>
+<li>The previous alias <code>PRIMARY KEY (tenant_id, data_source_id, fingerprint_digest)</code> plus an identical <code>UNIQUE</code> constraint is redundant. Keep one primary key/unique constraint only.</li>
+<li>The revised alias primary key includes <code>fingerprint_key_id</code>, so an old and new version can coexist for the same source and digest bytes. <code>fingerprint_key_id</code> must map immutably to purpose, tenant scope, algorithm, key version, and normalization version.</li>
+<li>Algorithm and key version are part of alias identity logically. With immutable key metadata, the FK to <code>fingerprint_key_id</code> is sufficient in the alias table. If those metadata are copied into aliases, enforce a composite FK to the key row and include the identity fields in the uniqueness key; avoid mutable duplicated metadata.</li>
+<li>A binding's primary key scopes <code>source_device_key_id</code> by tenant and data source. The same connector can therefore have arbitrarily many device bindings. There is deliberately no uniqueness on <code>data_source_id</code> alone.</li>
+<li>Alias uniqueness makes one exact versioned fingerprint resolve to no more than one binding. The alias's tenant/source-aware FK prevents attaching an alias to a binding in another tenant or connector.</li>
+<li>One binding can have multiple aliases: multiple key versions can coexist, and the same source device may expose a changed identifier over time. Do not add a one-alias-per-binding constraint.</li>
+<li>Different key versions may produce different digests and point to the same binding. Same key/digest mapping to another binding conflicts at the alias PK.</li>
+<li>A unique partial key-state index limits each tenant/purpose to at most one <code>active</code> and one <code>overlap</code> key. A checked tenant policy points to the intended current keys. Application logic and a deferred/triggered consistency check must ensure the policy key IDs agree with the corresponding key states; ordinary FKs alone cannot enforce that cross-row state invariant.</li>
+<li><code>fingerprint_rotation_run</code> allows one run per new key, but it does not alone prevent two runs targeting different new keys. The policy-row lock and unique active/overlap indexes prevent concurrent key transitions when all key-state changes use the same transaction protocol.</li>
+<li>The illustrative schema does not constrain a binding to an asset whose lifecycle state accepts data. Registration and lifecycle service logic must check this under locks; stronger DB enforcement may use a carefully reviewed trigger or normalized binding state machine.</li>
+<li><code>source_device_identifier_secret</code> is optional and may have zero or more superseded records per binding but at most one current record. The ciphertext must be authenticated with context-bound AAD; the DB cannot verify that the application actually used the required AAD.</li>
+<li>The DDL does not include RLS policies or grants. Tenant-aware foreign keys do not replace RLS or trusted tenant context.</li>
+</ul>
+<p><strong>NOT IMPLEMENTED:</strong> This DDL is a design proposal only. No schema or migration has been created.</p>
+<hr />
+<h2>6. Rotation state machine and crash-recovery design</h2>
+<h3>6.1 Rotation-run states</h3>
+<pre class="mermaid">stateDiagram-v2
+  [*] --&gt; preparing: authorize rotation
+  preparing --&gt; running: new key staged and policy switched
+  running --&gt; paused: operator pause / transient dependency outage
+  paused --&gt; running: resume after health checks
+  running --&gt; verifying: work enumeration drained
+  verifying --&gt; completed: anti-join checks pass and conflicts resolved
+  verifying --&gt; paused: recoverable verification issue
+  running --&gt; failed: integrity/security failure
+  paused --&gt; cancelled: owner-approved cancellation
+  running --&gt; cancelled: controlled cancellation
+</pre>
+<p><code>completed</code>, <code>failed</code>, and <code>cancelled</code> are terminal for that run ID. A new attempt creates a new run with explicit linkage to the prior run; it does not erase the old audit history.</p>
+<h3>6.2 Starting a run and concurrent registration</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong></p>
+<ol>
+<li>Stage the new key in the secret manager and add immutable key metadata in <code>fingerprint_key</code>; verify the migration service can use it.</li>
+<li>Begin a short PostgreSQL transaction. Lock <code>tenant_fingerprint_policy</code> <code>FOR UPDATE</code>; verify no incompatible run or overlap exists; set the new key as <code>active</code> and old key as <code>overlap</code> (or record that the old key is unavailable); increment policy generation; create the run; commit.</li>
+<li>Every registration transaction locks/reads the policy <code>FOR SHARE</code> before creating aliases. This drains in-flight pre-rotation registrations before cutover and ensures post-cutover registrations see the new policy.</li>
+<li>While both keys are available, new registrations dual-write aliases for active and overlap key versions in the same transaction. If the old secret is unavailable, only write the new alias and raise unresolved legacy bindings through the rotation work queue.</li>
+<li>Enqueue all preexisting eligible bindings after the policy switch. Bindings created after the switch are already written under the new key; they need no backfill item, though final verification still checks them.</li>
+</ol>
+<p>No correctness claim relies on a random UUID ordering or <code>last_binding_id</code> high-water mark. A <code>last_binding_id</code> can be retained as a user-interface progress hint only.</p>
+<h3>6.3 Work-item processing and transaction boundaries</h3>
+<p>Use the persistent <code>fingerprint_rotation_item</code> primary key as the idempotency identity:</p>
+<pre><code class="hljs language-text">(tenant_id, run_id, data_source_id, source_device_key_id)
+</code></pre>
+<p>Process each item as follows:</p>
+<ol>
+<li><strong>Claim transaction:</strong> select a bounded set of <code>queued</code> items or expired leases using <code>FOR UPDATE SKIP LOCKED</code>; set <code>leased</code>, worker ID, lease expiry, increment attempts; commit. A crashed worker's lease eventually expires.</li>
+<li><strong>Preparation outside the DB transaction:</strong> read the current encrypted identifier record and decrypt/HMAC through authorized services. Capture identifier-record ID/version and policy generation. Do not hold DB row locks during KMS calls.</li>
+<li><strong>Apply transaction:</strong> acquire the tenant policy lock, then any required asset locks in UUID order, then the binding lock, and finally lock the run and item. Verify run is <code>running</code>, the worker still owns an unexpired lease, binding is still eligible, identifier record is still current, and policy/key generation is valid. Insert the alias with <code>ON CONFLICT</code> only if the existing row maps to the same binding. If it maps elsewhere, persist <code>conflict</code> without reassigning or merging. Mark the item <code>complete</code> only in the same transaction that commits the alias and audit event.</li>
+<li><strong>Retry:</strong> after timeout, query the item and alias. If both commit, return success. If neither commits, retry. If the alias exists for the same binding but item is unfinished, finalize the item idempotently. Never increment asset usage in rotation.</li>
+<li><strong>KMS/secret failure:</strong> mark retryable failure or pause the run according to policy; do not erase old aliases or change assets.</li>
+</ol>
+<p>If a binding's identifier changes while preparation occurs, the apply transaction sees a different current identifier record and rejects the stale digest. It requeues or recalculates from the new record; it never installs a stale alias as current without provenance.</p>
+<h3>6.4 Lock order and concurrency</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Establish and test one lock order for operations that can touch the same records:</p>
+<ol>
+<li>Tenant fingerprint-policy row.</li>
+<li>Tenant licensing/usage row, only when quota/billable state can change.</li>
+<li>Canonical asset rows in ascending UUID order.</li>
+<li>Source-device binding rows in stable <code>(data_source_id, source_device_key_id)</code> order.</li>
+<li>Rotation run/item rows and alias/secret writes.</li>
+</ol>
+<p>Workers claim items in a separate short transaction before acquiring binding locks. A worker must not hold a run/item lock while waiting for an asset or binding lock; it reads run status without a lock, acquires locks in the order above, then rechecks status while locking the run/item. Cancellation locks the run and changes its state but does not wait on binding rows. Registration, rotation, merge, split, and reactivation must follow a documented common order or prove deadlock-safe retries. PostgreSQL uniqueness remains the final arbiter for alias collisions. On deadlock or serialization failure, retry the complete idempotent operation with bounded backoff.</p>
+<p>Registration and migration behavior:</p>
+<ul>
+<li>Registration and rotation for the same binding serialize on the binding/policy protocol. The alias unique key makes duplicate insert retries safe.</li>
+<li>New bindings registered after rotation cutover get the new alias transactionally. If old key is still usable during overlap, they also get the old alias.</li>
+<li>Source identifier changes update encrypted identifier history and create a new alias tied to the same binding only after source identity is authenticated. The old alias remains usable only while policy permits; identity change alone does not create a new canonical asset.</li>
+<li>Merge/split or binding reassignment pauses or invalidates affected work items; they are not silently applied to a changed binding.</li>
+</ul>
+<h3>6.5 Enumeration, checkpoints, and verification</h3>
+<p>A single <code>last_binding_id</code> is insufficient: new records may appear behind the cursor, a transaction can commit late, random UUID ordering is not insertion order, and a process can crash after data changes but before an external checkpoint.</p>
+<p>Instead:</p>
+<ul>
+<li>Store explicit work items and their terminal/nonterminal states.</li>
+<li>Ensure all registrations after policy cutover create new-key aliases in the registration transaction.</li>
+<li>Repeatedly enumerate any binding missing the new alias until none remain; insert missing work items with <code>ON CONFLICT DO NOTHING</code>.</li>
+<li>Mark progress only with the alias and item completion in one DB transaction.</li>
+<li>At verification, take a short lock on the tenant policy row <code>FOR UPDATE</code> to drain registrations that started under the previous generation. Check all eligible bindings against new aliases, ensure every alias resolves to its exact binding, verify no new-key alias resolves to multiple bindings, compare current source-identifier records, and count unresolved/ineligible items.</li>
+<li>Commit <code>completed</code> only after a persisted verification report and zero unexplained conflicts. If the owner permits offline exceptions, record them individually and do not mislabel the run as fully migrated.</li>
+</ul>
+<p>The “high-water mark” is therefore not a correctness boundary. If retained for reporting, it must be paired with the registration dual-write invariant and final anti-join verification.</p>
+<h3>6.6 Failure and recovery scenarios</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Required behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Worker crashes after alias insert but before response</td>
+<td>Alias and item state are atomic. On retry, same-binding alias is idempotent; item is completed.</td>
+</tr>
+<tr>
+<td>Database commit succeeds, client times out</td>
+<td>Read item and alias by their unique keys; report committed outcome, do not create a second binding or asset.</td>
+</tr>
+<tr>
+<td>Two workers claim the same run</td>
+<td><code>SKIP LOCKED</code> and expiring item leases normally partition work. Apply transaction verifies lease ownership; unique alias key is final duplicate protection.</td>
+</tr>
+<tr>
+<td>New binding created during rotation</td>
+<td>Post-cutover registration writes new alias in its transaction. Final verification scans all bindings, not only an old cursor range.</td>
+</tr>
+<tr>
+<td>Identifier changes during KMS preparation</td>
+<td>Compare the current identifier-record ID/version under binding lock; discard stale computation and retry.</td>
+</tr>
+<tr>
+<td>Collision/conflict midway through a batch</td>
+<td>Persist item as <code>conflict</code>, preserve existing mappings, continue only with independent items if policy allows; run cannot complete with unexplained conflict.</td>
+</tr>
+<tr>
+<td>Old HMAC key revoked unexpectedly</td>
+<td>Stop any work requiring that key. Continue only from encrypted IDs or trusted new observations. Do not derive a new HMAC from old digests. Alert and initiate incident procedure.</td>
+</tr>
+<tr>
+<td>Long interruption / expired worker lease</td>
+<td>Reclaim leases after health checks; revalidate key availability, policy generation, and current identifier record. Completed items remain completed.</td>
+</tr>
+<tr>
+<td>Cancellation before finalization</td>
+<td>Stop claims, let or revoke leases safely, retain both alias generations, and keep the current policy usable. Do not delete new aliases wholesale if registrations may rely on them.</td>
+</tr>
+<tr>
+<td>Need to undo after some aliases committed</td>
+<td>Prefer pausing and restoring the prior active policy while keeping valid new aliases. Alias deletion is a separately audited cleanup, not transactional rollback of the whole run.</td>
+</tr>
+</tbody>
+</table>
+<h3>6.7 Invariants: database versus application</h3>
+<p><strong>PostgreSQL-enforceable with the proposed constraints:</strong> tenant/source FKs; one exact fingerprint tuple to one binding; alias-to-binding relationship; one current encrypted identifier per binding; at most one active and one overlap key state per tenant/purpose; persistent work-item idempotency; atomic alias + item completion.</p>
+<p><strong>Requires application protocol and verification:</strong> trusted tenant/source resolution; use of correct tenant policy and key; HMAC input normalization/domain separation; same identifier decrypt/normalization/AAD; key-state and policy-row agreement; no billable asset creation during rotation; conflict handling; merge/split authorization; worker lease ownership semantics; comprehensive final anti-join; KMS recovery.</p>
+<p><strong>Requires both:</strong> strict tenant isolation (RLS plus trusted transaction-local tenant context, grants, tenant-aware FKs, and runtime-role tests); atomic quota enforcement (constraints plus tenant lock and idempotent service transaction); safe overlap (alias uniqueness plus dual-write/backfill protocol).</p>
+<hr />
+<h2>7. Asset lifecycle and licensing consistency</h2>
+<h3>7.1 Core invariants and commercial boundary</h3>
+<p><strong>EXISTING APPROVED REQUIREMENT:</strong></p>
+<ul>
+<li>One unique monitored device is exactly one licensed asset, independent of OS, type, vendor, integration, or number of sources.</li>
+<li>A connector/data source is not an asset.</li>
+<li>Source disconnection does not prove that the device has been decommissioned.</li>
+<li>A source attachment to an already-resolved asset never increments usage.</li>
+</ul>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Separate technical lifecycle state from commercial quota/billing classification. Every transition records an idempotency key, actor/service, reason, before/after state, source and asset IDs, quota policy/version, counter deltas, and timestamp in the same transaction as the state change.</p>
+<h3>7.2 Pending identity: alternatives and recommendation</h3>
+<table>
+<thead>
+<tr>
+<th>Alternative</th>
+<th>Effect</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A. Provisional canonical asset</strong></td>
+<td>Creates an asset-shaped record before identity is proven; can later promote, merge, or remove it</td>
+<td>A false or ambiguous identity can leak into dashboards, detections, billing, merge history, and quota counters; “provisional” can be mistaken for a real device</td>
+</tr>
+<tr>
+<td><strong>B. Separate pending identity case, no canonical asset</strong></td>
+<td>Stores bounded identity metadata, evidence references, source context, and quarantine status; no <code>asset_id</code> until a reviewed resolution</td>
+<td>Requires a separate quarantine pipeline and explicit resolution workflow; unresolved data cannot be normally attributed</td>
+</tr>
+<tr>
+<td><strong>C. Pending case with candidate asset references</strong></td>
+<td>Keeps the case separate but records candidate canonical assets and confidence/provenance</td>
+<td>Candidate references can become stale; must not be treated as binding or merge authority</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Use B, optionally augmented by C. Do not create a canonical asset or accept payload into normal asset analysis until identity is authoritative or reviewed. Upon resolution:</p>
+<ul>
+<li><strong>Attach to existing asset:</strong> lock target asset and source binding identity, create binding/alias, close pending case; no usage increase.</li>
+<li><strong>Confirm a new device:</strong> lock tenant usage row, recheck all aliases/claims, verify capacity under the owner-approved policy, then atomically create one canonical asset, binding, alias, lifecycle/license record, and counter update.</li>
+<li><strong>Reject/expire:</strong> retain only permitted minimal audit evidence; apply owner-approved payload and case-retention policy.</li>
+</ul>
+<p>Whether a pending case reserves quota is independent of whether it creates an asset; no pending case is billable merely because it exists.</p>
+<h3>7.3 State table</h3>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th style="text-align:right">Canonical asset exists?</th>
+<th style="text-align:right">Billable active count</th>
+<th>Quota reservation</th>
+<th>Incoming data</th>
+<th>Authorization / audit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pending identity resolution</td>
+<td style="text-align:right">No, recommended</td>
+<td style="text-align:right">0</td>
+<td>OWNER DECISION REQUIRED; may reserve a distinct pending slot</td>
+<td>Quarantine or reject; no ordinary detection/asset attribution</td>
+<td>Record source, minimum metadata, evidence, matching-rule version, case state and expiry</td>
+</tr>
+<tr>
+<td>Active</td>
+<td style="text-align:right">Yes</td>
+<td style="text-align:right">1 per unique monitored device</td>
+<td>Not separately reserved</td>
+<td>Accept from authorized active binding</td>
+<td>Record seen/attach/registration and licensing event</td>
+</tr>
+<tr>
+<td>Inactive/offline</td>
+<td style="text-align:right">Yes</td>
+<td style="text-align:right">Depends on whether still monitored under approved policy; offline alone is not removal</td>
+<td>No additional slot by default; confirm policy</td>
+<td>If credentials remain valid, accept/buffer per source policy</td>
+<td>Record last-seen/offline transition; timeout alone does not deactivate</td>
+</tr>
+<tr>
+<td>Deactivated</td>
+<td style="text-align:right">Yes, retained lifecycle record/tombstone</td>
+<td style="text-align:right">0 under proposed technical distinction</td>
+<td>OWNER DECISION REQUIRED</td>
+<td>Reject normal ingestion or quarantine pending authorized reactivation</td>
+<td>Explicit actor/reason, source credential revocation and transition event</td>
+</tr>
+<tr>
+<td>Reserved</td>
+<td style="text-align:right">Yes, same canonical ID retained</td>
+<td style="text-align:right">0 unless owner decides reserved slots are billable</td>
+<td>Reserved count only if approved; must not double-count active</td>
+<td>Accept only through authorized reactivation; otherwise reject/quarantine</td>
+<td>Reservation start, expiry/policy version and authorization</td>
+</tr>
+<tr>
+<td>Reactivated</td>
+<td style="text-align:right">Yes; reuse same canonical ID if identity is proven</td>
+<td style="text-align:right">1 after commit</td>
+<td>Reservation decreases by 1 atomically if one existed</td>
+<td>Accept after credentials/binding revalidated</td>
+<td>Reactivation event and counter deltas</td>
+</tr>
+<tr>
+<td>Permanently removed</td>
+<td style="text-align:right">Tombstone/history recommended; do not reuse ID</td>
+<td style="text-align:right">0</td>
+<td>0 after approved release; exception policy may differ</td>
+<td>Reject; any new enrollment is a new quota decision or reviewed restoration</td>
+<td>OWNER DECISION REQUIRED for who can authorize; retain lifecycle evidence per policy</td>
+</tr>
+<tr>
+<td>Merged</td>
+<td style="text-align:right">Survivor and losing tombstone both exist</td>
+<td style="text-align:right">One count for one verified device after merge</td>
+<td>No duplicate reservation</td>
+<td>Use survivor; old ID redirects only for authorized historical reads</td>
+<td>Privileged merge record with evidence, mapping, before/after and operation ID</td>
+</tr>
+<tr>
+<td>Split</td>
+<td style="text-align:right">Existing asset plus new canonical ID</td>
+<td style="text-align:right">Two only after establishing two distinct devices and quota approval</td>
+<td>No extra reservation unless separately approved</td>
+<td>Route only events with verified source mapping; ambiguous records quarantined</td>
+<td>Privileged split record with source/event mapping, evidence, quota delta and operation ID</td>
+</tr>
+</tbody>
+</table>
+<h3>7.4 Reserved-to-reactivated transition</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Reactivation is a single tenant transaction; it is not an “insert asset” operation:</p>
+<ol>
+<li>Resolve the incoming identity to the existing <code>source_device_key_id</code> and canonical asset. Confirm tenant, binding provenance, credential state, and the approved grace/expiry policy.</li>
+<li>Lock the tenant licensing row, then the asset and source binding in the global lock order.</li>
+<li>Recheck that the asset is <code>reserved</code>, the reservation is still valid, and the idempotency key has not already completed.</li>
+<li>Mark the asset active; activate/revalidate the source binding and credentials; close the reservation.</li>
+<li>Decrement <code>reserved_count</code> by one and increment <code>active_count</code> by one in the same transaction. Insert lifecycle and license-ledger events with before/after values.</li>
+<li>Commit. Retries return the original result.</li>
+</ol>
+<p><strong>Quota effect:</strong> if reserved slots consume capacity, <code>active + reserved</code> remains unchanged and available quota does not change. If reserved slots do not consume capacity, available capacity decreases by one on reactivation and the transaction may be rejected for insufficient quota. <strong>Billing effect:</strong> if reserved assets are nonbillable, reactivation causes billable usage to rise by one; if the owner makes reservations billable, the charge classification changes from reserved to active but the billable total may remain one. These are commercial alternatives, not selected behavior.</p>
+<h3>7.5 Counters and reconciliation</h3>
+<p>Do not store <code>available_quota</code> as an independent authoritative counter: it is derived from entitlement and the policy-approved occupancy categories. Use a transactionally updated counter row only as a materialized admission aid.</p>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong></p>
+<ul>
+<li>Keep the licensing ledger and current lifecycle/reservation rows authoritative.</li>
+<li>Maintain separate <code>active_count</code>, <code>reserved_count</code>, and <code>pending_count</code> materialized counters only if operational query/admission needs justify them. <code>active_count</code> means the count assigned to the owner-approved active/billable category; an offline asset may remain in that category if policy says it is still monitored. Category definitions and whether pending/reserved consume capacity must be versioned policy inputs.</li>
+<li>Derive <code>available_quota</code> as <code>max(licensed_quota - capacity_occupancy, 0)</code>, where <code>capacity_occupancy</code> includes only categories approved to consume slots. Do not equate capacity occupancy with billable usage.</li>
+<li>Update lifecycle row, ledger event, and counters in one PostgreSQL transaction under the tenant usage-row lock. A transaction that fails must change none.</li>
+<li>Reconciliation computes actual counts from current authoritative asset/reservation/pending rows and compares them with the materialized counters and ledger roll-forward. Report tenant, expected/observed values, relevant IDs, and ledger high-water mark. Do not silently overwrite ledger history. Corrections use an audited adjustment event and owner-defined authorization.</li>
+<li>Alert/block quota-changing writes on material counter drift until resolved or explicitly authorized. Keep reconciliation repeatable and idempotent.</li>
+</ul>
+<h3>7.6 Owner decisions and alternatives</h3>
+<p>Each item below remains <strong>OWNER DECISION REQUIRED</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Alternatives</th>
+<th>Technical / commercial consequences</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>30-day reactivation grace</td>
+<td>No grace; fixed 30 days; configurable period</td>
+<td>Changes reservation expiry, reactivation behavior, and when capacity is available. A 30-day period is only an existing proposal, not approved policy.</td>
+</tr>
+<tr>
+<td>Pending identity quota reservation</td>
+<td>Reserve a slot; do not reserve; short-lived configurable reservation</td>
+<td>Reservation can prevent over-admission but ambiguous identities may block legitimate enrollments. Pending remains non-billable unless separately approved.</td>
+</tr>
+<tr>
+<td>Deactivated asset quota reservation</td>
+<td>Free capacity immediately; reserve for an approved grace; reserve indefinitely</td>
+<td>Controls churn and capacity availability. Technical deactivation must not imply a customer charge without explicit policy.</td>
+</tr>
+<tr>
+<td>Reserved asset billing</td>
+<td>Bill as active; bill separately; do not bill</td>
+<td>Changes invoice semantics but does not change the need for distinct counters and audit history.</td>
+</tr>
+<tr>
+<td>Immediate quota release exceptions</td>
+<td>No exception; authorized emergency release; permanent decommission workflow</td>
+<td>Exceptions need strict authority, evidence, credential revocation, and reconciliation.</td>
+</tr>
+<tr>
+<td>Permanent removal authorization</td>
+<td>Tenant admin; platform support with grant; two-person approval</td>
+<td>Determines who can destroy/release a slot and corresponding audit and separation-of-duty requirements.</td>
+</tr>
+<tr>
+<td>Pending identity quarantine duration</td>
+<td>Reject immediately; fixed short TTL; customer-configurable TTL</td>
+<td>Affects privacy, storage, replay, and resolution SLA. Payload retention must be bounded and separate from case metadata.</td>
+</tr>
+</tbody>
+</table>
+<p>No recommendation in this table is approved policy. Any recommendation presented for owner consideration must be labeled <strong>PROPOSED — OWNER APPROVAL REQUIRED</strong> in subsequent product/billing documentation.</p>
+<hr />
+<h2>8. Merge/split safety</h2>
+<h3>8.1 Canonical identity and operation record</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Keep each <code>asset_id</code> immutable, tenant-scoped, and never reused. A merge creates a durable relationship from a losing asset to an explicitly selected survivor. A split creates a new canonical UUID and explicit source-binding/event lineage; it does not recycle an old merged ID automatically.</p>
+<p>Use an <code>asset_identity_operation</code> record (conceptual) with:</p>
+<ul>
+<li><code>tenant_id</code>, operation UUID, type (<code>merge</code>/<code>split</code>), idempotency key, state, actor/service identity, reason/evidence references, authorization/approval references, policy version, created/committed timestamps.</li>
+<li>Ordered source and target asset IDs with before/after lifecycle states.</li>
+<li>Explicit source-device binding moves and, where required, event/alert/case lineage decisions.</li>
+<li>Usage/billable/reserved/pending counter deltas and before/after values.</li>
+<li>A unique <code>(tenant_id, idempotency_key)</code> and an append-only audit event.</li>
+</ul>
+<h3>8.2 Merge protocol</h3>
+<ol>
+<li>Authenticate and authorize tenant-scoped privileged operation; require evidence and an explicit survivor. Apply any owner-approved second-person approval.</li>
+<li>Start a transaction; lock tenant licensing row; lock both canonical assets in ascending UUID order; lock affected bindings in stable order.</li>
+<li>Recheck tenant, lifecycle, identity claims, merge idempotency, and that evidence supports one physical/logical device. A conflicting exclusive identity or ambiguous source mapping stops the operation for review.</li>
+<li>Transfer only explicitly selected bindings and aliases to the survivor. Enforce tenant/source/fingerprint uniqueness. If any alias conflicts with a different binding, abort or isolate the conflicting item; do not silently overwrite it.</li>
+<li>Preserve source event attribution as originally recorded. Add lineage/association rows so later queries can show the survivor and original asset context. Do not rewrite evidence, audit, or external-response records in place.</li>
+<li>Mark the losing asset <code>merged</code> with <code>merged_into_asset_id</code>; retain tombstone and operation history. Decrement active licensed usage by one only if two active canonical records are verified to represent one unique device under approved licensing semantics. Atomically update reservation counters if applicable and write ledger/audit events.</li>
+<li>Commit the operation and idempotency outcome together.</li>
+</ol>
+<h3>8.3 Split protocol</h3>
+<ol>
+<li>Authorize the split and define evidence, exact source-device bindings to move, event ranges/lineage policy, and the new asset's identity claims. Do not split solely by a mutable hostname/IP.</li>
+<li>Start a transaction; lock tenant licensing row; lock source asset and involved bindings in stable order.</li>
+<li>Check idempotency, confirm that the selected bindings support a distinct device, and verify quota under owner-approved rules. If no capacity, abort unless an authorized entitlement/lifecycle operation occurs in the same controlled workflow.</li>
+<li>Create a new random tenant-scoped asset UUID; reassign only the selected binding rows and aliases after verifying uniqueness. Keep ambiguous observations quarantined.</li>
+<li>Preserve original event attribution. Add explicit event lineage/correction records to indicate which records are associated with the split asset; never erase the original recorded asset ID.</li>
+<li>Increment licensed active usage by one only when the split establishes a second unique monitored device. Append lifecycle, licensing, audit, and operation records atomically.</li>
+<li>Commit. A retry with the same operation key returns the committed result.</li>
+</ol>
+<h3>8.4 Concurrency, rollback, and reversibility</h3>
+<ul>
+<li>Merge and split must serialize against registration, source attachment, deactivation/reactivation, and rotation for the affected tenant/assets/bindings.</li>
+<li>Lock assets in deterministic order to reduce deadlocks. PostgreSQL unique constraints protect binding/alias ownership; application logic enforces evidence and authorization.</li>
+<li>Before commit, ordinary transaction rollback restores all database rows/counters. This does not undo external side effects already performed; therefore avoid emitting external work until a transactional outbox is committed.</li>
+<li>After commit, an audit record is historical evidence, not proof that the operation can be safely reversed. A merge may have changed alert ownership, external responses, customer exports, or automation. Use a compensating split/reassignment with new authorization and lineage, not deletion of audit rows.</li>
+<li>A split may not be exactly reversible if events, detections, response actions, reports, or external integrations consumed the new assignment. Recovery must preserve both original and corrected lineage.</li>
+<li>When a partially completed multi-step operation is possible (for example, outbox delivery after DB commit), use idempotent outbox consumers and explicit operation states; never report “rolled back” merely because a later side effect failed.</li>
+</ul>
+<hr />
+<h2>9. Security and concurrency analysis</h2>
+<h3>Risks and controls</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Required control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Raw identifier exposure through DB dump</td>
+<td>AEAD encryption where retention is approved; no raw IDs in ordinary indexes/logs; scoped decrypt path</td>
+</tr>
+<tr>
+<td>HMAC key compromise</td>
+<td>Tenant/purpose-scoped keying, secret manager, rotation/revocation response, restrict candidate-dictionary access, avoid digest disclosure</td>
+</tr>
+<tr>
+<td>Ciphertext moved across tenant/source/binding</td>
+<td>Context-bound AEAD AAD plus tenant-inclusive FKs and authorization</td>
+</tr>
+<tr>
+<td>Cross-tenant alias or asset attachment</td>
+<td>Authenticated tenant resolution, composite tenant FKs, RLS, no-BYPASSRLS runtime role, connection-pool context reset and PostgreSQL role tests</td>
+</tr>
+<tr>
+<td>Duplicate alias maps to two bindings</td>
+<td>Versioned alias PK/unique constraint; conflict is surfaced, never merged automatically</td>
+</tr>
+<tr>
+<td>Duplicate assets/licensed usage on retries</td>
+<td>Stable binding ID, registration idempotency key, tenant quota lock, unique aliases, atomic write set</td>
+</tr>
+<tr>
+<td>Key-state split-brain</td>
+<td>Tenant policy row locked during transitions; one active/one overlap partial unique indexes; final verification against key registry</td>
+</tr>
+<tr>
+<td>Cursor skips registration</td>
+<td>Persistent item state, registration dual-write after cutover, repeated missing-alias scan and final anti-join</td>
+</tr>
+<tr>
+<td>Worker crash/duplicate workers</td>
+<td>Expiring item lease, <code>SKIP LOCKED</code>, transactional alias+completion, idempotent retry</td>
+</tr>
+<tr>
+<td>Key revoked / KMS unavailable</td>
+<td>Pause run, preserve rows, alert; never attempt digest conversion or silently fall back to weak identity</td>
+</tr>
+<tr>
+<td>Merge/split abuse</td>
+<td>Tenant-scoped privilege, evidence/reason, optional two-person approval decision, audit, idempotency, lock ordering</td>
+</tr>
+<tr>
+<td>Counter drift</td>
+<td>Transactional state/counter/ledger updates, periodic reconciliation, block or alert on unexplained drift</td>
+</tr>
+<tr>
+<td>Backup cannot decrypt source IDs after restore</td>
+<td>Versioned KMS references and tested key recovery, backup/restore drills, retention and destruction coordination</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Treat the fingerprint service as an identity-resolution security boundary. Its API should accept authenticated tenant/source context and normalized identifier material over a protected internal channel, return an internal binding result, and avoid returning HMAC digests to untrusted clients.</p>
+<hr />
+<h2>10. Unresolved owner decisions</h2>
+<p>The following are explicitly not settled by this analysis:</p>
+<ol>
+<li>Which connectors/source types may persist recoverable source identifiers; legal/privacy purpose and retention per source.</li>
+<li>KMS provider, tenant key scope, envelope-encryption hierarchy, key custodians, recovery authorization, and dual control.</li>
+<li>Fingerprint key scope/rotation schedule, overlap duration, old alias retention, and incomplete/offline binding disposition.</li>
+<li>Source-specific normalization versions and what evidence constitutes authenticated re-enrollment or binding continuity.</li>
+<li>Whether pending identity cases reserve quota and for how long.</li>
+<li>Whether deactivated assets reserve quota and the proposed 30-day grace period.</li>
+<li>Whether reserved assets are billable, and how available quota is calculated for each category.</li>
+<li>Immediate quota release exceptions and authorization/evidence.</li>
+<li>Permanent removal authority and whether two-person approval is required.</li>
+<li>Pending identity payload quarantine duration and permitted content.</li>
+<li>Merge/split approval roles and whether second-person approval is mandatory.</li>
+<li>Data, audit, fingerprint-alias, encrypted-identifier, backup, and tombstone retention/deletion periods.</li>
+<li>What customer-facing billing language describes active, reserved, pending, and removed assets.</li>
+<li>PostgreSQL RLS tenant-context mechanism, support access grant model, and runtime/migration role boundaries.</li>
+</ol>
+<hr />
+<h2>11. PostgreSQL implementation-readiness assessment</h2>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Classification</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PostgreSQL as primary database</td>
+<td><strong>READY FOR IMPLEMENTATION</strong> (direction only)</td>
+<td>Mandatory technology requirement; actual integration is absent</td>
+</tr>
+<tr>
+<td>Tenant-aware foreign keys</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Composite-key approach is proposed; full schema and all relationships not reviewed</td>
+</tr>
+<tr>
+<td>RLS and trusted tenant context</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>RLS is proposed, but role/grant/pooling/support-access protocol is not fully specified</td>
+</tr>
+<tr>
+<td>Canonical asset identity</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Immutable tenant UUID is proposed; lifecycle and retention need final schema approval</td>
+</tr>
+<tr>
+<td>Source-device binding</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Stable internal key and namespace specified here; production model and source identity proof remain to be reviewed</td>
+</tr>
+<tr>
+<td>Fingerprint alias schema</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Conceptual uniqueness is specified; the illustrative DDL needs PostgreSQL/security review and migration acceptance criteria</td>
+</tr>
+<tr>
+<td>Encrypted identifier storage</td>
+<td><strong>OWNER DECISION REQUIRED</strong></td>
+<td>Whether/how long to retain recoverable IDs, KMS custody, and source scope are unresolved</td>
+</tr>
+<tr>
+<td>Fingerprint rotation workflow</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Proposed state machine and item model require review; old-key-loss and offline-source policy remain open</td>
+</tr>
+<tr>
+<td>Atomic quota enforcement</td>
+<td><strong>OWNER DECISION REQUIRED</strong></td>
+<td>Transaction pattern exists, but lifecycle occupancy and billable semantics are unsettled</td>
+</tr>
+<tr>
+<td>Concurrent registration</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Requires exact idempotency contract, lock order, constraints, and PostgreSQL race tests</td>
+</tr>
+<tr>
+<td>Asset merge</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Protocol specified here; authorization, event lineage, and schema need approval</td>
+</tr>
+<tr>
+<td>Asset split</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Protocol specified here; quota and lineage policies need approval</td>
+</tr>
+<tr>
+<td>Pending identity/quarantine</td>
+<td><strong>OWNER DECISION REQUIRED</strong></td>
+<td>Payload, duration, reservation and authorization policy unresolved</td>
+</tr>
+<tr>
+<td>Licensing history/counters</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Ledger/materialized-counter model proposed; policy categories and correction workflow unresolved</td>
+</tr>
+<tr>
+<td>Idempotency</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Rotation identity specified conceptually; full registration/merge/split API semantics remain open</td>
+</tr>
+<tr>
+<td>Transactional outbox</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Existing target design proposes an outbox; table, leases, replay and side-effect semantics require review</td>
+</tr>
+<tr>
+<td>Audit records</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Append-oriented audit is proposed; immutability, retention, access and tamper evidence not specified</td>
+</tr>
+<tr>
+<td>Retention and deletion</td>
+<td><strong>OWNER DECISION REQUIRED</strong></td>
+<td>Includes identifier ciphertext, aliases, events, tombstones, audit and backups</td>
+</tr>
+<tr>
+<td>Backup and recovery</td>
+<td><strong>NOT YET DESIGNED</strong></td>
+<td>RPO/RTO, key restore, KMS outage and verified restoration procedure remain absent</td>
+</tr>
+<tr>
+<td>PostgreSQL integration and tests</td>
+<td><strong>NOT IMPLEMENTED / NOT TESTED</strong></td>
+<td>No database driver, schema, migrations, runtime role, integration suite or benchmark exists</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Readiness conclusion:</strong> <strong>NOT READY to begin production schema/migration implementation for fingerprint aliases, asset lifecycle, or licensing.</strong> The illustrative model provides a reviewable direction, but owner decisions and a formal DDL/security review remain. This is not a claim that PostgreSQL is operational.</p>
+<hr />
+<h2>12. Recommended next steps</h2>
+<ol>
+<li>Obtain owner decisions for the items in Section 10, especially source-identifier retention/key custody and every quota/billing lifecycle rule.</li>
+<li>Security/privacy owners approve source-specific recoverability, KMS scopes, AAD fields, decrypt authority, key-loss process, and deletion/backup implications.</li>
+<li>Database and security reviewers validate the conceptual DDL, including tenant FKs, RLS, key-state consistency, constraints, indexes, lock ordering, and runtime/migration roles.</li>
+<li>Define connector-specific authoritative identity and re-enrollment proof, including identifier normalization/versioning and source-identifier change behavior.</li>
+<li>Approve an operational rotation runbook for KMS outage, old-key revocation, offline devices, conflict review, cancellation, verification, and post-commit recovery.</li>
+<li>Convert lifecycle and licensing policy decisions into versioned state-transition specifications and explicit billable/capacity formulas.</li>
+<li>Specify merge/split authorization, event lineage, operation idempotency, outbox effects, and compensating-recovery limits.</li>
+<li>Before production migration, write PostgreSQL integration acceptance tests for alias uniqueness, dual-write, key loss, worker crash/timeout, concurrent registrations, rotation conflict, tenant isolation, quota limits, merge/split, and backup restoration.</li>
+<li>Only after reviews/decisions, implement migrations and services in a separately authorized implementation task.</li>
+</ol>
+<p><strong>Final status:</strong></p>
+<ul>
+<li><strong>EXISTING APPROVED REQUIREMENT:</strong> mandatory CARES constraints are preserved.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> hybrid protected-identifier recovery, stable internal <code>source_device_key_id</code>, versioned alias identity, durable rotation work items, separate pending identity cases, and compensating merge/split recovery.</li>
+<li><strong>OWNER DECISION REQUIRED:</strong> source retention/key custody and all unresolved lifecycle/billing choices remain open.</li>
+<li><strong>NOT IMPLEMENTED:</strong> PostgreSQL, RLS, encryption/KMS integration, HMAC rotation, licensing lifecycle, merge/split, and recovery workflows.</li>
+<li><strong>NOT TESTED:</strong> all database concurrency, tenant-isolation, key-recovery, and lifecycle behaviors.</li>
+</ul>
+
+</article>
+</div>
+<script src="../assets/mermaid.min.js"></script>
+<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,securityLevel:'loose'});}</script>
+</body>
+</html>

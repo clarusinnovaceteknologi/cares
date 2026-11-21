@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Development Roadmap</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/DEVELOPMENT_ROADMAP.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Development Roadmap</h1>
+<p><strong>Status:</strong> sequencing proposal derived from the product vision and current repository state. No product implementation phase is represented as complete by this roadmap.</p>
+<p><strong>Roadmap baseline:</strong> the approved original product roadmap in <a href="CARES_PRODUCT_VISION.md.html">CARES_PRODUCT_VISION.md</a> consists of ten product-development phases (Phase 1 through Phase 10). Those original phase assignments and scope must not be silently replaced by the proposed revised sequence below.</p>
+<p>The revised sequence is a <strong>technical proposal only</strong>. It may become the implementation sequence only after project-owner approval. The original roadmap remains unchanged in the product vision.</p>
+<h2>Approved-roadmap comparison</h2>
+<table>
+<thead>
+<tr>
+<th>Original approved phase</th>
+<th>Revised proposal</th>
+<th>Disposition</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phase 1 - Core Platform</td>
+<td>Revised Phase 1 - Backend foundation and database; revised Phase 2 - Identity, tenant authorization and audit</td>
+<td><strong>Split and repositioned</strong></td>
+<td>Original authentication, authorization, multi-tenancy, database design, audit logging, and administrator/customer interfaces are separated into database and security foundation work. Revised ordering places tenant authorization before customer-facing tenant data.</td>
+</tr>
+<tr>
+<td>Phase 2 - Linux Agent and Data Ingestion</td>
+<td>Revised Phase 4 - Agent enrollment and first ingestion slice</td>
+<td><strong>Moved later</strong></td>
+<td>The revised proposal assumes database and tenant/asset identity foundations must exist before production agent enrollment and ingestion. Secure agent and asset work may still be developed in a vertical slice, but the original phase number is not approved.</td>
+</tr>
+<tr>
+<td>Phase 3 - Core Security Engine</td>
+<td>Revised Phase 5 - Processing and core security workflows</td>
+<td><strong>Moved later</strong></td>
+<td>Processing consumes ingestion and identity work; the revised sequence places it after the first ingestion slice. The original work itself is preserved.</td>
+</tr>
+<tr>
+<td>Phase 4 - Vulnerability and Threat Intelligence</td>
+<td>Revised Phase 7 - Integrations, vulnerability and threat intelligence</td>
+<td><strong>Moved later</strong></td>
+<td>The revised proposal delays feed/vulnerability work until integration and dashboard foundations have stable data APIs.</td>
+</tr>
+<tr>
+<td>Phase 5 - Dashboard and Reporting</td>
+<td>Revised Phase 6 - Dashboard, reports and subscription administration</td>
+<td><strong>Moved earlier</strong></td>
+<td>The revised sequence uses earlier dashboard delivery to expose asset, API and licensed-usage results, but it depends on tenant and asset foundations from revised Phases 2 and 3.</td>
+</tr>
+<tr>
+<td>Phase 6 - External Integrations and Windows Agent</td>
+<td>Revised Phase 7 - Integrations, vulnerability and threat intelligence</td>
+<td><strong>Moved earlier</strong>; combined with original Phase 4</td>
+<td>The revised proposal combines an integration framework with vulnerability/threat feeds and agent work across revised phases. Original Phase 6 scope is preserved but not assigned as the original phase.</td>
+</tr>
+<tr>
+<td>Phase 7 - MELIRA AI</td>
+<td>Revised Phase 8 - MELIRA external provider integration</td>
+<td><strong>Preserved in relative position</strong>, but moved from original number 7</td>
+<td>The relative sequence after core, dashboard and integrations is preserved; implementation remains later than tenant authorization and evidence processing.</td>
+</tr>
+<tr>
+<td>Phase 8 - SOAR and Advanced Response</td>
+<td>Revised Phase 9 - SOAR and controlled response</td>
+<td><strong>Preserved in relative position</strong></td>
+<td>No original SOAR scope is removed. Revised sequencing requires authorization, audit and a safe command channel first.</td>
+</tr>
+<tr>
+<td>Phase 9 - Cross-Platform Agent</td>
+<td>Revised Phase 4 for Linux and deferred cross-platform work</td>
+<td><strong>Scope split and moved</strong></td>
+<td>Linux is brought into the revised initial agent slice. BSD, macOS, Android and iOS work is not assigned an approved revised phase by this document and must retain original Phase 9 scope until owner approval.</td>
+</tr>
+<tr>
+<td>Phase 10 - Production Readiness</td>
+<td>Revised Phase 10 - Production readiness and distribution</td>
+<td><strong>Phase assignment preserved</strong></td>
+<td>The revised phase retains production-readiness scope; it adds only acceptance testing and owner-approved capacity/retention gates.</td>
+</tr>
+<tr>
+<td>No original Phase 0 (outside the ten original product-development phases)</td>
+<td>Revised Phase 0 - Architecture and discovery</td>
+<td><strong>New proposal (preparatory/documentation stage)</strong></td>
+<td>Added as a proposed preparatory/documentation stage before implementation; it is not one of the ten original product-development phases and must not alter the original approved Phase 1–10 roadmap scope, numbering, or assignments. No additional authoritative Phase 0 product-definition is invented here.</td>
+</tr>
+</tbody>
+</table>
+<p>Why the proposed dependency order may be technically preferable:</p>
+<ul>
+<li>It establishes database migrations, operational roles and a reproducible benchmark before persistent tenant data.</li>
+<li>It proves trusted identity, tenant authorization and PostgreSQL row-level isolation before customer-facing or AI access.</li>
+<li>It implements the canonical asset and atomic licensing primitives before Agent, integration and dashboard usage can produce inconsistent counts.</li>
+<li>It reaches an initial ingestion vertical slice before broad detection and analytics expansion.</li>
+<li>It leaves MELIRA and SOAR after authorization, evidence, audit and approved privacy/response controls exist.</li>
+<li>It keeps infrastructure expansion behind measured evidence instead of introducing brokers or analytical stores in advance.</li>
+</ul>
+<p>This is a dependency argument, not approval of revised phase numbering. Project-owner approval is required before replacing the original phase sequence with the revised sequence. The original approved roadmap remains in <a href="CARES_PRODUCT_VISION.md.html">CARES_PRODUCT_VISION.md</a>.</p>
+<h2>Sequencing principles</h2>
+<ul>
+<li>Complete the architecture and requirement acceptance criteria before broad feature implementation.</li>
+<li>Build security foundations before exposing tenant data, agent enrollment, or third-party integrations.</li>
+<li>Prove correctness against PostgreSQL and tenant isolation with integration tests; in-memory unit tests are not production evidence.</li>
+<li>Deliver a narrow vertical slice and measurable operational behavior before expanding the SOC feature set.</li>
+<li>Keep core monitoring usable without MELIRA. Introduce MELIRA only after privacy, authorization, and audit controls exist.</li>
+<li>Add infrastructure (broker, search, analytics, Kubernetes) only when measured requirements justify it.</li>
+</ul>
+<h2>Proposed performance baseline (owner approval required)</h2>
+<p>This proposed revised sequence does not replace the original approved phase assignments. The following provisional profile belongs to the revised proposal and defines what later proposed phase tests may measure; it is not an implemented capacity or customer-facing service commitment:</p>
+<ul>
+<li>One deployment, up to 10 tenants and 5,000 active assets.</li>
+<li>25 events/second sustained aggregate; 100 events/second aggregate for a five-minute burst.</li>
+<li>Average event payload 1 KiB; maximum event 256 KiB; maximum decompressed batch 4 MiB.</li>
+<li>Proposed initial event retention 30 days; audit/case retention 365 days and backup retention 35 days are separate proposals requiring privacy/legal/owner review.</li>
+<li>On the documented reference environment, durable ingest acknowledgment p95 &lt;=1 second and p99 &lt;=3 seconds; worker throughput &gt;=150 events/second; accepted-to-normalized/detected p95 &lt;=30 seconds and p99 &lt;=60 seconds; outbox p95 lag &lt;30 seconds.</li>
+<li>Test against a representative 30-day persisted data set; prove no acknowledged-event loss through restart and recovery.</li>
+</ul>
+<p>The detailed sizing, storage calculation, partitioning, backpressure, retries, and broker/analytics expansion thresholds are in <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a> and <a href="adr/0005-event-processing-and-broker-evolution.md.html">ADR 0005</a>. The reference host and numeric thresholds remain owner-approval decisions.</p>
+<h2>Phases and exit criteria</h2>
+<h3>Revised Phase 0 — Architecture and discovery (proposed preparatory/documentation stage; not an original Phase 1–10 product-development phase)</h3>
+<p><strong>Work:</strong> architecture, technology rationale, data/security architecture, threat model, roadmap, traceability, status, and ADRs.</p>
+<p><strong>Exit:</strong> documents exist; proposed design is visibly separated from current implementation; major requirements have trace links; unresolved decisions and risks are explicit. This proposed preparatory stage is complete when the relevant documentation set has been reviewed and accepted; it does not redefine or renumber the original Phase 1–10 product roadmap.</p>
+<h3>Phase 1 — Backend foundation and database</h3>
+<p><strong>Work:</strong> Python API foundation, PostgreSQL connection/migrations, deployment configuration, structured errors, health checks, test harness, database roles, and a reproducible PostgreSQL benchmark harness for the proposed profile.</p>
+<p><strong>Exit:</strong> reproducible local environment; migration/rollback strategy; integration tests against PostgreSQL; runtime credentials least-privileged; restore test documented; reference DB/app configuration, connection budget, event schema, and benchmark fixture are recorded. No tenant customer data until security boundary is verified.</p>
+<h3>Phase 2 — Identity, tenant authorization, and audit</h3>
+<p><strong>Work:</strong> OIDC integration, user/membership lifecycle, customer/admin roles, tenant-scoped service conventions, PostgreSQL RLS, support access grants, audit trail.</p>
+<p><strong>Exit:</strong> denial-by-default behavior; API and DB cross-tenant read/write tests using runtime role; pooled connection context tests; administrator access is scoped/time-bound/audited. Security review required before production.</p>
+<h3>Phase 3 — Assets and commercial licensing</h3>
+<p><strong>Work:</strong> stable CARES asset identity, source associations, identity alias/reconciliation policy, per-tenant quota persistence, registration lifecycle/history, quota reporting and enforcement.</p>
+<p><strong>Exit:</strong> exact one-device-one-asset acceptance tests across source types; quota concurrency/retry tests; no IP-only identity; merge/split and removal lifecycle tested; dashboard/API/count agree with database after restart and reconciliation.</p>
+<h3>Phase 4 — Agent enrollment and first ingestion slice</h3>
+<p><strong>Work:</strong> Linux Agent vertical slice, signed/short-lived enrollment, unique device credentials, TLS/mTLS, heartbeat, bounded offline buffer, ingestion schema, idempotency, transactional outbox, payload bounds and per-tenant technical ingest limits.</p>
+<p><strong>Exit:</strong> enrollment/revocation/rotation tests, duplicate delivery tests, connector/source-device-to-asset binding (one connector may report many devices), network failure/recovery tests, payload limits, package provenance, supported capability matrix, and 25 EPS sustained / 100 EPS five-minute burst ingestion test meeting the proposed acknowledgment/error targets on the Phase 1 reference environment.</p>
+<h3>Phase 5 — Processing and core security workflows</h3>
+<p><strong>Work:</strong> parser/normalizer, enrichment interfaces, deterministic detection rules, event correlation, alerts, cases, evidence and audit; bounded workers, partition maintenance, retry/dead-letter handling, and backpressure.</p>
+<p><strong>Exit:</strong> repeatable fixture-based tests; evidence lineage; AI not required for detection; worker replay throughput &gt;=150 events/second, accepted-to-normalized/detected latency targets, bounded retries/dead letters, failure recovery, retention behavior, and ingestion-lag observability demonstrated against a 30-day persisted event set.</p>
+<h3>Phase 6 — Dashboard, reports, and subscription administration</h3>
+<p><strong>Work:</strong> customer/admin UI, asset/agent state, licensing/technical usage, alerts/cases, exports and configuration management.</p>
+<p><strong>Exit:</strong> all views and export paths enforce tenant permissions; usage and licensed count match the backend; accessibility, API contract, and export audit tests pass.</p>
+<h3>Phase 7 — Integrations, vulnerability and threat intelligence</h3>
+<p><strong>Work:</strong> connector framework and a small set of selected integrations, vulnerability feed ingestion and mapping, threat intelligence.</p>
+<p><strong>Exit:</strong> per-connector credentials and revocation, schema validation, source attribution, freshness/failure status, tenant scope, and feed update resilience tested. Select connectors based on product demand.</p>
+<h3>Phase 8 — MELIRA external provider integration</h3>
+<p><strong>Work:</strong> explicit customer provider configuration, secret handling, provider adapters, privacy gate, data minimization, optional analyst/investigator features, cost limits and audit.</p>
+<p><strong>Exit:</strong> provider transport integration tests; no network call when disabled or denied; no cross-provider fallback; classified/redacted transmission tests; endpoint/egress validation; prompt-injection and tool authorization tests; core service behavior verified during provider outage.</p>
+<h3>Phase 9 — SOAR and controlled response</h3>
+<p><strong>Work:</strong> versioned workflow execution, approval gates, action connectors, signed agent commands, execution history, rollback/compensation.</p>
+<p><strong>Exit:</strong> default read-only, strict authorization per action, human approval for high-impact actions, replay protection, dry-run, audit, failure/rollback tests.</p>
+<h3>Phase 10 — Production readiness and distribution</h3>
+<p><strong>Work:</strong> service health/monitoring, backups/restore, performance and failure testing, threat review, installer and package signing, staged upgrades, retention operations, self-hosted and SaaS profiles; validate the full approved capacity profile and expansion thresholds.</p>
+<p><strong>Exit:</strong> owner-approved SLOs/RPO/RTO and retention, documented load and security test results on the reference environment, verified recovery, signed release pipeline, supported OS matrix, operational runbooks, and release approval. If the proposed capacity baseline is rejected, replace it with an approved measurable profile before declaring production readiness.</p>
+<h2>Dependency order</h2>
+<p>Phase 1 is required before persistent product data. Phase 2 precedes customer-facing tenant data. Phase 3 is required before commercial licensing claims. Phase 4 requires identity and quota primitives. Phase 5 consumes ingestion. Phase 6 depends on stable APIs and tenant access. Phase 8 depends on Phase 2's tenant authorization and Phase 5's evidence model. Phase 9 requires authorization/audit and a safe command channel. Phase 10 validates the supported implementation end-to-end.</p>
+<h2>Change gates</h2>
+<p>Any change to a mandatory product decision, asset-count semantics, tenant boundary, or external AI transmission policy requires an explicit ADR and updated traceability. Splitting a module into a service or adding infrastructure requires a measured justification and funded operational ownership.</p>
+<h2>Roadmap consistency record</h2>
+<p>This revised roadmap changes the approved phase sequence. It must not be described as the original roadmap. The proposed sequence is:</p>
+<ul>
+<li>Revised architecture/database foundations in Phases 0-1.</li>
+<li>Tenant and authorization work in Revised Phase 2.</li>
+<li>Asset identity/licensing work in Revised Phase 3.</li>
+<li>Agent, integration and ingestion work distributed across Revised Phases 4 and 7.</li>
+<li>Core processing in Revised Phase 5.</li>
+<li>Dashboard/reporting in Revised Phase 6.</li>
+<li>MELIRA in Revised Phase 8.</li>
+<li>SOAR in Revised Phase 9.</li>
+<li>Production readiness in Revised Phase 10.</li>
+</ul>
+<p>The original roadmap instead has Core Platform as original Phase 1, Linux Agent and Data Ingestion as original Phase 2, Core Security Engine as original Phase 3, Vulnerability and Threat Intelligence as original Phase 4, Dashboard and Reporting as original Phase 5, External Integrations and Windows Agent as original Phase 6, MELIRA AI as original Phase 7, SOAR and Advanced Response as original Phase 8, Cross-Platform Agent as original Phase 9, and Production Readiness as original Phase 10.</p>
+<p>Original scope is substantially preserved, but several tasks move and some original phases are split or combined. Broker, analytical database and Kubernetes adoption are gated architecture decisions, not approved roadmap phases or implementation commitments.</p>
+
+</article>
+</div>
+
+</body>
+</html>

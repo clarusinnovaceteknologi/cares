@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Project Status</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/PROJECT_STATUS.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Project Status</h1>
+<p><strong>Status date:</strong> 2026-11-16<br />
+<strong>Overall maturity:</strong> documentation plus an initial Python prototype; not an operational cybersecurity platform.<br />
+<strong>Implementation phase:</strong> architecture and discovery. No product implementation phase is complete.</p>
+<h2>Executive summary</h2>
+<p>The repository is a small Python package with three modules: in-memory asset licensing, a permissive tenant-access predicate, and a local AI policy/status abstraction. Five standard-library unit tests exercise a small subset of those behaviors. There is no API, dashboard, agent, ingestion pipeline, persistent storage, PostgreSQL integration, real AI SaaS client, deployment, or operational security control.</p>
+<p>The earlier implementation must be treated as a prototype. Its tests demonstrate selected in-process behavior, not end-to-end product capabilities or security assurance. The architecture documents created alongside this status report describe a proposed design and do not claim that design has been built.</p>
+<p>The architecture refinement adds a deterministic identity-claim proposal, PostgreSQL transaction/constraint design for asset quota, AI provider privacy and egress controls, and a measurable initial event-capacity profile. These are documentation-only proposals. Capacity numbers, retention defaults, provider policy, identity confidence rules, and deactivation grace require owner/privacy/legal approval; none have been benchmarked or implemented. Round 1 PostgreSQL logical schema design (entity catalogue, logical ERDs, transaction boundaries, open-decision register, and design changelog) is now documented as a proposed baseline; it is <strong>not implemented, not migrated, and not validated</strong> by database or security tests.</p>
+<h2>Required capability classification</h2>
+<p>Each row uses exactly one implementation classification. Where tests exist, that evidence is described separately and does not upgrade a prototype to a production feature.</p>
+<table>
+<thead>
+<tr>
+<th>Feature / capability</th>
+<th>Classification</th>
+<th>Evidence and limits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python module and data types for assets, tenants, and AI configuration</td>
+<td>Prototype</td>
+<td>In-memory objects only</td>
+</tr>
+<tr>
+<td>One provided stable identity repeated across sources maps to one in-memory asset</td>
+<td>Prototype</td>
+<td>One unit test; does not reconcile different identity types</td>
+</tr>
+<tr>
+<td>Sequential monitored-asset quota check</td>
+<td>Prototype</td>
+<td>One unit test; one manager-wide quota reused for all tenants</td>
+</tr>
+<tr>
+<td>Asset lookup, removal, local snapshots and history</td>
+<td>Implemented but insufficiently tested</td>
+<td>Source methods exist; removal drops active record, no durable history or lifecycle rules</td>
+</tr>
+<tr>
+<td>Tenant access predicate</td>
+<td>Prototype</td>
+<td>One unit test; not wired to API/database/authentication</td>
+</tr>
+<tr>
+<td>Secure tenant isolation across product data</td>
+<td>Not implemented</td>
+<td>No API, persistence, trusted identity, RLS or isolation test</td>
+</tr>
+<tr>
+<td>AI classification allow/deny calculation</td>
+<td>Prototype</td>
+<td>One denial unit test; no data transmission</td>
+</tr>
+<tr>
+<td>AI “redaction” string transformations</td>
+<td>Implemented but insufficiently tested</td>
+<td>Simple substitutions only; not a privacy control and can leave sensitive text</td>
+</tr>
+<tr>
+<td>AI disabled status</td>
+<td>Prototype</td>
+<td>One unit test; no dependent CARES core functionality to demonstrate optionality</td>
+</tr>
+<tr>
+<td>External AI SaaS integration</td>
+<td>Not implemented</td>
+<td>No HTTP client, credentials retrieval, request/response, provider integration test, or external provider call</td>
+</tr>
+<tr>
+<td>PostgreSQL integration</td>
+<td>Not implemented</td>
+<td>No driver, schema, ORM, migrations, connection, or DB test</td>
+</tr>
+<tr>
+<td>Dashboard / public or internal APIs</td>
+<td>Not implemented</td>
+<td>No frontend or web server</td>
+</tr>
+<tr>
+<td>Agent, secure enrollment, and communication</td>
+<td>Not implemented</td>
+<td>No agent code or protocol</td>
+</tr>
+<tr>
+<td>Event ingestion, normalization, detection, alerts, incidents, reports</td>
+<td>Not implemented</td>
+<td>No processing modules</td>
+</tr>
+<tr>
+<td>Vulnerability and threat intelligence management</td>
+<td>Not implemented</td>
+<td>No code</td>
+</tr>
+<tr>
+<td>Integration framework / SOAR</td>
+<td>Not implemented</td>
+<td>No code</td>
+</tr>
+<tr>
+<td>Production deployment, monitoring, backup, installers, secure updates</td>
+<td>Not implemented</td>
+<td>No runtime or packaging pipeline</td>
+</tr>
+<tr>
+<td>Five local unit tests</td>
+<td>Implemented and tested</td>
+<td><code>unittest</code> suite; narrow prototype behavior only</td>
+</tr>
+<tr>
+<td>Architecture and planning documentation</td>
+<td>Implemented but insufficiently tested</td>
+<td>Design documents exist; architecture correctness still requires owner review and implementation evidence</td>
+</tr>
+</tbody>
+</table>
+<h2>Review findings on prototype code</h2>
+<h3>PostgreSQL</h3>
+<p>PostgreSQL is not integrated. No database dependency, connection configuration, SQL, ORM, schema, migration, transaction, row-level security policy, or integration test exists. Current state is in-memory Python dictionaries and lists. The database in the target design is a mandatory future implementation, not an operational service.</p>
+<h3>External AI</h3>
+<p>There is no real external AI provider integration. <code>AIProviderConfig</code> stores descriptive values; <code>api_key_env_var</code> is unused. <code>AIProvider.can_process</code> evaluates a classification, and <code>MELIRAAIService.process</code> returns <code>ready</code>, <code>blocked</code>, or <code>unavailable</code>. Even <code>ready</code> does not send a request. No API key is loaded, no HTTP client is used, no provider response is parsed, and no SaaS call has been tested. Therefore MELIRA is not functional.</p>
+<p>The current redactor is unsuitable for privacy enforcement: replacing every period is not IP detection; the <code>host=</code> / <code>user=</code> replacements can leave original values after the inserted marker; there is no structured filtering, file-content policy, secret detection, IPv6 handling, or transmission test. The tests do not establish that restricted data is absent from an outbound request because no outbound request exists.</p>
+<p>The provider catalog, explicit region/retention/training checks, consent, SSRF protections, secret rotation, usage budgets, and request audit are all proposed Phase 8 work. The requirement for external SaaS and no local inference is mandatory; supported vendor list and customer key-custody model still need owner decisions.</p>
+<h3>Event capacity and scale</h3>
+<p>The proposed initial planning envelope is 10 tenants / 5,000 active assets, 25 EPS sustained and 100 EPS for five minutes, 1 KiB average event, and 256 KiB maximum event. The proposed ingest/worker latencies, PostgreSQL reference environment, 30-day event retention, partitioning and expansion thresholds are recorded in <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a> and <a href="adr/0005-event-processing-and-broker-evolution.md.html">ADR 0005</a>. They are assumptions pending owner approval and benchmark evidence, not current capacity or service commitments.</p>
+<h3>Asset identity and one-device-one-asset</h3>
+<p>The narrow implementation deduplicates only when callers submit the same stripped <code>stable_identity</code> value under the same tenant. It does not derive or reconcile stable identities across agent/integration records. Two strings for the same real device consume two slots; one reused string can conflate distinct devices. It does not use IP as its key, which is positive but insufficient to satisfy device identity requirements.</p>
+<p>Quota enforcement is a sequential in-process check with no locking or persistence; a race can exceed quota in a concurrent server. The quota is a single constructor value shared across tenants rather than independently configured per tenant. Source IDs are an in-memory set, not durable source objects. Removal pops the asset from the active map, losing accessible lifecycle state; the generated ID based on current map length may be reused after removal. No production billing claim is justified.</p>
+<p>The proposed alias namespace, deterministic match rules, pending identity workflow, manual merge/split audit, PostgreSQL locking and uniqueness constraints, lifecycle reservation, and race-condition tests are design work only. The recommended 30-day quota reservation after last-source deactivation is a policy proposal, not confirmed billing behavior.</p>
+<h3>Tenant isolation</h3>
+<p><code>AccessController.can_access</code> compares the <code>User</code> object's tenant to a requested tenant, or allows any user whose caller-supplied role equals administrator. These dataclasses are constructible by any caller in the library; there is no trusted authentication or membership lookup in the decision, no check that the target tenant exists, and the tenant registry is not used by <code>can_access</code>. An administrator has unrestricted cross-tenant access through the helper, with no scope, reason, expiry, or audit. No application or database enforcement exists. The test only checks two outcomes for a manually constructed object. Tenant isolation is not secure or verified.</p>
+<h3>Test suite</h3>
+<p>The tests use Python <code>unittest</code>; five cases cover the narrow behavior listed above. They do not test concurrency, restart persistence, database constraints, access-control bypass, event lifecycles, provider network calls, secret handling, privacy-redaction quality, or end-to-end flows. The test suite is not a security certification.</p>
+<h2>Repository inventory reviewed</h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Role / observations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>README.md</code></td>
+<td>Initial quick start contained an invalid <code>UserRole</code> import and overclaimed current behavior; amended to identify prototype scope</td>
+</tr>
+<tr>
+<td><code>pyproject.toml</code></td>
+<td>Minimal setuptools package metadata; no runtime dependencies, PostgreSQL/AI integrations, or pytest dependency</td>
+</tr>
+<tr>
+<td><code>cares/__init__.py</code></td>
+<td>Re-exports prototype classes</td>
+</tr>
+<tr>
+<td><code>cares/licensing.py</code></td>
+<td>In-memory prototype and licensing limitations described above</td>
+</tr>
+<tr>
+<td><code>cares/tenancy.py</code></td>
+<td>In-memory tenant/user dataclasses and predicate helper</td>
+</tr>
+<tr>
+<td><code>cares/ai.py</code></td>
+<td>Local policy/status and naive string transformations; no provider call</td>
+</tr>
+<tr>
+<td><code>tests/test_cares_core.py</code></td>
+<td>Five unit tests; standard-library unittest</td>
+</tr>
+<tr>
+<td><code>docs/CARES_PRODUCT_VISION.md</code></td>
+<td>Product vision and requirements, in Indonesian; retained as source specification</td>
+</tr>
+<tr>
+<td><code>cares/__pycache__/*</code>, <code>tests/__pycache__/*</code></td>
+<td>Generated Python bytecode artifacts, not source or separately deployed product features</td>
+</tr>
+</tbody>
+</table>
+<p>No application source or existing test files were changed for this documentation task. The README was corrected because its prior usage example referenced a nonexistent export and overstated prototype behavior.</p>
+<h2>Documentation delivered</h2>
+<ul>
+<li><a href="ARCHITECTURE.md.html">ARCHITECTURE.md</a>: proposed modular architecture and eight requested Mermaid diagrams.</li>
+<li><a href="TECHNOLOGY_SELECTION.md.html">TECHNOLOGY_SELECTION.md</a>: rationale, alternatives, tradeoffs, security, and operations.</li>
+<li><a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>: PostgreSQL target, tenant data model, licensing identity, retention.</li>
+<li><a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a>: proposed trust boundaries and controls.</li>
+<li><a href="THREAT_MODEL.md.html">THREAT_MODEL.md</a>: STRIDE risks, scenarios, and test evidence required.</li>
+<li><a href="DEVELOPMENT_ROADMAP.md.html">DEVELOPMENT_ROADMAP.md</a>: phases and acceptance gates.</li>
+<li><a href="REQUIREMENTS_TRACEABILITY.md.html">REQUIREMENTS_TRACEABILITY.md</a>: requirements mapped to evidence and status.</li>
+<li><a href="adr">adr/</a>: proposed architectural decision records.</li>
+<li><a href="adr/0003-device-identity-and-asset-licensing.md.html">ADR 0003</a> and <a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">ADR 0006</a>: proposed device identity and atomic quota decisions.</li>
+<li><a href="adr/0004-external-ai-provider-boundary.md.html">ADR 0004</a> and <a href="adr/0005-event-processing-and-broker-evolution.md.html">ADR 0005</a>: proposed AI processing boundary and event capacity/evolution decisions.</li>
+<li><a href="POSTGRESQL_LOGICAL_DATA_MODEL.md.html">POSTGRESQL_LOGICAL_DATA_MODEL.md</a>, <a href="POSTGRESQL_LOGICAL_ERD.md.html">POSTGRESQL_LOGICAL_ERD.md</a>, <a href="POSTGRESQL_TRANSACTION_BOUNDARIES.md.html">POSTGRESQL_TRANSACTION_BOUNDARIES.md</a>, <a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md.html">POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md</a>: Round 1 logical PostgreSQL schema design artifacts (proposed, documented only; no DDL/migrations/implementation).</li>
+</ul>
+<h2>Immediate risks and gates</h2>
+<ol>
+<li>Do not represent PostgreSQL as available until the application connects, migrations run, and integration tests verify persistence, constraints, and RLS.</li>
+<li>Do not represent tenant isolation as secure until authentication, trusted membership, service authorization, RLS, and comprehensive cross-tenant tests exist.</li>
+<li>Do not represent MELIRA as functional until an explicitly selected external provider is called in integration tests and policy is proven to gate all transmission.</li>
+<li>Do not represent commercial asset counts as correct until canonical identity reconciliation and concurrent per-tenant quota enforcement are durable and tested.</li>
+<li>Do not advance to production deployment before threat controls, backup/restore, audit, monitoring, and security testing have evidence.</li>
+<li>Do not advertise the proposed capacity figures, retention periods, or provider capabilities as commitments until owners approve and benchmark/contract evidence exists.</li>
+</ol>
+<h2>Next authorized step</h2>
+<p>The next step is owner review of the proposed canonical identity rules, pending/quota-reservation semantics, deactivation grace and release policy, event capacity profile/retention, and MELIRA provider/consent/data-processing policy. No further application feature implementation has been started in this task.</p>
+
+</article>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Logical Design Changelog (Round 1)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Logical Design Changelog (Round 1)</h1>
+<p><strong>Status:</strong> Documentation changelog for Round 1 logical schema design; <strong>NOT IMPLEMENTED, NOT TESTED</strong>.</p>
+<h2>Scope of this round</h2>
+<ul>
+<li>Performed mandatory baseline inspection of repository documentation, ADRs, roadmap/status/traceability, and relevant architecture review/changelog artifacts.</li>
+<li>Inspected current implementation/prototype state sufficiently to distinguish implemented functionality, prototype code, proposed architecture, established decisions, and unresolved decisions.</li>
+<li>Produced logical (documentation-only) PostgreSQL schema design artifacts: entity catalogue, ERDs, transaction-boundary analysis, and open-decision register.</li>
+<li>Did <strong>not</strong> create PostgreSQL DDL, migrations, migration scripts, executable SQL indexes/constraints, RLS policies, database roles/grants, triggers/functions/procedures/<code>SECURITY DEFINER</code> code, ORM models, database drivers, application code changes, product roadmap changes, or ADR status changes.</li>
+<li>Did <strong>not</strong> claim production readiness, implementation, testing, or security validation.</li>
+</ul>
+<h2>Source documents inspected</h2>
+<h3>Mandatory/core baseline</h3>
+<ul>
+<li><a href="../README.html">README.md</a></li>
+<li><a href="ARCHITECTURE.md.html">docs/ARCHITECTURE.md</a></li>
+<li><a href="SECURITY_ARCHITECTURE.md.html">docs/SECURITY_ARCHITECTURE.md</a></li>
+<li><a href="THREAT_MODEL.md.html">docs/THREAT_MODEL.md</a></li>
+<li><a href="DATA_ARCHITECTURE.md.html">docs/DATA_ARCHITECTURE.md</a></li>
+<li><a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">docs/POSTGRESQL_TECHNICAL_DECISIONS.md</a></li>
+<li><a href="adr/0001-modular-monolith.md.html">docs/adr/0001-modular-monolith.md</a></li>
+<li><a href="adr/0002-postgresql-and-tenant-isolation.md.html">docs/adr/0002-postgresql-and-tenant-isolation.md</a></li>
+<li><a href="adr/0003-device-identity-and-asset-licensing.md.html">docs/adr/0003-device-identity-and-asset-licensing.md</a></li>
+<li><a href="adr/0004-external-ai-provider-boundary.md.html">docs/adr/0004-external-ai-provider-boundary.md</a></li>
+<li><a href="adr/0005-event-processing-and-broker-evolution.md.html">docs/adr/0005-event-processing-and-broker-evolution.md</a></li>
+<li><a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a></li>
+<li><a href="CARES_PRODUCT_VISION.md.html">docs/CARES_PRODUCT_VISION.md</a></li>
+<li><a href="DEVELOPMENT_ROADMAP.md.html">docs/DEVELOPMENT_ROADMAP.md</a></li>
+<li><a href="PROJECT_STATUS.md.html">docs/PROJECT_STATUS.md</a></li>
+<li><a href="REQUIREMENTS_TRACEABILITY.md.html">docs/REQUIREMENTS_TRACEABILITY.md</a></li>
+</ul>
+<h3>Relevant architecture review/changelog/context documents</h3>
+<ul>
+<li><a href="ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md.html">docs/ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md</a></li>
+<li><a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a></li>
+<li><a href="ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md</a></li>
+<li><a href="ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md</a></li>
+<li><a href="ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md</a></li>
+<li><a href="ARCHITECTURE_DECISION_PACKAGE.md.html">docs/ARCHITECTURE_DECISION_PACKAGE.md</a></li>
+<li><a href="ARCHITECTURE_RECONCILIATION_CHANGELOG.md.html">docs/ARCHITECTURE_RECONCILIATION_CHANGELOG.md</a></li>
+<li><a href="PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md.html">docs/PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md</a></li>
+<li><a href="TECHNOLOGY_SELECTION.md.html">docs/TECHNOLOGY_SELECTION.md</a></li>
+</ul>
+<h3>Implementation/prototype inspection</h3>
+<ul>
+<li><a href="../README.html">README.md</a>, <a href="PROJECT_STATUS.md.html">docs/PROJECT_STATUS.md</a></li>
+<li><code>cares/__init__.py</code>, <code>cares/licensing.py</code>, <code>cares/tenancy.py</code>, <code>cares/ai.py</code></li>
+<li><code>tests/test_cares_core.py</code></li>
+<li>Repository-wide search confirming no PostgreSQL driver/ORM/migration/schema/RLS artifacts in application code</li>
+</ul>
+<h2>New documents created</h2>
+<ul>
+<li><a href="POSTGRESQL_LOGICAL_DATA_MODEL.md.html">docs/POSTGRESQL_LOGICAL_DATA_MODEL.md</a></li>
+<li><a href="POSTGRESQL_LOGICAL_ERD.md.html">docs/POSTGRESQL_LOGICAL_ERD.md</a></li>
+<li><a href="POSTGRESQL_TRANSACTION_BOUNDARIES.md.html">docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md</a></li>
+<li><a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a></li>
+<li><a href="POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md.html">docs/POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md</a> (this document)</li>
+</ul>
+<h2>Existing files modified</h2>
+<ul>
+<li><a href="PROJECT_STATUS.md.html">docs/PROJECT_STATUS.md</a> — minimal update to reflect that Round 1 PostgreSQL logical schema design has been documented (proposed, not implemented) and to list the new logical design documents; no unrelated status changes.</li>
+</ul>
+<h2>Decisions preserved</h2>
+<ul>
+<li>Python backend; PostgreSQL primary relational database; modular monolith.</li>
+<li>External AI SaaS providers only for MELIRA; no local LLM inference/local AI compute/local GPU; CARES core works without MELIRA.</li>
+<li>Multi-tenant isolation at application and database boundaries; trusted verified transaction-bound tenant context (not client-supplied IDs or user-settable PostgreSQL GUC authorization); RLS defense in depth.</li>
+<li>Logical database roles: <code>cares_api_runtime</code>, <code>cares_ingest_runtime</code>, <code>cares_worker_runtime</code>, <code>cares_migration</code>, <code>cares_maintenance</code>; no ordinary runtime role as owner/SUPERUSER/BYPASSRLS.</li>
+<li>Asset licensing invariants (one unique monitored device = one licensed asset per tenant, no duplicate counting across sources, source not billable, equal device weight, licensing separate from technical quotas, IP/hostname not stable identity, no auto-merge on ambiguity, stable non-reusable canonical IDs, atomicity/durable idempotency support for identity/licensing/lifecycle/history).</li>
+<li>Source-device identity model distinctions and constraints (<code>asset</code>, <code>data_source</code>, <code>asset_data_source</code>, stable <code>source_device_key</code>, <code>source_device_fingerprint_alias</code>, identity claims/observations; no competing source of truth for binding; aliases versioned lookup identities with overlap to same stable binding; no raw source identifiers as DB uniqueness keys).</li>
+<li>ADR statuses preserved (including ADR 0006 <strong>Proposed</strong>).</li>
+</ul>
+<h2>Proposed design choices (logical, not accepted)</h2>
+<ul>
+<li>Explicit entity catalogue covering tenant/access, asset/identity/licensing, event ingestion/processing, audit/forensic evidence, MELIRA/AI configuration, and selected SOC entities supported by documented requirements.</li>
+<li>Recommended (not approved) interpretation: <code>asset_data_source</code> and <code>source_device_key</code> modeled with a single authoritative stable-binding relationship (preferably 1:1 ownership) to avoid competing sources of truth; ambiguity recorded in open decisions.</li>
+<li>Distinct modeling of <code>event_receipt</code> (ingestion idempotency) vs <code>identity_operation_idempotency_ledger</code> vs outbox attempt/replay metadata.</li>
+<li>Separation of operational <code>audit_event</code> from forensic evidence metadata/object versions/custody records and controlled transition authorization.</li>
+<li>Tenant ownership/data classification matrix with expected RLS applicability categories and tenant-inclusive FK enforcement requirement for physical schema.</li>
+</ul>
+<h2>Contradictions and ambiguities documented (not silently rewritten)</h2>
+<ul>
+<li><code>asset_data_source</code> ↔ <code>source_device_key</code> cardinality/ownership remains ambiguous across reconciled materials; competing interpretations and recommended direction documented (OD-002).</li>
+<li>Pending identity reservation/capacity accounting and active/reserved/pending/available/tombstone counter semantics remain unresolved and must not be double-counted (OD-003, OD-004).</li>
+<li>ADR 0006 contains proposed semantics but remains <strong>Proposed</strong> with schema-level ambiguity (OD-001).</li>
+</ul>
+<h2>Unresolved questions</h2>
+<p>See <a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a> for the consolidated register (OD-001 through OD-012), blockers, required approvals, and recommended resolution order.</p>
+<h2>Explicit implementation statement</h2>
+<p>No PostgreSQL DDL, migration, migration script, executable SQL index/constraint, RLS policy, database role/grant, trigger, function, procedure, <code>SECURITY DEFINER</code> code, ORM model, database driver, application code change, or database implementation/test was created in this round. This round produced documentation only.</p>
+
+</article>
+</div>
+
+</body>
+</html>

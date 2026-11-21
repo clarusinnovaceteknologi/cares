@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Architecture Decision Package — Gap Analysis Round 3</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Architecture Decision Package — Gap Analysis Round 3</h1>
+<p><strong>Status:</strong> Documentation-only architecture refinement. All schemas, SQL, cryptographic protocols, retention mechanisms, and worker behavior below are illustrative proposals—not production migrations or implemented controls.</p>
+<h2>Status labels</h2>
+<ul>
+<li><strong>EXISTING APPROVED REQUIREMENT</strong> — a mandatory CARES decision preserved by this review.</li>
+<li><strong>EXISTING PROPOSAL</strong> — a design already present in CARES architecture documents, not implemented.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION</strong> — a technical recommendation for owner and engineering review.</li>
+<li><strong>OWNER DECISION REQUIRED</strong> — a commercial, privacy, legal, or security-owner decision not made here.</li>
+<li><strong>IMPLEMENTED AND TESTED</strong> — supported by working implementation and relevant tests.</li>
+<li><strong>NOT IMPLEMENTED</strong> — no working implementation exists.</li>
+<li><strong>NOT TESTED</strong> — no relevant PostgreSQL, cryptographic, integration, or security tests have been run.</li>
+</ul>
+<hr />
+<h2>1. Executive summary</h2>
+<h3>Findings</h3>
+<ul>
+<li><strong>EXISTING APPROVED REQUIREMENT:</strong> CARES uses Python and PostgreSQL as its primary relational database; MELIRA uses external SaaS AI providers only; no local GPU is required; core security functionality works without AI.</li>
+<li><strong>EXISTING APPROVED REQUIREMENT:</strong> One unique monitored device is exactly one licensed asset. Multiple connectors reporting that device must not produce duplicate billable assets. Connectors are not billable assets.</li>
+<li><strong>EXISTING APPROVED REQUIREMENT:</strong> The original ten-phase CARES roadmap is unchanged.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Use a restrictive RLS tenant baseline and restrictive command-scope policies, plus a permissive role gate. PostgreSQL permissive policies combine with <strong>OR</strong>, so tenant and scope boundaries must not rely on permissive policies alone.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Treat a signed context as transaction-scoped and consume its unique nonce in the same PostgreSQL transaction as the protected work. A committed transaction consumes the assertion; rollback also rolls back the nonce and business effects, allowing a safe retry while the token remains valid.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Expand the transactional outbox with fenced leases, durable attempt history, retry schedules, provider idempotency references, explicit <code>delivery_unknown</code> handling, dead-lettering, and authorized replay records.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Replace every free-form evidence reference with a tenant-scoped <code>evidence_id</code> FK into an immutable evidence registry. External object identity, version, cryptographic hash, provenance, custody, retention, and purge disposition are recorded separately.</li>
+</ul>
+<h3>Readiness and status</h3>
+<ul>
+<li><strong>NOT IMPLEMENTED:</strong> PostgreSQL, RLS policies, tenant context verification/replay protection, outbox delivery, evidence registry, evidence authorization, merge/split, or any of the SQL in this document.</li>
+<li><strong>NOT TESTED:</strong> Policy composition, context-token cryptography/replay, worker lease fencing, provider delivery/reconciliation, evidence hash verification, and cross-tenant negative cases.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> The design is suitable for <strong>formal PostgreSQL schema/security review</strong>, but it is not ready for migrations or implementation until the owner/security team accepts the token-verifier trust model, retention decisions, RLS role plan, and provider-specific delivery semantics.</li>
+</ul>
+<hr />
+<h2>2. Round 2 findings carried forward</h2>
+<p>Round 2 established tenant-aware composite FKs, source-device identifier binding, run/item retry states, cross-source identity rules, a signed tenant-context concept, and normalized operation/event-lineage proposals. It also explicitly stated that these designs are not implemented or tested.</p>
+<p>Round 3 resolves these additional gaps:</p>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Round 2 limitation</th>
+<th>Round 3 refinement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RLS combination</td>
+<td>Example policies were permissive and did not explain policy-composition rules</td>
+<td>Restrictive tenant and action-scope baselines prevent an added permissive policy from broadening access</td>
+</tr>
+<tr>
+<td>Context replay</td>
+<td>Assertion included a nonce, but nonce uniqueness, commit/rollback, and replay semantics were unspecified</td>
+<td>Token lifetime, bindings, atomic nonce consumption, retries, revocation, key rotation, skew, and audit are specified</td>
+</tr>
+<tr>
+<td>Outbox</td>
+<td>Basic state/attempt fields were proposed, without lease fencing or ambiguous-send behavior</td>
+<td>Claim/ack/reclaim protocol, attempt ledger, idempotency, <code>delivery_unknown</code>, dead-letter, manual replay, and reconciliation are specified</td>
+</tr>
+<tr>
+<td>Evidence references</td>
+<td>Several tables used free-form <code>evidence_ref</code>/<code>evidence_summary_ref</code> strings</td>
+<td>All operation, assignment, event, alert, and incident references resolve by tenant-scoped evidence FK</td>
+</tr>
+<tr>
+<td>Evidence object integrity</td>
+<td>External object storage was mentioned without a complete registry contract</td>
+<td>Exact object version, hash, provenance, custody, authorized access, retention, and purge tombstone are specified</td>
+</tr>
+</tbody>
+</table>
+<p><strong>EXISTING APPROVED REQUIREMENT:</strong> None of these refinements changes CARES product requirements or the original roadmap.</p>
+<hr />
+<h2>3. Workstream A — PostgreSQL RLS policy composition</h2>
+<h3>3.1 PostgreSQL policy-combination behavior</h3>
+<p>PostgreSQL RLS policies have a <code>PERMISSIVE</code> or <code>RESTRICTIVE</code> mode:</p>
+<ul>
+<li>Applicable <strong>permissive</strong> policies are combined with <strong>OR</strong>. If at least one applicable permissive policy exists, one successful permissive predicate is sufficient for that side of the check.</li>
+<li>Applicable <strong>restrictive</strong> policies are combined with <strong>AND</strong>.</li>
+<li>The final check is effectively:</li>
+</ul>
+<pre><code class="hljs language-text">(permissive_policy_1 OR permissive_policy_2 OR ...)
+AND restrictive_policy_1
+AND restrictive_policy_2
+AND ...
+</code></pre>
+<ul>
+<li>If no applicable permissive policy exists, access is denied.</li>
+<li><code>USING</code> controls which existing rows can be seen/targeted; <code>WITH CHECK</code> controls rows created or resulting from <code>INSERT</code>/<code>UPDATE</code>.</li>
+<li><code>FOR ALL</code> policies apply to each command unless a command-specific policy is more applicable; command-specific and <code>ALL</code> policies participate together according to their permissive/restrictive mode.</li>
+</ul>
+<p>Therefore, a tenant or scope condition placed only in a permissive policy is unsafe: a later permissive <code>USING (true)</code> policy can broaden access through OR composition.</p>
+<h3>3.2 Recommended policy strategy</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> For each tenant-owned base table:</p>
+<ol>
+<li>Enable and <code>FORCE ROW LEVEL SECURITY</code>.</li>
+<li>Add a <strong>restrictive <code>FOR ALL</code> tenant baseline</strong> that requires a valid verified context and exact tenant match in both <code>USING</code> and <code>WITH CHECK</code>.</li>
+<li>Add <strong>restrictive command-specific scope policies</strong> for <code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, and <code>DELETE</code>. This ensures action scope remains an AND condition even if an additional permissive policy is later added.</li>
+<li>Add one narrowly role-targeted <strong>permissive gate</strong> for the intended runtime/worker roles. It enables evaluation but is not the security boundary. Database grants remain least-privilege.</li>
+<li>Deny missing/invalid context by returning false/NULL from verifier functions. No policy may default to a public or “system tenant.”</li>
+<li>Require code review and tests for new policies. The restrictive tenant and scope policies may be removed or altered only by a protected migration role.</li>
+</ol>
+<p>Illustrative SQL:</p>
+<pre><code class="hljs language-sql"><span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">asset</span><span class="w"> </span><span class="n">ENABLE</span><span class="w"> </span><span class="k">ROW</span><span class="w"> </span><span class="k">LEVEL</span><span class="w"> </span><span class="k">SECURITY</span><span class="p">;</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">asset</span><span class="w"> </span><span class="k">FORCE</span><span class="w"> </span><span class="k">ROW</span><span class="w"> </span><span class="k">LEVEL</span><span class="w"> </span><span class="k">SECURITY</span><span class="p">;</span>
+
+<span class="c1">-- A permissive gate is required for rows to be eligible at all.</span>
+<span class="c1">-- It is intentionally not the tenant or scope boundary.</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="n">POLICY</span><span class="w"> </span><span class="n">asset_runtime_gate</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">asset</span>
+<span class="w">    </span><span class="k">AS</span><span class="w"> </span><span class="n">PERMISSIVE</span>
+<span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="k">ALL</span>
+<span class="w">    </span><span class="k">TO</span><span class="w"> </span><span class="n">cares_runtime</span><span class="p">,</span><span class="w"> </span><span class="n">cares_worker</span>
+<span class="w">    </span><span class="k">USING</span><span class="w"> </span><span class="p">(</span><span class="k">true</span><span class="p">)</span>
+<span class="w">    </span><span class="k">WITH</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="k">true</span><span class="p">);</span>
+
+<span class="c1">-- Restrictive policies are ANDed with every permissive policy.</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="n">POLICY</span><span class="w"> </span><span class="n">asset_tenant_floor</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">asset</span>
+<span class="w">    </span><span class="k">AS</span><span class="w"> </span><span class="n">RESTRICTIVE</span>
+<span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="k">ALL</span>
+<span class="w">    </span><span class="k">TO</span><span class="w"> </span><span class="n">cares_runtime</span><span class="p">,</span><span class="w"> </span><span class="n">cares_worker</span>
+<span class="w">    </span><span class="k">USING</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">security</span><span class="p">.</span><span class="n">context_is_valid</span><span class="p">()</span>
+<span class="w">        </span><span class="k">AND</span><span class="w"> </span><span class="n">tenant_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">security</span><span class="p">.</span><span class="n">current_verified_tenant_id</span><span class="p">()</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="w">    </span><span class="k">WITH</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">security</span><span class="p">.</span><span class="n">context_is_valid</span><span class="p">()</span>
+<span class="w">        </span><span class="k">AND</span><span class="w"> </span><span class="n">tenant_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">security</span><span class="p">.</span><span class="n">current_verified_tenant_id</span><span class="p">()</span>
+<span class="w">    </span><span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="n">POLICY</span><span class="w"> </span><span class="n">asset_select_scope</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">asset</span>
+<span class="w">    </span><span class="k">AS</span><span class="w"> </span><span class="n">RESTRICTIVE</span>
+<span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="k">SELECT</span>
+<span class="w">    </span><span class="k">TO</span><span class="w"> </span><span class="n">cares_runtime</span><span class="p">,</span><span class="w"> </span><span class="n">cares_worker</span>
+<span class="w">    </span><span class="k">USING</span><span class="w"> </span><span class="p">(</span><span class="k">security</span><span class="p">.</span><span class="n">current_verified_scope_allows</span><span class="p">(</span><span class="s1">&#39;asset:read&#39;</span><span class="p">));</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="n">POLICY</span><span class="w"> </span><span class="n">asset_insert_scope</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">asset</span>
+<span class="w">    </span><span class="k">AS</span><span class="w"> </span><span class="n">RESTRICTIVE</span>
+<span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="k">INSERT</span>
+<span class="w">    </span><span class="k">TO</span><span class="w"> </span><span class="n">cares_runtime</span><span class="p">,</span><span class="w"> </span><span class="n">cares_worker</span>
+<span class="w">    </span><span class="k">WITH</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="k">security</span><span class="p">.</span><span class="n">current_verified_scope_allows</span><span class="p">(</span><span class="s1">&#39;asset:write&#39;</span><span class="p">));</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="n">POLICY</span><span class="w"> </span><span class="n">asset_update_scope</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">asset</span>
+<span class="w">    </span><span class="k">AS</span><span class="w"> </span><span class="n">RESTRICTIVE</span>
+<span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="k">UPDATE</span>
+<span class="w">    </span><span class="k">TO</span><span class="w"> </span><span class="n">cares_runtime</span><span class="p">,</span><span class="w"> </span><span class="n">cares_worker</span>
+<span class="w">    </span><span class="k">USING</span><span class="w"> </span><span class="p">(</span><span class="k">security</span><span class="p">.</span><span class="n">current_verified_scope_allows</span><span class="p">(</span><span class="s1">&#39;asset:write&#39;</span><span class="p">))</span>
+<span class="w">    </span><span class="k">WITH</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="k">security</span><span class="p">.</span><span class="n">current_verified_scope_allows</span><span class="p">(</span><span class="s1">&#39;asset:write&#39;</span><span class="p">));</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="n">POLICY</span><span class="w"> </span><span class="n">asset_delete_scope</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">asset</span>
+<span class="w">    </span><span class="k">AS</span><span class="w"> </span><span class="n">RESTRICTIVE</span>
+<span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="k">DELETE</span>
+<span class="w">    </span><span class="k">TO</span><span class="w"> </span><span class="n">cares_runtime</span><span class="p">,</span><span class="w"> </span><span class="n">cares_worker</span>
+<span class="w">    </span><span class="k">USING</span><span class="w"> </span><span class="p">(</span><span class="k">security</span><span class="p">.</span><span class="n">current_verified_scope_allows</span><span class="p">(</span><span class="s1">&#39;asset:delete&#39;</span><span class="p">));</span>
+</code></pre>
+<p>In this pattern, adding <code>CREATE POLICY ... AS PERMISSIVE ... USING (true)</code> cannot bypass the restrictive tenant floor or the restrictive scope for the command. An added permissive policy can still broaden access within the tenant/action scope; therefore role targeting, grants, code review, and tests remain required.</p>
+<p>Do not add a generic permissive support policy. Support requests receive a verified scoped assertion; the same restrictive tenant/action conditions apply. A table with no matching permissive gate remains default-deny.</p>
+<h3>3.3 Commands and PostgreSQL bypass surfaces</h3>
+<ul>
+<li><strong>SELECT:</strong> <code>USING</code> must require both verified tenant context and a <code>read</code> scope. <code>SELECT</code> grants do not replace RLS.</li>
+<li><strong>INSERT:</strong> restrictive <code>WITH CHECK</code> must require tenant equality and <code>write</code> scope. A client cannot insert a different <code>tenant_id</code>.</li>
+<li><strong>UPDATE:</strong> restrictive <code>USING</code> checks the existing row; restrictive <code>WITH CHECK</code> checks the resulting row. Both require tenant and write scope.</li>
+<li><strong>DELETE:</strong> restrictive <code>USING</code> requires tenant and delete scope.</li>
+<li>Revoke <code>TRUNCATE</code>, <code>REFERENCES</code>, policy/DDL privileges, schema <code>CREATE</code>, and unnecessary function execution from runtime/worker roles. RLS does not filter <code>TRUNCATE</code>; it is not an allowed tenant operation.</li>
+<li>Table owners are <code>NOLOGIN</code>; runtime/workers are not owners, superusers, or <code>BYPASSRLS</code>. <code>FORCE ROW LEVEL SECURITY</code> does not stop superusers or roles with <code>BYPASSRLS</code>.</li>
+<li>Restrict <code>SECURITY DEFINER</code> functions to narrow purposes, fixed safe <code>search_path</code>, no unsafe dynamic SQL, tenant/scope verification, minimal owner privileges, and explicit <code>EXECUTE</code> grants. A definer function must not become a generic cross-tenant query proxy.</li>
+<li>Trigger functions execute with the invoking role unless explicitly <code>SECURITY DEFINER</code>. If a definer trigger is necessary, it must use the same verified tenant, validate old/new row tenant equality, and have a fixed search path. Do not let a trigger silently rewrite tenant IDs.</li>
+<li>For views, prefer <code>security_invoker = true</code> on supported PostgreSQL versions and test the actual version. If unavailable, avoid tenant-facing owner-rights views or use a reviewed invoker-rights implementation. <code>security_barrier</code> is not a substitute for RLS.</li>
+<li>Materialized views do not provide base-table RLS semantics. Do not expose cross-tenant materialized rows without a tenant key, their own forced RLS, and a controlled refresh role; otherwise publish only tenant-isolated aggregates.</li>
+<li>Revoke direct access to partition child tables from runtime/worker roles. Access through the parent must be tested. If direct child access is required, enable/force RLS and install equivalent restrictive policies on every child partition; partition creation automation must apply and verify them before grants.</li>
+<li>Audit and test row-level policies on partitions, views, functions, triggers, foreign-key paths, and maintenance procedures. An RLS policy is not proof that all SQL execution paths are isolated.</li>
+</ul>
+<h3>3.4 RLS threat and failure scenarios</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Expected behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A new permissive <code>USING (true)</code> policy is added</td>
+<td>Restrictive tenant/action baselines still deny out-of-tenant or out-of-scope rows</td>
+</tr>
+<tr>
+<td>No permissive policy applies</td>
+<td>PostgreSQL denies access</td>
+</tr>
+<tr>
+<td>Tenant context is absent, invalid, expired, or revoked</td>
+<td><code>context_is_valid()</code> is false; restrictive baseline denies</td>
+</tr>
+<tr>
+<td>A row is selected under tenant A but updated to tenant B</td>
+<td><code>WITH CHECK</code> rejects the resulting row</td>
+</tr>
+<tr>
+<td>Runtime role runs <code>TRUNCATE</code> or alters policy</td>
+<td>Privilege denied; RLS is not relied on for those operations</td>
+</tr>
+<tr>
+<td>Query directly targets a partition</td>
+<td>No grants, or that partition's own restrictive policies deny invalid context</td>
+</tr>
+<tr>
+<td>Owner-rights view/definer function is introduced</td>
+<td>Review/test blocks release unless it preserves invoker tenant/scope checks</td>
+</tr>
+<tr>
+<td>Table owner executes query</td>
+<td><code>FORCE ROW LEVEL SECURITY</code> applies, unless privileged bypass role; owner is non-login</td>
+</tr>
+</tbody>
+</table>
+<h3>3.5 RLS acceptance tests</h3>
+<ol>
+<li>For each of SELECT/INSERT/UPDATE/DELETE, execute cross-tenant access using the exact runtime/worker roles and verify denial.</li>
+<li>Add a test-only broad permissive policy; verify restrictive tenant and command-scope policies still deny unauthorized access.</li>
+<li>Verify tenant A's update changing <code>tenant_id</code> to B fails <code>WITH CHECK</code>.</li>
+<li>Verify a missing permissive policy denies, and an invalid context denies even with a permissive <code>true</code> policy.</li>
+<li>Verify the runtime cannot <code>TRUNCATE</code>, <code>SET ROLE</code> to owner/migrator, disable RLS, alter policies, or call unreviewed definer functions.</li>
+<li>Test every view, partition, trigger, function, materialized view, and maintenance path under the production-equivalent roles.</li>
+<li>Test partition access both through the parent and by direct child relation name; direct access is denied unless explicitly secured.</li>
+<li>Test support/read-only scopes against write/delete commands and verify command scopes cannot be broadened by adding a permissive policy.</li>
+<li>Run concurrent tenant A/B requests through pooled connections and assert no context bleed.</li>
+</ol>
+<p><strong>NOT TESTED:</strong> No RLS, role, view, partition, or policy-composition integration tests currently exist.</p>
+<hr />
+<h2>4. Workstream B — Signed tenant-context replay protection</h2>
+<h3>4.1 Assertion contents and binding</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Use a short-lived signed assertion with a canonical, unambiguous serialization. It binds all of:</p>
+<ul>
+<li>Issuer and signing key ID/version.</li>
+<li>Database/service audience.</li>
+<li>Tenant ID.</li>
+<li>Principal or service identity and actor type.</li>
+<li>Allowed action scopes (least privilege).</li>
+<li>Request ID or immutable background-job ID.</li>
+<li>Unique cryptographically random token ID/nonce.</li>
+<li>Issued-at, not-before, and expiration timestamps.</li>
+<li>Authorization/membership policy version and, for support, JIT grant ID.</li>
+</ul>
+<p>The authorization service independently verifies membership, job ownership, and support grant before signing. An untrusted request's tenant ID is only a requested scope and cannot be signed without successful authorization. Do not place raw source identifiers, secret key material, or unnecessary personal data in the assertion.</p>
+<h3>4.2 Lifetime, nonce, and atomic replay prevention</h3>
+<p>The following are proposed engineering defaults, not established policy:</p>
+<ul>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Maximum assertion lifetime: 60 seconds from <code>issued_at</code>.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Allow at most 30 seconds of clock skew, measured by the database clock. Reject <code>issued_at</code>/<code>not_before</code> too far in the future, expired tokens outside the skew window, and any token with a lifetime exceeding the configured maximum.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Generate a 128-bit-or-stronger CSPRNG nonce/token ID; never reuse it. Uniqueness is scoped by signing key ID and enforced in PostgreSQL.</li>
+<li>An assertion is <strong>single-commit-use</strong>, not single-attempt-use: its nonce consumption and protected database changes occur in the same transaction. A committed transaction durably consumes the nonce; an aborted/rolled-back transaction rolls back both nonce consumption and all protected writes, so retrying the same still-valid assertion cannot duplicate committed effects.</li>
+<li>Concurrent replays contend on a unique nonce key. If one transaction commits, the other fails the nonce insert. If the first transaction rolls back, the second may proceed; no protected side effect from the first survived.</li>
+<li>Nonce rows are retained through <code>expires_at + allowed_clock_skew</code> and then purged by a controlled cleanup task. Since the assertion is then expired, deleting an old nonce cannot make it valid again.</li>
+</ul>
+<p>Illustrative nonce registry:</p>
+<pre><code class="hljs language-sql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">security</span><span class="p">.</span><span class="n">tenant_context_nonce</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">signing_key_id</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">token_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">principal_id</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">request_or_job_id</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">allowed_scope_digest</span><span class="w"> </span><span class="n">bytea</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">issued_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">expires_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">consumed_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">clock_timestamp</span><span class="p">(),</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">signing_key_id</span><span class="p">,</span><span class="w"> </span><span class="n">token_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">expires_at</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">issued_at</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">expires_at</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">issued_at</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">interval</span><span class="w"> </span><span class="s1">&#39;60 seconds&#39;</span><span class="p">)</span>
+<span class="p">);</span>
+</code></pre>
+<p>This table is security-internal: no direct <code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> grants to runtime/worker roles. A narrowly scoped verifier function inserts the row as part of the caller's current transaction and fails closed on a duplicate key. The function verifies the actual signed claims and stores their verified fields; callers do not choose registry values independently.</p>
+<h3>4.3 Transaction setup, retries, and connection reuse</h3>
+<p>For each tenant transaction:</p>
+<pre><code class="hljs language-text">BEGIN
+verify signature, issuer, key status, audience, tenant, subject, scope, request/job,
+  timestamp bounds, maximum lifetime, and nonce uniqueness
+insert nonce registry row in this same transaction
+store verified assertion transaction-locally
+execute tenant SQL under restrictive RLS
+COMMIT
+</code></pre>
+<ul>
+<li><strong>Transaction retry after a known rollback:</strong> the nonce insert rolled back with the work. The same assertion may be retried if it is still within lifetime and has the same request/job ID, scope, and business idempotency key.</li>
+<li><strong>Serialization/deadlock retry:</strong> retry the whole transaction, not only the failed statement. Revalidate the assertion and nonce; use bounded retry/backoff for the database transaction.</li>
+<li><strong>Unknown commit outcome / client timeout:</strong> do not assume rollback. Obtain a fresh assertion and retry with the same business idempotency key. A committed transaction has consumed the nonce, and the business idempotency record returns the original result.</li>
+<li><strong>Connection reuse:</strong> assertion/context is transaction-local. Commit/rollback clears it. Pool check-in rolls back any open transaction and discards a connection if context cleanup is uncertain. A committed assertion cannot start a second transaction because its nonce is already present.</li>
+<li><strong>Transaction lifetime:</strong> keep tenant transactions bounded. Do not hold an open transaction while calling external APIs or KMS. A token expiring after verified transaction start does not retroactively revoke that transaction; revoke/kill sessions for emergency response and keep transactions short.</li>
+</ul>
+<h3>4.4 Revocation and signing-key rotation</h3>
+<ul>
+<li>A signing-key registry records key ID, algorithm, verification material/reference, state (<code>active</code>, <code>verify_only</code>, <code>revoked</code>), activation/revocation time, and authorized issuer.</li>
+<li>During planned rotation, issue with the new key and allow the prior key to verify only for no longer than maximum token lifetime plus clock skew and deployment overlap. Stop issuing with the old key before retiring it.</li>
+<li>Every context start checks current key status. A revoked key is rejected even if the assertion has not expired. Emergency revocation also terminates or drains already-open transactions according to the incident procedure.</li>
+<li>Keep nonce rows tied to key ID so replay uniqueness remains unambiguous across rotations. Do not reuse key IDs or token IDs.</li>
+<li>Audit key activation, verify-only transition, revocation, rejected assertion, nonce replay, and cleanup operations without logging the full token or HMAC/signing secret.</li>
+</ul>
+<h3>4.5 HMAC versus asymmetric signatures</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Benefits</th>
+<th>Risks/operational implications</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HMAC</td>
+<td>Fast and conceptually simple; can be verified in a narrowly scoped database function</td>
+<td>Signer and verifier share a secret. Anyone who obtains the verifier's HMAC secret can mint valid tenant assertions. A database/verifier compromise is therefore also a context-signing compromise. Key distribution/rotation and access controls are critical.</td>
+</tr>
+<tr>
+<td>Asymmetric signature</td>
+<td>Authorization service keeps private signing key; database verifier needs only public key, limiting token forgery after read-only DB compromise</td>
+<td>PostgreSQL has no assumed built-in general-purpose signature verifier for every algorithm. A reviewed extension, trusted verifier service, or carefully maintained implementation is needed. Verify key format, algorithm allow-list, timing, and upgrade compatibility.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Prefer asymmetric verification if a reviewed PostgreSQL-compatible verifier is accepted and supportable. If HMAC is selected, explicitly accept the shared-secret trust boundary, restrict the secret to the signer and protected verifier function, and treat verifier/database compromise as potential token forgery. Do not claim either crypto path is installed or verified.</p>
+<p><strong>OWNER DECISION REQUIRED:</strong> Approve algorithm/verifier implementation, assertion TTL/skew, signing-key custody and rotation, nonce-retention window, and emergency revocation process.</p>
+<h3>4.6 Context failure audit</h3>
+<p>Record only sanitized fields: key ID, token ID/hash, request/job ID, claimed/verified tenant if safe, subject/service, failure class, timestamp, and correlation ID. Never log the full assertion, signature, nonce secret material, signing/HMAC key, or sensitive query parameters. Audit nonce replay and signature/context failure in a protected security log; do not make a logging outage silently convert a rejected context into success.</p>
+<hr />
+<h2>5. Workstream C — Transactional outbox lease and recovery</h2>
+<h3>5.1 Delivery semantics</h3>
+<p>The operation, licensing changes, evidence/lineage rows, and outbox row commit in one PostgreSQL transaction. External delivery happens later and cannot be part of that transaction. The contract is <strong>at-least-once dispatch attempts</strong>, not universal exactly-once external effects.</p>
+<p>The stable <code>provider_idempotency_ref</code> represents one logical side effect and is reused across automatic retries and authorized manual replay. It is not regenerated on every attempt. Store only sanitized payload or references to tenant-scoped records; do not put raw credentials or source identifiers in the outbox.</p>
+<h3>5.2 Illustrative outbox and attempt DDL</h3>
+<pre><code class="hljs language-sql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">identity_operation_outbox</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">outbox_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">operation_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">destination_id</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">message_type</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">payload</span><span class="w"> </span><span class="n">jsonb</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">request_idempotency_key</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">provider_idempotency_ref</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;pending&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;leased&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retry_wait&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;delivered&#39;</span><span class="p">,</span>
+<span class="w">                  </span><span class="s1">&#39;delivery_unknown&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;dead_letter&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cancelled&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">attempt_count</span><span class="w"> </span><span class="nb">integer</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">attempt_count</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">max_attempts</span><span class="w"> </span><span class="nb">integer</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">max_attempts</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">next_attempt_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lease_owner</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lease_token</span><span class="w"> </span><span class="n">uuid</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lease_until</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_error_class</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_error_code</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">delivered_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">provider_receipt_ref</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">replay_generation</span><span class="w"> </span><span class="nb">integer</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">replay_generation</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">updated_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">outbox_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">UNIQUE</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">request_idempotency_key</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">operation_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">asset_identity_operation</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">operation_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;leased&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">lease_owner</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span>
+<span class="w">                          </span><span class="k">AND</span><span class="w"> </span><span class="n">lease_token</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">lease_until</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="k">OR</span>
+<span class="w">        </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="s1">&#39;leased&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">lease_owner</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span>
+<span class="w">                           </span><span class="k">AND</span><span class="w"> </span><span class="n">lease_token</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">lease_until</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;retry_wait&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">next_attempt_at</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="k">OR</span><span class="w"> </span><span class="k">state</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="s1">&#39;retry_wait&#39;</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;delivered&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">delivered_at</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="k">OR</span><span class="w"> </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="s1">&#39;delivered&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">delivered_at</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">identity_outbox_claimable</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">identity_operation_outbox</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">next_attempt_at</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span>
+<span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;pending&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retry_wait&#39;</span><span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">identity_outbox_expired_lease</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">identity_operation_outbox</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">lease_until</span><span class="p">)</span>
+<span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;leased&#39;</span><span class="p">;</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">identity_operation_outbox_attempt</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">outbox_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">attempt_number</span><span class="w"> </span><span class="nb">integer</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">attempt_number</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">replay_generation</span><span class="w"> </span><span class="nb">integer</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">replay_generation</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">worker_id</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lease_token</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">started_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">completed_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">outcome</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="n">outcome</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;delivered&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retryable_failure&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;permanent_failure&#39;</span><span class="p">,</span>
+<span class="w">                    </span><span class="s1">&#39;delivery_unknown&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;lease_expired&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cancelled&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">error_class</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">error_code</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">provider_request_ref</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">provider_response_ref</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">outbox_id</span><span class="p">,</span><span class="w"> </span><span class="n">attempt_number</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">outbox_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">identity_operation_outbox</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">outbox_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="p">(</span><span class="n">completed_at</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">outcome</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="k">OR</span><span class="w"> </span><span class="p">(</span><span class="n">completed_at</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">outcome</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">identity_operation_outbox_replay</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">replay_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">outbox_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">requested_by</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">approved_by</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">reason</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ticket_ref</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">authorization_ref</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">requested_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">approved_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;requested&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;approved&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;rejected&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;applied&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">replay_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">outbox_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">identity_operation_outbox</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">outbox_id</span><span class="p">)</span>
+<span class="p">);</span>
+</code></pre>
+<p>Use the outbox row's stable idempotency key as the logical request identity; provider-specific idempotency references may be unique only within a provider/account namespace and should be constrained accordingly in the final schema. Attempt and replay records are append-only to runtime roles. The outbox current state is a projection; history is preserved.</p>
+<h3>5.3 Atomic claim, acknowledgement, and lease fencing</h3>
+<p>Claim a bounded batch for one authorized tenant in a short transaction. Do not use a worker role that scans all tenants without a verified job/context.</p>
+<p>Illustrative claim:</p>
+<pre><code class="hljs language-sql"><span class="k">WITH</span><span class="w"> </span><span class="n">claimable</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">outbox_id</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">identity_operation_outbox</span>
+<span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">tenant_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">:</span><span class="n">verified_tenant_id</span>
+<span class="w">      </span><span class="k">AND</span><span class="w"> </span><span class="p">(</span>
+<span class="w">          </span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pending&#39;</span>
+<span class="w">          </span><span class="k">OR</span><span class="w"> </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;retry_wait&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">next_attempt_at</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">clock_timestamp</span><span class="p">())</span>
+<span class="w">      </span><span class="p">)</span>
+<span class="w">    </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="k">COALESCE</span><span class="p">(</span><span class="n">next_attempt_at</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">),</span><span class="w"> </span><span class="n">created_at</span>
+<span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="k">UPDATE</span><span class="w"> </span><span class="n">SKIP</span><span class="w"> </span><span class="n">LOCKED</span>
+<span class="w">    </span><span class="k">LIMIT</span><span class="w"> </span><span class="p">:</span><span class="n">batch_size</span>
+<span class="p">)</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">identity_operation_outbox</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">o</span>
+<span class="k">SET</span><span class="w"> </span><span class="k">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;leased&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lease_owner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">:</span><span class="n">worker_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lease_token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">:</span><span class="n">fresh_random_token</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lease_until</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">clock_timestamp</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">:</span><span class="n">lease_interval</span><span class="p">,</span>
+<span class="w">    </span><span class="n">attempt_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">attempt_count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="n">updated_at</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">clock_timestamp</span><span class="p">()</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">claimable</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="k">c</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">tenant_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">c</span><span class="p">.</span><span class="n">tenant_id</span>
+<span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">outbox_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">c</span><span class="p">.</span><span class="n">outbox_id</span>
+<span class="n">RETURNING</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="o">*</span><span class="p">;</span>
+</code></pre>
+<p>In the same transaction, create the attempt row with the returned <code>attempt_count</code>, worker identity, and token; then commit. <code>SKIP LOCKED</code> lets concurrent workers claim different rows without waiting on rows already locked by another claimant. It does not by itself provide delivery exactly once.</p>
+<p>The worker calls the provider <strong>outside</strong> the database transaction. To acknowledge success, start a new transaction and update only if <code>(tenant_id, outbox_id, state='leased', lease_token=:my_token, lease_until &gt; clock_timestamp())</code> still matches. Mark delivered, store provider receipt, complete attempt, and clear lease fields atomically. A stale worker whose lease has expired or been replaced cannot acknowledge.</p>
+<h3>5.4 Outbox state-transition table</h3>
+<table>
+<thead>
+<tr>
+<th>Current state</th>
+<th>Event/condition</th>
+<th>Next state</th>
+<th>Required behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pending</code></td>
+<td>Worker claims</td>
+<td><code>leased</code></td>
+<td>Atomic row claim, increment attempt, create attempt record, commit before external call</td>
+</tr>
+<tr>
+<td><code>retry_wait</code></td>
+<td>Retry time reached</td>
+<td><code>leased</code></td>
+<td>Same claim protocol; stable provider idempotency reference</td>
+</tr>
+<tr>
+<td><code>leased</code></td>
+<td>Provider confirms success</td>
+<td><code>delivered</code></td>
+<td>Fenced acknowledgement by current unexpired token; persist receipt/time</td>
+</tr>
+<tr>
+<td><code>leased</code></td>
+<td>Retryable failure, safe to retry</td>
+<td><code>retry_wait</code></td>
+<td>Record error class/code; calculate bounded retry time; clear lease</td>
+</tr>
+<tr>
+<td><code>leased</code></td>
+<td>Permanent request/payload failure</td>
+<td><code>dead_letter</code></td>
+<td>Record sanitized failure; alert; require reviewed correction/replay</td>
+</tr>
+<tr>
+<td><code>leased</code></td>
+<td>Lease expires before call is known to have started</td>
+<td><code>retry_wait</code> or <code>pending</code></td>
+<td>Reclaim after fencing old token; do not lose attempt history</td>
+</tr>
+<tr>
+<td><code>leased</code></td>
+<td>Lease expires after a possibly successful non-idempotent call</td>
+<td><code>delivery_unknown</code></td>
+<td>Do not blindly repeat; reconcile provider state or require manual disposition</td>
+</tr>
+<tr>
+<td><code>delivery_unknown</code></td>
+<td>Provider lookup confirms completed</td>
+<td><code>delivered</code></td>
+<td>Record provider receipt and reconciliation evidence</td>
+</tr>
+<tr>
+<td><code>delivery_unknown</code></td>
+<td>Provider lookup confirms not applied</td>
+<td><code>retry_wait</code></td>
+<td>Retry only with recorded reconciliation and authorization as required</td>
+</tr>
+<tr>
+<td><code>dead_letter</code></td>
+<td>Authorized replay after remediation</td>
+<td><code>pending</code>/<code>retry_wait</code></td>
+<td>Append replay authorization; retain original error/attempts; use same logical idempotency ref</td>
+</tr>
+<tr>
+<td><code>delivery_unknown</code></td>
+<td>Manual replay authorized after reconciliation</td>
+<td><code>pending</code>/<code>retry_wait</code> or remain blocked</td>
+<td>Record approver, ticket, reconciliation, and duplicate-risk acceptance</td>
+</tr>
+<tr>
+<td>Nonterminal</td>
+<td>Operation explicitly cancelled before delivery</td>
+<td><code>cancelled</code></td>
+<td>Append cancellation reason; do not erase operation/outbox history</td>
+</tr>
+</tbody>
+</table>
+<h3>5.5 Error classes and retries</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Use bounded exponential backoff with full jitter for retryable failures, for example <code>min(base × 2^(attempt-1), cap)</code> and a configured maximum attempt count. Values such as a 1-second base, 15-minute cap, and 8 attempts are candidates for load/operations validation, not approved SLOs.</p>
+<ul>
+<li>Retryable: transient connection/DNS failures, provider <code>429</code>, transient <code>5xx</code>, and provider-documented temporary conditions. Honor bounded <code>Retry-After</code>.</li>
+<li>Permanent: invalid payload/schema, unsupported operation, most nonrecoverable <code>4xx</code>, or revoked/invalid target configuration after an operator confirms it is not a temporary deployment fault. Dead-letter and alert.</li>
+<li>Configuration/authorization failures such as provider <code>401/403</code>: pause or dead-letter according to integration policy; never retry rapidly with known-invalid credentials.</li>
+<li>Ambiguous timeout after request transmission: if provider idempotency is supported and the same key is retained, retry with that key. If not, move to <code>delivery_unknown</code> and reconcile before retrying.</li>
+<li>Provider idempotency retention may expire. Before a delayed retry after that interval, reconcile first; reusing a key after provider expiry may not suppress duplicate effects.</li>
+</ul>
+<h3>5.6 Manual replay and provider reconciliation</h3>
+<ul>
+<li>Replay is a privileged operation with actor, approver if required, reason, ticket, target tenant/provider, replay generation, and authorization reference.</li>
+<li>Manual replay never deletes or resets attempt history. It records a new replay row and starts another attempt generation on the existing logical message or a linked replacement message, preserving the original <code>provider_idempotency_ref</code>.</li>
+<li>For providers with idempotency keys, use the same logical key for all retries/replays of one effect. Do not use a new key just to bypass a provider's deduplication.</li>
+<li>For providers without idempotency support, use a stable CARES request reference in provider metadata if available. Reconcile by querying provider state before replay. If no reliable query exists, keep <code>delivery_unknown</code> and require explicit owner/operator risk authorization rather than claiming success or automatically repeating a potentially destructive action.</li>
+<li>External effects remain outside PostgreSQL atomicity. A committed operation plus undelivered outbox row is a committed CARES operation awaiting delivery, not a rolled-back operation.</li>
+</ul>
+<h3>5.7 Outbox failure scenarios</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Result/recovery</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Worker crashes before external call</td>
+<td>Lease expires; reclaimer fences token and returns row to eligible state</td>
+</tr>
+<tr>
+<td>Worker crashes after provider success but before DB ack</td>
+<td>Retry with same provider idempotency key; otherwise <code>delivery_unknown</code> and reconcile</td>
+</tr>
+<tr>
+<td>Two workers claim concurrently</td>
+<td>Row locks plus <code>SKIP LOCKED</code> yield distinct leases; token/expiry fences stale acknowledgements</td>
+</tr>
+<tr>
+<td>Provider returns 429/5xx</td>
+<td>Record attempt and retry schedule; no long DB transaction held</td>
+</tr>
+<tr>
+<td>Provider returns permanent validation error</td>
+<td>Dead-letter, alert, correct payload/config, then authorized replay</td>
+</tr>
+<tr>
+<td>Provider has no idempotency key and timeout is ambiguous</td>
+<td>Do not automatically retry; reconcile by request reference or require manual decision</td>
+</tr>
+<tr>
+<td>Manual replay submitted twice</td>
+<td>Replay idempotency/authorization record ensures one replay generation; duplicate request returns prior result</td>
+</tr>
+<tr>
+<td>Database commits operation but outbox delivery fails</td>
+<td>Operation stays committed; outbox retries/alerts; do not reverse licensing state</td>
+</tr>
+<tr>
+<td>Delivery works but acknowledgement transaction fails</td>
+<td>The side effect may have happened; retry with provider key or enter reconciliation path</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>6. Workstream D — Evidence reference integrity</h2>
+<h3>6.1 Evidence-reference audit</h3>
+<p>Round 2 used untyped text references in several records:</p>
+<table>
+<thead>
+<tr>
+<th>Round 2 field</th>
+<th>Defect</th>
+<th>Round 3 form</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>asset_identity_operation.evidence_summary_ref</code></td>
+<td>Free-form string may be a path, URL, or nonexistent record</td>
+<td><code>primary_evidence_id</code> FK to tenant-scoped registry</td>
+</tr>
+<tr>
+<td><code>asset_binding_assignment_history.evidence_ref</code></td>
+<td>No tenant or evidence-record validation</td>
+<td><code>evidence_id</code> FK</td>
+</tr>
+<tr>
+<td><code>asset_event_lineage.evidence_ref</code></td>
+<td>No tenant or object integrity relationship</td>
+<td><code>evidence_id</code> FK</td>
+</tr>
+<tr>
+<td><code>asset_alert_lineage.evidence_ref</code></td>
+<td>No tenant or object integrity relationship</td>
+<td><code>evidence_id</code> FK</td>
+</tr>
+<tr>
+<td><code>incident_asset_lineage.evidence_ref</code></td>
+<td>No tenant or object integrity relationship</td>
+<td><code>evidence_id</code> FK</td>
+</tr>
+<tr>
+<td><code>asset_identity_operation_evidence.evidence_id</code></td>
+<td>FK target was only a conceptual <code>forensic_evidence</code> row</td>
+<td>Formal evidence registry contract, store/object identity, hash, and custody records</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> Every reference in those CARES tables is a UUID <code>evidence_id</code> and a composite FK <code>(tenant_id, evidence_id)</code>. Do not persist a naked object URI or unvalidated string as the sole evidence link.</p>
+<h3>6.2 Illustrative evidence registry DDL</h3>
+<pre><code class="hljs language-sql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tenant_evidence_store</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">tenant</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">),</span>
+<span class="w">    </span><span class="n">evidence_store_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">provider</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">storage_namespace</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;read_only&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;disabled&#39;</span><span class="p">)),</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_store_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">UNIQUE</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">provider</span><span class="p">,</span><span class="w"> </span><span class="n">storage_namespace</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">forensic_evidence</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">evidence_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">evidence_store_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">object_key</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">object_version_id</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">hash_algorithm</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">hash_algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;SHA-256&#39;</span><span class="p">),</span>
+<span class="w">    </span><span class="n">content_hash</span><span class="w"> </span><span class="n">bytea</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="k">octet_length</span><span class="p">(</span><span class="n">content_hash</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">32</span><span class="p">),</span>
+<span class="w">    </span><span class="n">content_length</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">content_length</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">media_type</span><span class="w"> </span><span class="nb">text</span><span class="p">,</span>
+<span class="w">    </span><span class="n">source_kind</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">source_data_source_id</span><span class="w"> </span><span class="n">uuid</span><span class="p">,</span>
+<span class="w">    </span><span class="n">source_device_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="p">,</span>
+<span class="w">    </span><span class="n">captured_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ingested_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">collector_identity</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">provenance</span><span class="w"> </span><span class="n">jsonb</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">retention_policy_id</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">legal_hold</span><span class="w"> </span><span class="nb">boolean</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">false</span><span class="p">,</span>
+<span class="w">    </span><span class="n">availability_state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="n">availability_state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;available&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;purge_pending&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;purged&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;integrity_failed&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">UNIQUE</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_store_id</span><span class="p">,</span><span class="w"> </span><span class="n">object_key</span><span class="p">,</span><span class="w"> </span><span class="n">object_version_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_store_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">tenant_evidence_store</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_store_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">source_device_binding</span>
+<span class="w">            </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">MATCH</span><span class="w"> </span><span class="k">SIMPLE</span><span class="p">,</span>
+<span class="w">    </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="p">(</span><span class="n">source_data_source_id</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">source_device_key_id</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">evidence_custody_event</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">custody_event_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">evidence_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">action</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="n">action</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;registered&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;hash_verified&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;copied&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;accessed&#39;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s1">&#39;exported&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;legal_hold_set&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;legal_hold_released&#39;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s1">&#39;purge_requested&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;purged&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;integrity_failure&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">),</span>
+<span class="w">    </span><span class="n">actor_identity</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">occurred_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">request_or_job_id</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">content_hash</span><span class="w"> </span><span class="n">bytea</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">content_hash</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">octet_length</span><span class="p">(</span><span class="n">content_hash</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">32</span><span class="p">),</span>
+<span class="w">    </span><span class="k">result</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">prior_custody_hash</span><span class="w"> </span><span class="n">bytea</span><span class="p">,</span>
+<span class="w">    </span><span class="n">custody_hash</span><span class="w"> </span><span class="n">bytea</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">custody_event_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">forensic_evidence</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+<span class="p">);</span>
+</code></pre>
+<p><code>object_key</code> and <code>object_version_id</code> together identify an immutable external object version within a tenant's registered store. No global bucket/account URI is trusted from an API request. <code>tenant_evidence_store</code> contains configuration references, not cloud credentials.</p>
+<h3>6.3 Replace free-form references with composite evidence FKs</h3>
+<p>Revised illustrative fields and relationships:</p>
+<pre><code class="hljs language-sql"><span class="c1">-- asset_identity_operation:</span>
+<span class="n">primary_evidence_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">primary_evidence_id</span><span class="p">)</span>
+<span class="w">    </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">forensic_evidence</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+
+<span class="c1">-- asset_binding_assignment_history:</span>
+<span class="n">evidence_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+<span class="w">    </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">forensic_evidence</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+
+<span class="c1">-- asset_event_lineage:</span>
+<span class="n">evidence_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+<span class="w">    </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">forensic_evidence</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+
+<span class="c1">-- asset_alert_lineage:</span>
+<span class="n">evidence_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+<span class="w">    </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">forensic_evidence</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+
+<span class="c1">-- incident_asset_lineage:</span>
+<span class="n">evidence_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+<span class="w">    </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">forensic_evidence</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+</code></pre>
+<p>Retain an <code>asset_identity_operation_evidence</code> junction for additional evidence:</p>
+<pre><code class="hljs language-sql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">asset_identity_operation_evidence</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">operation_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">evidence_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">evidence_role</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">operation_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">operation_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">asset_identity_operation</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">operation_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+<span class="w">        </span><span class="k">REFERENCES</span><span class="w"> </span><span class="n">forensic_evidence</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">evidence_id</span><span class="p">)</span>
+<span class="p">);</span>
+</code></pre>
+<p>The operation's primary evidence FK and every lineage/assignment FK enforce same-tenant reference. The junction records additional evidence without duplicating an untyped location. If policy requires multiple evidence records for a single binding move or lineage row, use a normalized child junction with the same tenant-composite FKs rather than an array of IDs.</p>
+<h3>6.4 Content integrity, custody, access, and retention</h3>
+<ul>
+<li>On ingestion, CARES computes SHA-256 while streaming the object to storage; it does not trust a sender-provided hash. Store the computed digest, byte length, immutable object version ID, source, capture/ingest time, collector, normalization/tool version where relevant, and provenance.</li>
+<li>Before evidence is used for a merge/split decision, forensic export, or legal/customer delivery, retrieve the exact object version and verify byte length and digest. A mismatch sets <code>integrity_failed</code>, blocks use, emits a security alert, and preserves metadata/custody history.</li>
+<li>Store evidence under tenant-scoped object-store authorization and immutable/versioned object IDs. Consider retention lock/object lock only after legal/privacy review; do not assume a provider feature or retention mode is selected.</li>
+<li>Evidence reads/exports require tenant and purpose scope, short-lived object access, and audit. Do not expose long-lived public URLs. Use a short-lived, exact-object signed access reference only after RLS/context authorization.</li>
+<li>Custody events are append-only: registration, verification, copy, access, export, legal hold, purge request, purge confirmation, and integrity failure. Custody links are tenant-scoped and include actor, request/job ID, timestamp, result, and hash-chain metadata if tamper evidence is required.</li>
+<li><code>ON DELETE RESTRICT</code> is the default for all operation/lineage/evidence references; do not cascade-delete evidence because an asset, operation, or tenant row is removed.</li>
+<li>Retention expiry is not automatic permission to erase evidence. A controlled purge workflow checks legal hold, customer/legal policy, references, approvals, and backups. It records a custody event and a durable tombstone (<code>availability_state='purged'</code>); it must not silently delete evidence metadata or history.</li>
+<li><strong>OWNER DECISION REQUIRED:</strong> Set evidence retention, legal-hold behavior, permitted tombstone/hash retention after payload purge, customer deletion semantics, object-lock mode, and backup purge timelines. A hash or provenance record may itself remain sensitive under some policies.</li>
+<li>A compensating merge/split creates new operations, evidence links, and custody/audit records. It never rewrites or deletes original evidence or the original operation's evidence references.</li>
+</ul>
+<h3>6.5 Evidence threats and failure scenarios</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Required response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Evidence ID from another tenant supplied</td>
+<td>Composite FK/RLS rejects it</td>
+</tr>
+<tr>
+<td>External object key points to mutable latest version</td>
+<td>Require immutable version ID; reject unversioned mutable reference for forensic use</td>
+</tr>
+<tr>
+<td>Sender supplies false content hash</td>
+<td>Recompute during ingest; compare and record discrepancy</td>
+</tr>
+<tr>
+<td>Stored object is altered/deleted</td>
+<td>Retrieval hash/version check fails; mark integrity failure and block use</td>
+</tr>
+<tr>
+<td>Evidence store inaccessible</td>
+<td>Operation remains pending/review; no success-shaped fallback or unverified decision</td>
+</tr>
+<tr>
+<td>Object storage access token leaks</td>
+<td>Revoke/expire; scoped short-lived exact-object URLs; audit; do not expose credentials in DB/logs</td>
+</tr>
+<tr>
+<td>Retention job attempts to delete evidence still referenced</td>
+<td>FK <code>RESTRICT</code> and legal-hold check reject; reviewed disposition needed</td>
+</tr>
+<tr>
+<td>Merge/split correction needs new interpretation</td>
+<td>Append new lineage and evidence references; original remains intact</td>
+</tr>
+<tr>
+<td>Backup has evidence pointer but object/key was deleted</td>
+<td>Restore reconciliation reports unavailable evidence; retention/key-recovery runbook governs, no false integrity claim</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>7. Combined acceptance tests</h2>
+<p>These are proposed requirements, not tests run by this task.</p>
+<h3>RLS and context</h3>
+<ol>
+<li>Verify PostgreSQL's permissive OR and restrictive AND behavior in a test schema. Add a broad permissive policy and prove restrictive tenant/scope baselines still deny.</li>
+<li>Verify each command separately: SELECT, INSERT, UPDATE old-row filtering, UPDATE resulting-row check, DELETE.</li>
+<li>Verify no permissive policy means deny; invalid/missing context denies even with a broad permissive policy.</li>
+<li>Verify views, partitions, definer functions, triggers, materialized views, <code>TRUNCATE</code>, and maintenance roles cannot bypass tenant/action scope.</li>
+<li>Verify runtime/worker cannot access nonce/key tables, alter policies, <code>SET ROLE</code> to owner/migrator, or use <code>BYPASSRLS</code>.</li>
+<li>Verify forged tenant GUC cannot override a signed context for another tenant.</li>
+</ol>
+<h3>Signed context</h3>
+<ol start="7">
+<li>Accept a valid signed assertion and atomically insert its nonce with the protected write.</li>
+<li>Replay a committed token in a second transaction; unique nonce rejects it.</li>
+<li>Run two concurrent uses of one token; at most one transaction commits. If the first rolls back, the second may succeed with no duplicate business effects.</li>
+<li>Force serialization/deadlock rollback; same unexpired assertion may retry. Simulate unknown commit result; fresh token plus same business idempotency key returns the original operation outcome.</li>
+<li>Reject expired, too-long, future-issued beyond skew, wrong audience, wrong principal/scope/tenant, invalid signature, revoked key, and malformed serialization.</li>
+<li>Verify nonce/key rotation overlap and cleanup cannot revive an expired assertion.</li>
+<li>Verify pooled connection reuse clears transaction context, and an already committed token cannot be reused.</li>
+<li>Verify logs include sanitized failure context but never the full token, signature, or key.</li>
+</ol>
+<h3>Transactional outbox</h3>
+<ol start="15">
+<li>Concurrent workers claim separate rows with <code>SKIP LOCKED</code>; no row has two current lease tokens.</li>
+<li>Expire/reclaim a lease; stale worker cannot acknowledge because its token/expiry fails.</li>
+<li>Crash before request, after request, and after provider success/before ack; verify idempotent retry or <code>delivery_unknown</code> reconciliation as appropriate.</li>
+<li>Exercise 429/5xx, permanent 4xx, provider auth failure, attempt exhaustion, dead-letter, manual replay, and provider idempotency-key expiry.</li>
+<li>Verify manual replay requires authorization and appends history without erasing prior attempts.</li>
+<li>Verify DB operation commit is independent of outbox delivery, and failed delivery never appears as a rolled-back operation.</li>
+<li>For a provider without idempotency support, test reconciliation and require operator disposition when delivery remains ambiguous.</li>
+</ol>
+<h3>Evidence integrity</h3>
+<ol start="22">
+<li>Reference an evidence ID from another tenant in each operation/assignment/event/alert/incident table; every FK rejects it.</li>
+<li>Register a versioned external object, recompute its hash and length, and verify exact object identity is unique per tenant/store/key/version.</li>
+<li>Tamper/delete/replace the object; access-time hash/version verification marks integrity failure and blocks decision use.</li>
+<li>Verify evidence access and export require tenant scope and produce custody/audit events.</li>
+<li>Attempt deletion while referenced or under legal hold; reject. Verify approved purge leaves the specified tombstone/custody record and does not cascade-delete lineage.</li>
+<li>Perform merge/split compensation; original evidence IDs, hashes, operation, and lineage remain unchanged; new records link to new evidence.</li>
+</ol>
+<hr />
+<h2>8. Remaining owner decisions</h2>
+<p>The following remain <strong>OWNER DECISION REQUIRED</strong>:</p>
+<ol>
+<li>Approved context-signature algorithm and PostgreSQL-compatible verifier implementation; HMAC shared-secret versus asymmetric verification.</li>
+<li>Assertion maximum lifetime, clock-skew allowance, nonce cleanup period, signing-key custody/rotation, and emergency revocation process.</li>
+<li>Whether a verifier extension such as <code>pgcrypto</code> is acceptable; it is not assumed installed.</li>
+<li>PostgreSQL major version and support for <code>security_invoker</code> views; otherwise define the approved view strategy.</li>
+<li>Evidence retention, legal holds, deletion/tombstone/hash retention, object-lock mode, and backup deletion timelines.</li>
+<li>Approved external object-storage provider, tenant boundary, versioning/immutability guarantees, and evidence access authorization path.</li>
+<li>Provider-specific outbox idempotency semantics, idempotency retention window, maximum retries/backoff, dead-letter ownership, and manual replay approval.</li>
+<li>Whether non-idempotent or destructive external effects require two-person approval/reconciliation before replay.</li>
+<li>Role ownership, permission to run maintenance, and emergency break-glass authorization.</li>
+<li>Remaining owner decisions from Round 2 on source identity authority, lifecycle/billing, pending quarantine, and merge/split approval continue to apply.</li>
+</ol>
+<hr />
+<h2>9. Implementation readiness assessment</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Classification</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mandatory CARES product constraints</td>
+<td><strong>READY FOR IMPLEMENTATION</strong> (requirements only)</td>
+<td>Preserved; no operational implementation implied</td>
+</tr>
+<tr>
+<td>Restrictive RLS policy composition</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Strategy specified; database version, complete role grants, and policy coverage require review</td>
+</tr>
+<tr>
+<td>Signed assertion replay protocol</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Atomic nonce semantics specified; signature verifier, key custody, TTL/skew approval, and performance require security review</td>
+</tr>
+<tr>
+<td>Outbox lease/recovery protocol</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Core transitions specified; provider idempotency/reconciliation contracts remain integration-specific</td>
+</tr>
+<tr>
+<td>Evidence registry and references</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>Composite FK model specified; retention/object-store/legal policy and full event schema remain</td>
+</tr>
+<tr>
+<td>Merge/split evidence lineage</td>
+<td><strong>NEEDS DESIGN CLARIFICATION</strong></td>
+<td>No-free-form-reference direction specified; full procedure/immutability grants need schema review</td>
+</tr>
+<tr>
+<td>Evidence retention/deletion</td>
+<td><strong>OWNER DECISION REQUIRED</strong></td>
+<td>Legal/privacy/customer policy determines purge and tombstone behavior</td>
+</tr>
+<tr>
+<td>Cryptographic context/signing model</td>
+<td><strong>OWNER DECISION REQUIRED</strong></td>
+<td>HMAC versus asymmetric and verifier custody are security-owner decisions</td>
+</tr>
+<tr>
+<td>PostgreSQL persistence, RLS, nonce replay, outbox, evidence registry</td>
+<td><strong>NOT IMPLEMENTED</strong></td>
+<td>No schema, migrations, runtime roles, verifier, workers, or evidence registry exists</td>
+</tr>
+<tr>
+<td>RLS/context/outbox/evidence verification</td>
+<td><strong>NOT TESTED</strong></td>
+<td>No production-equivalent PostgreSQL tests or provider/evidence integration tests exist</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusion:</strong> <strong>Ready for formal PostgreSQL schema/security review, not ready for production migrations or implementation.</strong> The Round 3 design addresses policy composition, transactional replay prevention, outbox uncertainty, and evidence-reference integrity. Formal review must still select cryptographic and retention policies and verify the actual PostgreSQL version/role behavior.</p>
+<hr />
+<h2>10. Comparison with Round 2</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Round 2</th>
+<th>Round 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RLS composition</td>
+<td>Command-specific policies shown, but permissive/restrictive composition not analyzed</td>
+<td>Restrictive tenant and scope baselines plus permissive gate; explicit PostgreSQL OR/AND behavior and bypass-surface controls</td>
+</tr>
+<tr>
+<td>Context replay</td>
+<td>Signed assertion included nonce/lifetime fields without single-use transaction semantics</td>
+<td>Defined token claims, TTL/skew proposals, atomic nonce consumption, rollback/concurrency behavior, retries, revocation, and signature trade-offs</td>
+</tr>
+<tr>
+<td>Outbox</td>
+<td>Basic operation outbox and retry states</td>
+<td>Fenced leases, <code>SKIP LOCKED</code> claim, attempt ledger, expiry recovery, idempotency references, ambiguous delivery, dead-letter, manual replay</td>
+</tr>
+<tr>
+<td>Evidence</td>
+<td>Free-form strings remained in operation/assignment/lineage fields; registry conceptual</td>
+<td>Tenant evidence registry with object version/hash/custody and composite FKs for every referenced evidence ID</td>
+</tr>
+<tr>
+<td>Implementation status</td>
+<td>Explicitly not implemented/tested</td>
+<td>Still explicitly not implemented/tested; no claims of deployed controls</td>
+</tr>
+<tr>
+<td>Requirements/roadmap</td>
+<td>Ten-phase roadmap preserved</td>
+<td>Same roadmap and mandatory CARES requirements preserved without change</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>11. Final status</h2>
+<ul>
+<li><strong>EXISTING APPROVED REQUIREMENT:</strong> Python backend, PostgreSQL primary database, external SaaS AI only, no local GPU requirement, optional AI, one monitored device per licensed asset, no connector billing, strict tenant isolation, and the original ten-phase roadmap remain unchanged.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> Restrictive RLS baseline, transaction-scoped nonce consumption, explicit outbox fencing/reconciliation, and tenant-scoped immutable evidence registry.</li>
+<li><strong>OWNER DECISION REQUIRED:</strong> Signature/verifier mechanism, token and key policy, PostgreSQL version, object-store/retention policy, and provider-specific delivery/replay semantics remain open.</li>
+<li><strong>NOT IMPLEMENTED:</strong> All SQL and protocols in this document remain illustrative.</li>
+<li><strong>NOT TESTED:</strong> No RLS, replay, outbox, evidence-integrity, or PostgreSQL integration tests were run.</li>
+<li><strong>Readiness:</strong> Ready for formal PostgreSQL schema/security review; not ready for migrations or implementation.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

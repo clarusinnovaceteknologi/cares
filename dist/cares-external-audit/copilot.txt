@@ -1,151 +1,71 @@
-# CARES PostgreSQL Formal Schema Design — Round 1.1 Execution Report
+# CARES PostgreSQL Logical Model Round 1.1 — Final Audit & Publication Correction Execution Report
 
-## 1. Baseline documents inspected
-Mandatory baseline and related documents inspected/read in this environment:
-- `docs/POSTGRESQL_LOGICAL_DATA_MODEL.md`
-- `docs/POSTGRESQL_LOGICAL_ERD.md`
-- `docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md`
-- `docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md`
-- `docs/POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md`
-- `docs/DATA_ARCHITECTURE.md`
-- `docs/SECURITY_ARCHITECTURE.md`
-- `docs/POSTGRESQL_TECHNICAL_DECISIONS.md`
-- `docs/adr/0003-device-identity-and-asset-licensing.md`
-- `docs/adr/0005-event-processing-and-broker-evolution.md`
-- `docs/adr/0006-atomic-per-tenant-asset-licensing.md`
-- `docs/PROJECT_STATUS.md`
-- Supporting context reviewed for consistency: `docs/ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md`, `docs/ARCHITECTURE_RECONCILIATION_CHANGELOG.md`, existing export artifacts under `dist/cares-documentation-html/` and `dist/CARES_DOCUMENTATION_HTML.zip` (pre-regeneration baseline).
+## 1. Objective and scope
+- Focused technical and documentary audit of PostgreSQL Logical Model Round 1.1 deliverables and correction of external audit publication README to reflect actual GitHub publication state.
+- Documentation/audit/publication-correction only. **No PostgreSQL DDL, migrations, tables, indexes, constraints, triggers, functions, procedures, RLS policies, database roles/grants, application code changes, or database implementation were created.** **No ADR statuses changed (ADR 0006 remains Proposed).** **No Round 2 physical schema design/implementation started.** No owner/finance/privacy/legal/security approvals invented.
 
-## 2. Files created and modified
+## 2. Audit baseline and documents actually inspected
+- **Repository:** https://github.com/clarusinnovaceteknologi/cares
+- **Publication branch:** `audit/postgresql-round1-1-publication`
+- **Initial publication commit (existing, preserved):** `888905d8aef8bf6eb2e874cf9804a239f0f6f51a`
+- **Local audit package inspected:** `dist/cares-external-audit/README.md`, `dist/cares-external-audit/copilot.txt` (pre-correction packaged report, SHA-256 `1a06f38285fbabc7e1b77d2bce90c38b928bc95a02500112d3b4984d59c0c4e5`), `dist/cares-external-audit/CARES_DOCUMENTATION_HTML.zip` (pre-rebuild package SHA-256 `b8ef7f11b1b7c6f9e8381896f121dc2d7200911c3fc9572f850a71f3c02049c6`, integrity verified, 35 entries, required principal HTML/index/manifest present).
+- **Remote publication context inspected (GitHub repository tools):** branch `audit/postgresql-round1-1-publication` present at `888905d...`; remote `dist/cares-external-audit/README.md` and `copilot.txt` retrieved and reviewed. **Remote ZIP binary contents were not byte-downloaded/compared in this environment (NOT VERIFIED).**
+- **Principal Round 1.1 Markdown sources inspected:** `docs/POSTGRESQL_LOGICAL_DATA_MODEL.md`, `docs/POSTGRESQL_LOGICAL_ERD.md`, `docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md`, `docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md`, `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md`.
+- **Supporting baseline inspected:** `docs/DATA_ARCHITECTURE.md`, `docs/SECURITY_ARCHITECTURE.md`, `docs/POSTGRESQL_TECHNICAL_DECISIONS.md`, `docs/adr/0003-device-identity-and-asset-licensing.md`, `docs/adr/0005-event-processing-and-broker-evolution.md`, `docs/adr/0006-atomic-per-tenant-asset-licensing.md` (ADR 0006 status confirmed Proposed), `dist/cares-documentation-html/index.html`, `dist/cares-documentation-html/EXPORT_MANIFEST.json`, principal local HTML exports, and `copilot.txt`.
 
-### Created
-- `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md` — Round 1.1 findings, corrections, alternatives evaluated, recommendations, Proposed/open decisions, documents changed, and explicit no-physical-schema/no-implementation confirmation.
+## 3. Technical audit summary (areas A–E)
+Detailed evidence, classifications, and cross-document/OD reassessment are recorded in `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md`.
 
-### Modified
-- `docs/POSTGRESQL_LOGICAL_DATA_MODEL.md` — targeted Round 1.1 corrections: restored/reconciled missing critical catalogue rows for ERD consistency; documented recommended authoritative binding ownership (Proposed, OD-002); expanded `identity_operation_idempotency_ledger` proposed contract; expanded `event_receipt` explicit dedup namespace/provenance model; replaced polymorphic lineage with typed relational lineage model; normalized entity naming/responsibilities (`role_permission`, `membership_role_assignment`, `tenant_configuration`, `ai_interaction_audit` distinction, `asset_tombstone` clarification, `processing_work_item` optional/non-core, `outbox_attempt` distinct); updated relationships/matrices/notes and added Round 1.1 review/correction section.
-- `docs/POSTGRESQL_LOGICAL_ERD.md` — aligned ERD 1–4 with corrected model (binding ownership/projection labels, idempotency ledger state/hash fields, event receipt explicit namespace/provenance fields, typed `ASSET_LINEAGE_LINK` FKs/relations, added `OUTBOX_ATTEMPT` where appropriate, intentionally omitted/simplified catalogue entities explicitly identified, Round 1.1 assumption/limitation notes).
-- `docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md` — updated global principles and relevant operations (notably 1–4, 6–8, 10 and cross-operation taxonomy/notes) for binding recommendation, proposed idempotency contract and A/B coupling comparison, explicit event dedup namespace/collision-prevention rules, typed lineage integrity, and added Round 1.1 consistency notes.
-- `docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md` — refined OD-002 and OD-008 with alternatives/recommendations while preserving Proposed/open/approval-required status; added OD-013 (event receipt deduplication namespace and connector-specific event-ID/fallback behavior, partial/open); added Round 1.1 correction notes; updated blockers, recommended resolution order, and readiness assessment.
-- `copilot.txt` — updated with actual Round 1.1 execution results (this report).
-- `dist/cares-documentation-html/**` and `dist/CARES_DOCUMENTATION_HTML.zip` — complete HTML export regenerated and ZIP rebuilt after Markdown changes.
+- **A. Source-device binding and identity ownership:** **PASS WITH LIMITATIONS (Proposed).** `asset_data_source` consistently recommended as authoritative stable binding owning immutable `source_device_key_id`; aliases resolve to same stable binding identity; optional `source_device_key` only 1:1 dependent/non-authoritative projection if materialized; model/ERD/transactions agree. OD-002 remains open (formal technical approval required).
+- **B. Identity and licensing idempotency:** **PASS WITH LIMITATIONS (Proposed).** Scope `(tenant_id, operation_type, idempotency_key)`, canonicalization/hash, states (`in_progress`, `committed`, `failed_terminal`, `timeout_unknown_commit`), replay/conflict/concurrency/unknown-commit handling, retention/reconciliation need, and DB-local transaction coupling (A recommended default; B staged only with explicit approval) consistently documented. No exactly-once external delivery claimed. OD-008 remains open.
+- **C. Event receipt deduplication:** **PASS WITH LIMITATIONS (Proposed/Open).** Explicit namespace/provenance model (`dedup_namespace_type/id` + normalized source event key); device-scoped upstream IDs must use stable source-device binding namespace to prevent cross-device collisions; data-source-global IDs may use tenant+`data_source_id`; unreliable/missing IDs require approved deterministic fallback or reject/quarantine. Distinct from identity/licensing idempotency. OD-013 remains open/partial (connector-specific behavior).
+- **D. Asset lineage and relational integrity:** **PASS.** No current polymorphic `from_asset_or_op_ref` attribute/definition in model/ERD/transactions; typed `from_asset_id`/`to_asset_id` and typed nullable `merge_operation_id`/`split_operation_id` by link type documented consistently; ERD/catalogue retain no obsolete polymorphic lineage design.
+- **E. Entity naming and responsibility boundaries:** **PASS WITH LIMITATIONS.** Boundaries between `role_permission`/`membership_role_assignment`, `tenant_configuration` and policy references, `ai_interaction_audit`/`audit_event`, `asset_tombstone`/terminal lifecycle state, `processing_work_item`/core processing entities, and `outbox_message`/`outbox_attempt` are consistently distinguished in intent. **Narrowly scoped essential correction applied:** removed duplicate/misplaced catalogue rows in `docs/POSTGRESQL_LOGICAL_DATA_MODEL.md` to restore authoritative catalogue consistency (9 rows removed; remaining backticked repetitions are intentional section 9.5 comparison rows). Technical design intent unchanged.
 
-### Not modified (Round 1.1)
-- `docs/PROJECT_STATUS.md` — no necessary correction identified (Round 1 artifacts already reflected; no status/implementation/validation claim upgrade required).
-- `docs/DATA_ARCHITECTURE.md`, `docs/SECURITY_ARCHITECTURE.md`, `docs/POSTGRESQL_TECHNICAL_DECISIONS.md` — reviewed for consistency; not modified (Round 1.1 detailed corrections/recommendations recorded in logical schema documents/open decisions/changelog).
-- ADR files (`docs/adr/0003`, `0005`, `0006`) — unchanged; **ADR 0006 remains Proposed**.
-- No application code files modified.
+## 4. Cross-document consistency, ERD, and Mermaid validation
+- **Cross-document consistency:** principal docs consistent on corrected Round 1.1 semantics for binding, idempotency, event dedup namespace, typed lineage, and entity boundaries; OD IDs/statuses (OD-001–OD-013) and proposed-vs-approved distinctions preserved. Catalogue duplication issue identified and corrected.
+- **ERD structure:** 4 Mermaid `erDiagram` blocks in `docs/POSTGRESQL_LOGICAL_ERD.md`; **40 unique entities** extracted from Mermaid definitions. `from_asset_or_op_ref` not present as an ERD attribute.
+- **Intentionally omitted/simplified catalogue entities:** explicitly documented in ERD/model; includes 10 named entities (`AI_INTERACTION_AUDIT`, `PROCESSING_WORK_ITEM`, `AI_PROVIDER_POLICY_CONSENT_REFERENCE`, `AI_PROVIDER_SECRET_REFERENCE`, `AI_USAGE_BUDGET_ACCOUNTING`, `DETECTION_RULE`, `DETECTION_RULE_VERSION`, `INTEGRATION_CONFIGURATION`, `THREAT_INTELLIGENCE_REFERENCE`, `ASSET_INVENTORY_OBSERVATION`) plus noted simplifications.
+- **Mermaid validation:** **structural validation performed** (block/entity extraction, declaration/search checks). **No Mermaid renderer/parser CLI available (`mmdc`/`npx` not found); visual rendering was NOT performed.** Structural validation must not be reported as visual validation.
 
-## 3. Findings and resolutions
+## 5. Open Decision reassessment (OD-001–OD-013)
+- **OD-001, OD-003, OD-004:** Proposed/open; block or constrain accepted licensing/accounting schema semantics and physical enforcement details pending ADR/owner/commercial approvals (partial/targeted blockers).
+- **OD-002:** Proposed/open (Alternative A recommended, not approved); **targeted blocker** for physical identity binding schema finalization.
+- **OD-008:** Proposed/open (contract refined, A recommended default for DB-local ops, not approved); **targeted blocker** for physical idempotency constraints/transaction templates.
+- **OD-013:** Proposed/open/partial; **connector-dependent partial blocker** for supported-connector dedup uniqueness/fallback physical rules.
+- **OD-005, OD-006, OD-007, OD-009, OD-010, OD-011, OD-012:** Proposed/open; block only specific physical/governance/operational design details and can be explicitly bounded without unsupported assumptions.
+- **No decision statuses changed. No decisions approved.**
 
-| Finding | Resolution | Status |
-|---|---|---|
-| Binding ownership/cardinality ambiguous (`asset_data_source` vs `source_device_key`), risk of competing source of truth | Evaluated A/B; **recommended Proposed Alternative A:** `asset_data_source` authoritative binding owns immutable `source_device_key_id`; aliases reference same stable binding identity; separate `source_device_key` only 1:1 dependent/non-authoritative projection if materialized. Model/ERD/transactions/OD-002 updated; approval still required | Completed/verified in documentation (recommendation Proposed, not approved) |
-| `identity_operation_idempotency_ledger` lacked complete logical contract (scope, canonicalization/hash, states, retry/unknown-commit, coupling) | Defined proposed contract and compared A single-transaction coupling (recommended default for DB-local identity/licensing ops) vs B staged/multi-transaction with leases/fencing/recovery; distinguished DB-local atomicity from external outbox side effects; no exactly-once external delivery claimed. Updated model/ERD/transactions/OD-008 | Completed/verified in documentation (Proposed, not approved) |
-| `event_receipt` dedup namespace insufficient for device-scoped/unreliable/missing upstream IDs and multi-device connectors | Defined proposed explicit namespace/provenance (tenant + namespace type/id + normalized source event key); device-scoped IDs must use stable source-device binding namespace to prevent cross-device collisions; unreliable/missing IDs require approved deterministic fallback or reject/quarantine. Updated model/ERD/transactions and added OD-013 for connector-specific behavior | Completed/verified in documentation (namespace model Proposed; connector-specific behavior Open) |
-| `asset_lineage_link` used polymorphic `from_asset_or_op_ref` not enforceable by conventional relational FK | Replaced with typed relationally enforceable lineage: typed `from_asset_id`/`to_asset_id` FKs and typed nullable operation FKs (`merge_operation_id`/`split_operation_id`) by link type/role; preserved canonical/non-reusable IDs, merge/split history, tenant boundaries, auditability. Updated model/ERD/transactions | Completed/verified in documentation (Proposed logical correction) |
-| Naming/responsibility overlap risk (`permission_assignment` vs `role_permission`, `tenant_configuration` vs `tenant_policy_reference`, `audit_event` vs `ai_interaction_audit`, `asset_tombstone` vs lifecycle, optional pipeline entities) | Normalized/clarified: `role_permission` canonical (distinct from `membership_role_assignment`), `tenant_configuration` canonical, `ai_interaction_audit` retained as separate specialized record correlated with `audit_event`, `asset_tombstone` distinct optional terminal historical representation, `processing_work_item` optional/non-core, `outbox_message`/`outbox_attempt` distinct. Updated catalogue/ERD/notes | Completed/verified in documentation (Proposed normalization) |
-| ERD/catalogue consistency gap discovered during Round 1.1 (missing catalogue rows for several ERD-critical entities after initial model edit) | Restored/reconciled missing catalogue entities (`data_source`, `asset_data_source`, `source_device_key`, `asset_identity_claim`, `asset_tombstone`, `asset_lineage_link`, `outbox_attempt`, `role_permission`, `tenant_configuration`) with Round 1.1-consistent definitions; revalidated ERD/catalogue alignment | Completed/verified |
+## 6. Publication correction details
+- **Corrected file:** `dist/cares-external-audit/README.md`
+- **Corrections:** removed stale implication that remote GitHub publication could not be completed; added accurate repository/branch/commit/publication URLs and direct file URLs for `audit/postgresql-round1-1-publication` on `https://github.com/clarusinnovaceteknologi/cares` (initial publication commit `888905d8aef8bf6eb2e874cf9804a239f0f6f51a`); preserved historical packaging facts (original package created when workspace did not expose Git repository/source commit SHA; original packaging date/checksums context) and distinguished from subsequent publication; stated correction via new commit preserving history; did not claim original ZIP built from known Git commit and did not claim unperformed independent verification.
+- **External accessibility:** repository/branch/file presence verified via GitHub repository tools in this environment; unauthenticated external accessibility **NOT independently verified** (if repository is private, authorized GitHub access required). No visibility change made.
+- **Technical design documents were not modified for README consistency.**
 
-## 4. Alternatives evaluated and recommendations
+## 7. Export regeneration and validation results
+- **Exporter:** `/tmp/export_cares_docs.py` (Python, `markdown-it-py` available; Mermaid renderer/parsing CLI unavailable for visual render)
+- **Regeneration result:** eligible sources **32**, generated doc HTML **32**, total HTML files **33** (including `index.html`), failed conversions **0**, copied assets **0**, missing referenced assets **0**, broken internal links **0**, empty HTML **[]**, Mermaid bundled **true**.
+- **Outputs:** `dist/cares-documentation-html/` (index and manifest updated), `dist/CARES_DOCUMENTATION_HTML.zip` rebuilt (36 entries, `zipfile.testzip()` no bad member).
+- **Required contents present in ZIP:** index, `EXPORT_MANIFEST.json`, `EXPORT_MANIFEST.md`, 5 principal Round 1.1 HTML docs, and `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html`.
+- **Final audit report:** `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md` created and corresponding HTML page generated/included in export and ZIP.
 
-- **Binding model:** A (authoritative `asset_data_source`, dependent key projection) vs B (authoritative `source_device_key`). **Recommendation:** A (Proposed, not approved; OD-002).
-- **Idempotency coupling:** A single-transaction coupling (recommended default for DB-local identity/licensing operations) vs B staged/multi-transaction tracking with leases/fencing/recovery. **Recommendation:** A by default; B only with explicit approval (Proposed, OD-008).
-- **Event dedup namespace:** tenant+data source, tenant+stable source-device binding, or explicit modeled namespace. **Recommendation:** explicit modeled namespace/provenance with namespace selected by upstream ID scope; device-scoped IDs must use stable source-device binding namespace. **Connector-specific fallback behavior remains open (OD-013).**
-- **Lineage integrity:** typed asset refs, explicit operation-to-lineage entities, separate merge/split associations, or typed link table with nullable operation FKs. **Recommendation:** typed, relationally enforceable lineage associations (typed asset and operation FKs by link type). **Proposed.**
-- **Naming normalization:** retain-separate, merge, or specialize. **Recommendations/dispositions:** as documented in changelog and logical model (Proposed, traceability preserved).
+## 8. Recorded SHA-256 hashes (updated artifacts)
+- `dist/cares-external-audit/README.md`: `9d1a3321f7ef937ae6a56cf9d55ff9a551a6917fc829eb7796c8d258dcd0e62f`
+- `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md`: `80ee95d08545274f58d4dcdaa3ceab41a482886189487e28e757f1f3d3265db6`
+- `dist/CARES_DOCUMENTATION_HTML.zip` (rebuilt, also copied to `dist/cares-external-audit/CARES_DOCUMENTATION_HTML.zip`): `d543bc43d2a31eeeb0b76dc34eea1b22b3ec46a8361af93827a62617c39643c0`
+- Prior packaged `copilot.txt` (replaced by this report): `1a06f38285fbabc7e1b77d2bce90c38b928bc95a02500112d3b4984d59c0c4e5`
+- Prior packaged ZIP (replaced in audit package): `b8ef7f11b1b7c6f9e8381896f121dc2d7200911c3fc9572f850a71f3c02049c6`
 
-No recommendation in this report constitutes approval.
+## 9. Git/publication actions and limitations
+- Local git repository state: branch `audit/postgresql-round1-1-publication` tracks `origin/audit/postgresql-round1-1-publication` (initial commit `888905d...` preserved). Correction changes prepared as a new commit (no history rewrite).
+- Remote push/verification from this environment may require authorized Git credentials; push outcome and final remote verification are reported in the completion summary below/alongside this report. **Publication must not be claimed successful unless remote verification is complete.**
 
-## 5. Entity and relationship changes (logical, documentation-only)
-
-- `asset_data_source`: clarified as authoritative stable binding entity owning immutable `source_device_key_id` (Proposed recommendation).
-- `source_device_key`: clarified as optional 1:1 dependent/non-authoritative projection if materialized (no competing lifecycle/attributes).
-- `source_device_fingerprint_alias`: references stable binding identity (same authoritative context).
-- `identity_operation_idempotency_ledger`: expanded with proposed scope/canonicalization/hash/state/outcome semantics.
-- `event_receipt`: expanded with explicit dedup namespace type/id, normalized source event key, provenance/device-scope context, and collision-prevention rules.
-- `asset_lineage_link`: changed from generic polymorphic reference to typed FKs (`from_asset_id`, `to_asset_id`, nullable `merge_operation_id`/`split_operation_id`, `link_type` role/exclusivity intent).
-- `asset_merge_operation` / `asset_split_operation`: linked to typed lineage (not polymorphic refs).
-- `role_permission`: normalized as canonical role→capability mapping, distinct from `membership_role_assignment`.
-- `tenant_configuration`: normalized as canonical tenant configuration/policy-reference state.
-- `ai_interaction_audit`: retained as distinct specialized record correlated/cross-referenced with `audit_event`.
-- `asset_tombstone`: clarified as distinct optional terminal historical representation.
-- `outbox_attempt`: retained/restored as distinct attempt/replay metadata entity.
-- `data_source`, `asset_identity_claim`: restored/reconciled in catalogue for consistency.
-
-## 6. Updated ERD validation and rendering results
-
-- **ERD count:** 4 Mermaid ERDs (`ERD 1` core, `ERD 2` asset identity/licensing, `ERD 3` event processing/audit/evidence, `ERD 4` tenant and authorization boundary). **Completed/verified (structural).**
-- **Mermaid fences/blocks:** 4 fenced Mermaid blocks, `erDiagram` declarations present (5 total `erDiagram` token occurrences in file). **Completed/verified (structural grep/count).**
-- **ERD/catalogue entity alignment:** 40 unique ERD entities identified; **0 ERD entities missing from catalogue** (case-normalized comparison). **Completed/verified.**
-- **Catalogue entities not drawn in ERDs:** 10 (`AI_INTERACTION_AUDIT`, `AI_PROVIDER_POLICY_CONSENT_REFERENCE`, `AI_PROVIDER_SECRET_REFERENCE`, `AI_USAGE_BUDGET_ACCOUNTING`, `ASSET_INVENTORY_OBSERVATION`, `DETECTION_RULE`, `DETECTION_RULE_VERSION`, `INTEGRATION_CONFIGURATION`, `PROCESSING_WORK_ITEM`, `THREAT_INTELLIGENCE_REFERENCE`) — explicitly identified as intentionally omitted/simplified in ERD document. **Completed/verified.**
-- **Renderer validation:** no Mermaid CLI/renderer execution performed in this environment; diagram rendering/visual layout was **not independently verified**. Structural validation only. **Completed/not independently verified (rendering).**
-
-## 7. Transaction/idempotency contract conclusions
-
-- Proposed identity/licensing idempotency contract documented (scope, canonicalization/hash, `in_progress`/`committed`/`failed_terminal`/`timeout_unknown_commit`, replay/conflict/concurrency/unknown-commit behavior, retention/reconciliation need). **Completed/verified in docs (Proposed).**
-- A/B coupling comparison documented; **recommended default:** single-transaction coupling for database-local identity/licensing operations (ledger claim/state/result with business, audit/history/licensing, and required outbox). Staged tracking requires explicit leases/fencing/recovery and approval. **Completed/verified in docs (Proposed).**
-- Database-local atomicity separated from external side effects; no exactly-once external delivery claimed. **Completed/verified.**
-
-## 8. Event deduplication namespace conclusions
-
-- Explicit namespace/provenance model documented for `event_receipt` (tenant + namespace type/id + normalized source event key). **Completed/verified in docs (Proposed).**
-- Device-scoped upstream IDs in multi-device connectors must use tenant + stable source-device binding identity namespace to prevent cross-device collisions; data-source-global IDs may use tenant + `data_source_id`; unreliable/missing IDs require approved deterministic fallback or reject/quarantine. **Completed/verified in docs (Proposed).**
-- Connector-specific fallback/classification behavior remains **Open Decision OD-013**. **Unresolved (requires approval/bounded connector policy).**
-
-## 9. Lineage referential-integrity conclusions
-
-- Polymorphic `from_asset_or_op_ref` removed from logical lineage design and replaced with typed, relationally enforceable associations (typed asset and typed operation FKs by link type). **Completed/verified in docs (Proposed).**
-- Preserves canonical ID stability/non-reuse, merge survivor/losing history, split source/result history, tenant boundaries, and auditability intent. Physical constraint syntax remains future schema design. **Completed/verified in docs.**
-
-## 10. Remaining open decisions and blockers
-
-- **ADR 0006:** remains **Proposed** (not promoted).
-- **OD-001–OD-012 retained**; **OD-002, OD-008 refined** with recommendations but still require formal technical approval (targeted blockers for physical identity/licensing/idempotency schema finalization).
-- **OD-013 added (Open/partial blocker):** connector-specific event dedup namespace/fallback behavior for supported connectors (especially unreliable/missing upstream IDs and pre-binding/device-scoped cases).
-- **Accounting semantics dependencies:** OD-003/OD-004/OD-001 remain relevant blockers/dependencies for reservation/counter and schema-level acceptance details.
-- Additional unresolved areas (as previously documented): merge/split approval workflow authority (OD-005), fingerprint/key custody (OD-006), agent reinstall/re-enrollment lifecycle effects (OD-007), outbox fencing/replay/`delivery_unknown` details (OD-009), evidence retention/legal hold/deletion approvals (OD-010), AI consent/classification/budget/provider policy approvals (OD-011), retention/workload validation (OD-012).
-- No owner, finance, privacy, legal, or security approvals invented.
-
-## 11. Cross-document validation results
-
-- **Entity/catalogue/ERD:** all 40 ERD entities exist in logical data model catalogue (case-normalized); intentionally omitted catalogue entities explicitly documented in ERD. **Completed/verified.**
-- **Mermaid structure:** 4 fenced ERD blocks present. **Completed/verified (structural).**
-- **Key correction propagation:** checked in Markdown and generated HTML for binding recommendation text, typed lineage (`from_asset_id`/operation FKs), explicit event dedup namespace fields/notes, idempotency state/hash/contract fields and Round 1.1 notes, OD-013 presence, and Round 1.1 changelog/index/manifest inclusion. **Completed/verified.**
-- **Renderer/visual Mermaid output:** not independently verified (no renderer run). **Completed/not independently verified.**
-- **Internal links in regenerated export:** exporter reported `broken_links: 0`. **Completed/verified by exporter report.**
-- **Mermaid/assets in regenerated export:** exporter reported `missing_assets: 0`, `copied_assets: 0`, `mermaid_bundled: true`. **Completed/verified by exporter report.**
-
-## 12. HTML export and ZIP regeneration results
-
-- **Exporter run:** `python3 /tmp/export_cares_docs.py` completed successfully after Round 1.1 Markdown updates.
-- **Eligible Markdown files discovered:** 31
-- **Document HTML files generated:** 31 (`generated_doc_html`)
-- **Total HTML files generated (including index):** 32 (`generated_html_total`)
-- **Conversion failures:** 0
-- **Broken internal links:** 0
-- **Missing assets:** 0
-- **Empty HTML outputs:** none reported
-- **Export index:** `dist/cares-documentation-html/index.html` (includes `POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG`)
-- **Export manifest:** `dist/cares-documentation-html/EXPORT_MANIFEST.md` (includes Round 1.1 changelog)
-- **Updated/generated documents include:** `POSTGRESQL_LOGICAL_DATA_MODEL.md.html`, `POSTGRESQL_LOGICAL_ERD.md.html`, `POSTGRESQL_TRANSACTION_BOUNDARIES.md.html`, `POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html`, `POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md.html`
-- **ZIP path:** `dist/CARES_DOCUMENTATION_HTML.zip`
-- **ZIP size:** 1,374,630 bytes
-- **ZIP entry count:** 35
-- **ZIP top-level directory verification:** exactly one top-level directory `cares-documentation-html/` (**verified**)
-- **ZIP/index inclusion verification:** Round 1.1 changelog HTML present in ZIP and linked from index (**verified**)
-
-## 13. Explicit confirmations and scope
-
-- **No PostgreSQL DDL created.**
-- **No migration created.**
-- **No SQL constraints, indexes, RLS policies, triggers, functions, procedures, or database roles implemented.**
-- **No application code modified.**
-- **No database implementation or tests created.**
-- ADR 0006 status preserved as **Proposed**. No owner/finance/privacy/legal/security approvals invented.
-- Documentation corrections are proposed logical-model clarifications; they are **not** implementation, test, or security validation evidence.
-
-## 14. Final status
-
+## 10. Final readiness recommendation
 **READY FOR ROUND 2 WITH EXPLICITLY BOUNDED EXCLUSIONS**
 
-Explicitly bounded exclusions/blocking approvals required before unbounded physical schema finalization: formal technical approval of OD-002 binding ownership/materialization, formal approval of OD-008 idempotency contract/scope/canonicalization/state/retention and any staged exceptions, resolution or explicit bounding of OD-001/OD-003/OD-004 accounting and schema-level acceptance dependencies, and connector-specific approval/bounding of OD-013 event dedup namespace/fallback behavior for supported connectors (plus other retained OD approvals as applicable to affected physical artifacts). Mermaid visual rendering was not independently verified (structural validation only).
+- **Does not block entire Round 2 design (bounded):** no whole-round blocker identified in inspected artifacts, subject to exclusions.
+- **Blocks specific physical design decisions:** OD-002 (binding physical schema), OD-008 (idempotency constraints/transaction templates), OD-001/003/004 (licensing/accounting semantics/enforcement and accepted ADR 0006 interpretations), OD-013 (connector-specific dedup uniqueness/fallback for supported connectors), and OD-005/006/007/009/010/011/012 for their respective physical/governance/operational details.
+- **Safely deferrable with bounds:** optional dependent key projection materialization choice (consistent with authoritative model), `processing_work_item`, fine-grained RBAC/catalog expansions, and finalized partition/retention/connector fallback specifics until approved.
+- **Formal approvals required:** OD-001–OD-013 as applicable and ADR 0006 governance acceptance where relevant; no approvals invented.
+
+*Stop after audit and publication correction. Do not start Round 2 without explicit project-owner authorization.*

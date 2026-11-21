@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADR 0005: Start event processing with a PostgreSQL outbox at a measured pilot profile</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/adr/0005-event-processing-and-broker-evolution.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>ADR 0005: Start event processing with a PostgreSQL outbox at a measured pilot profile</h1>
+<ul>
+<li><strong>Status:</strong> Proposed initial design and capacity assumptions; not implemented; owner approval required</li>
+<li><strong>Date:</strong> 2026-11-16</li>
+</ul>
+<h2>Problem</h2>
+<p>CARES needs durable event ingestion and asynchronous processing, but no workload, reference hardware, or production performance measurements exist. A broker and analytical database add operational and tenant-security complexity. Conversely, an unspecified target cannot guide schema, retention, backpressure, or verification.</p>
+<h2>Proposed initial capacity envelope</h2>
+<p>For one initial SaaS deployment, use this <strong>planning assumption</strong>, not a service commitment:</p>
+<ul>
+<li>Up to 10 tenants and 5,000 active assets.</li>
+<li>25 events/second sustained aggregate; 100 events/second aggregate burst for five minutes.</li>
+<li>1 KiB average uncompressed payload, 256 KiB maximum event, and 4 MiB maximum decompressed batch.</li>
+<li>Approximately 2.06 GiB/day event payload and 61.8 GiB for 30 days at average size; reserve about 150 GiB for event data at a provisional 2x normalized/index overhead plus headroom. WAL, replicas, backups, and non-event data are additional.</li>
+<li>Benchmark reference: app/API/worker 4 vCPU/8 GiB RAM; PostgreSQL 4 vCPU/16 GiB RAM/500 GiB SSD, private network, same region.</li>
+<li>Ingest p95 durable acknowledgment &lt;=1 second, p99 &lt;=3 seconds; worker &gt;=150 events/second; accepted-to-normalized/detected p95 &lt;=30 seconds and p99 &lt;=60 seconds at 25 events/second; outbox p95 lag &lt;30 seconds and no sustained &gt;120 seconds during the defined burst.</li>
+</ul>
+<p>All numbers are provisional until the owner approves the test profile and representative payload distribution and the Phase 10 load test validates them. The full assumptions, storage math, retention proposal, and test procedure are in <a href="../DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>.</p>
+<h2>Alternatives considered</h2>
+<ol>
+<li><strong>Synchronous processing in the ingestion API.</strong> Simple but couples source acknowledgment to detection latency and failure; rejected.</li>
+<li><strong>PostgreSQL transactional outbox with bounded Python workers.</strong> Uses the mandatory database, keeps event acceptance and work enqueue atomic, and avoids another service at pilot scale; selected initially.</li>
+<li><strong>NATS/Kafka from day one.</strong> Provides streaming/fan-out features but adds operations, security, and recovery complexity before requirements are measured; deferred.</li>
+<li><strong>ClickHouse/OpenSearch as primary event store.</strong> Could optimize analytics but adds a second source of tenant, retention, and correctness complexity; deferred. PostgreSQL remains initial primary relational and event store.</li>
+</ol>
+<h2>Proposed decision</h2>
+<p>Write validated events and outbox work in the same PostgreSQL transaction. Use daily UTC partitions keyed on server-assigned ingestion time, idempotency keys, bounded worker claims, bounded concurrency, exponential backoff with jitter (up to 10 attempts), and a terminal dead-letter state in the database with audited manual replay. Apply request/event size limits and per-tenant plus global rate/technical quotas. Do not add a message broker, cache, object store, search service, or analytical database for the proposed initial profile.</p>
+<h2>Trade-offs</h2>
+<ul>
+<li><strong>Benefits:</strong> atomic event acceptance/work creation; fewer moving components; PostgreSQL can enforce tenant and retention controls in one initial store.</li>
+<li><strong>Costs:</strong> polling and outbox history consume DB I/O/storage; workers and OLTP queries compete for resources; large analytics may be inefficient.</li>
+<li><strong>Reliability:</strong> only acknowledge after durable commit; all processing must be idempotent; outbox age and disk headroom must be monitored.</li>
+<li><strong>Scalability:</strong> daily partitions and bounded workers allow an initial profile, but are not an unlimited streaming design.</li>
+<li><strong>Security:</strong> payload size, tenant context, RLS, and worker leases must be enforced; broker adoption later requires a separate tenant/auth design.</li>
+</ul>
+<h2>Expansion criteria</h2>
+<p>Propose a broker only if representative tests/telemetry show sustained aggregate &gt;250 events/second or bursts &gt;1,000 events/second are required; the outbox consumes &gt;10% of DB CPU or breaches query/transaction targets after tuning; or durable replay/fan-out to independent consumers cannot safely use the outbox.</p>
+<p>Propose an analytical database only if common analytics remain p95 &gt;2 seconds after partition/index/query optimization; analytics uses &gt;25% primary DB CPU for 30 minutes at target load; or event retention exceeds 1 TiB and a benchmark demonstrates OLTP impact. A new analytical store is derived, never authoritative for tenant identities, asset licensing, access decisions, or event acceptance.</p>
+<p>Any expansion requires a separate ADR, load-test evidence, tenant isolation and retention design, backup/recovery plan, operational owner, and cost justification. Thresholds themselves are assumptions pending owner approval.</p>
+<h2>Implementation requirements</h2>
+<ul>
+<li>Implement bounded request and event sizes, source/tenant validation, durable acceptance, idempotency, transactional outbox, partition management, retention, worker concurrency limits, retries, dead-lettering, and backpressure.</li>
+<li>Keep globally unique <code>(tenant_id, source_id, source_event_key)</code> deduplication in an idempotency receipt ledger because a partitioned event table cannot enforce that unique key across partitions unless the partition key is included. Namespace the connector-normalized key by source-device key when upstream event IDs are only device-scoped. Commit receipt, event, and outbox atomically; reject same-key/different-payload reuse.</li>
+<li>Alert on outbox age (&gt;60 seconds for five minutes; escalate &gt;5 minutes or growing), disk headroom, database load, worker errors, and dead-letter creation.</li>
+<li>Never silently drop an acknowledged event. When safe capacity is exhausted, reject uncommitted input with retry guidance so agents can use bounded offline buffers.</li>
+<li>Keep technical ingestion/storage quotas separate from monitored asset licensing.</li>
+</ul>
+<h2>Verification requirements</h2>
+<ul>
+<li>Performance-test a representative 30-day event data set and payload distribution on the documented reference hardware.</li>
+<li>Sustain 25 events/second for 60 minutes and run a 100 events/second burst for five minutes; verify ingest latency, worker throughput, lag, DB CPU/storage, valid-event failures, and zero acknowledged-event loss.</li>
+<li>Sustain 150 events/second worker replay and demonstrate recovery from a burst within the declared lag objective.</li>
+<li>Kill/restart API and workers at commit/claim boundaries; verify idempotency, retry, dead-letter, and manual replay.</li>
+<li>Replay the same event across different ingestion-time partitions; verify a same-payload duplicate returns the prior result and conflicting payload under the same event key is rejected.</li>
+<li>Test partition rollover, late events, retention drops, RLS, query plans, and backup restore.</li>
+<li>Record environment, schema/index version, payload fixture, run duration, raw results, and measurement variance.</li>
+</ul>
+<h2>Unresolved owner decisions</h2>
+<ul>
+<li>Approve or revise the initial scale profile, hardware baseline, latency targets, and expansion thresholds.</li>
+<li>Approve raw/normalized event retention and audit/case retention durations in coordination with privacy/legal requirements.</li>
+<li>Define tenant-specific ingestion and storage ceilings and the ingestion rejection policy during platform overload.</li>
+<li>Confirm that PostgreSQL is sufficient for the first supported customer scale.</li>
+</ul>
+<h2>Revisit when</h2>
+<p>Measured workload breaches approved thresholds or new requirements need replay, fan-out, analytics, or retention beyond the profile. Do not add infrastructure solely on anticipated scale.</p>
+
+</article>
+</div>
+
+</body>
+</html>

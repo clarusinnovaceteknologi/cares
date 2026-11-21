@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADR 0004: MELIRA uses explicitly selected external AI SaaS behind a privacy gate</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/adr/0004-external-ai-provider-boundary.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>ADR 0004: MELIRA uses explicitly selected external AI SaaS behind a privacy gate</h1>
+<ul>
+<li><strong>Status:</strong> External SaaS direction is mandatory; detailed controls proposed, owner approval required</li>
+<li><strong>Date:</strong> 2026-11-16</li>
+</ul>
+<h2>Problem</h2>
+<p>MELIRA may process sensitive multi-tenant security data. CARES must not transmit data to an unselected provider, bypass customer policy, leak credentials, or allow model output to cross tenant/tool authorization boundaries. Provider residency, retention, training use, quotas, and endpoint validation affect whether a call is permitted.</p>
+<h2>Confirmed requirements</h2>
+<ul>
+<li>MELIRA uses external AI SaaS; CARES must not require local GPU resources.</li>
+<li>Customers can configure and select supported third-party providers.</li>
+<li>No silent transmission to an alternative provider.</li>
+<li>AI is optional; core CARES behavior must not depend on AI.</li>
+<li>Customer data policies must be enforced before external transmission.</li>
+<li>AI tool permissions are independently checked; high-impact actions require approval.</li>
+</ul>
+<h2>Alternatives considered</h2>
+<ol>
+<li><strong>Local model inference or local GPU service.</strong> Conflicts with the mandatory external SaaS/no-local-inference direction; rejected.</li>
+<li><strong>Hard-code one vendor throughout CARES.</strong> Simpler initially but couples domain behavior and configuration to one vendor; rejected.</li>
+<li><strong>Provider-neutral CARES boundary with provider-specific external SaaS adapters.</strong> Supports explicit customer choice and independent privacy enforcement; selected.</li>
+<li><strong>Automatic failover to a different provider on outage.</strong> Risks disclosing data to an unapproved processor; rejected.</li>
+<li><strong>Accept arbitrary customer endpoints without validation.</strong> Flexible but creates SSRF, DNS rebinding, and egress risks; rejected as default.</li>
+</ol>
+<h2>Proposed decision</h2>
+<p>Define a provider interface for supported external SaaS vendors. A tenant explicitly selects an enabled provider, model, and approved region/endpoint. CARES sends a request only to that selected target after user/tool authorization, classification, customer transmission consent/policy, minimization, residency/retention/training checks, and budget preflight. If any check fails or the provider is unavailable, return an explicit blocked/unavailable/error outcome; do not send data elsewhere. Local AI inference is not an allowed fallback.</p>
+<p>Maintain a versioned provider catalog containing supported API capabilities, official endpoint/region allow-lists, data processing terms, retention options, training/data-use policy, and review date. Disable a provider for a data class if its residency, retention, or training terms cannot be established or do not satisfy the tenant's policy. Customers acknowledge applicable provider terms and authorize the relevant data categories before enabling transmission.</p>
+<p>Store tenant provider credentials as secret references in a KMS-backed secret manager. The UI accepts and replaces credentials but never reads them back; credentials are scoped per tenant, redacted from logs, access-audited, and revocable/rotatable. The credential ownership model (customer BYOK versus CARES-managed billing) remains unresolved.</p>
+<p>The provider-neutral adapter contract exposes capability/configuration validation, supported models/regions, request submission, normalized response/errors, and actual usage/cost metadata. Adapters do not query tenant data, set authorization, choose another provider, or execute tools. Provider capabilities and terms are catalog-versioned; conformance tests verify each adapter's timeout, error, usage, region, and tool-call behavior.</p>
+<p>Validate provider destinations against platform allow-lists. Permit HTTPS only; reject userinfo, unexpected ports, redirects to unvalidated destinations, loopback/private/link-local/multicast/metadata IPs, and DNS answers that violate egress policy. Resolve and validate at connection time and route outbound traffic through egress controls to mitigate DNS rebinding. Custom compatible endpoints are disabled by default and require administrator allow-listing and equivalent review.</p>
+<p>Each call records a privacy decision and an audit record: tenant, actor, purpose, provider/model, endpoint region, policy/catalog version, data classifications/categories, evidence IDs, estimated/actual tokens and cost, timestamp, outcome, and correlation ID. Do not retain full prompts/responses by default. Apply tenant-specific hard request/token/spend limits with preflight estimate, concurrency/rate limit, and post-call reconciliation. If usage state cannot be checked, fail closed for paid external transmission.</p>
+<p>Model tool calls are proposals, never authorization. CARES checks each tool, tenant, object, arguments, and user permission independently. Default to read-only tools. Changes to customer systems require the existing workflow/approval boundary and separate audit; no model response can approve itself.</p>
+<h2>Data-minimization policy</h2>
+<p>Retrieve only records the authenticated user may access. Proposed defaults are: no provider enabled and no transmission until a tenant administrator explicitly configures a provider and accepts its terms; no background AI export; each call initiated by an authorized user with an external-processing notice; <code>restricted</code> data, secrets, credentials, and file contents denied; <code>confidential</code> data denied unless separately and explicitly authorized; and <code>public</code>/<code>internal</code> data still subject to tenant policy and minimization. The classification matrix and consent granularity require owner/privacy/legal approval.</p>
+<p>Exclude credentials/secrets and restricted information by default. Transform structured IP/host/user fields using tested, request-scoped tokenization where correlation is necessary; keep any token mapping inside CARES. Free-form logs require explicit filtering and policy; do not assume prompt instructions or vendor settings alone enforce privacy.</p>
+<h2>Trade-offs</h2>
+<ul>
+<li><strong>Benefits:</strong> explicit provider control, no local AI infrastructure, replaceable adapters, and CARES-owned privacy/authorization boundary.</li>
+<li><strong>Costs:</strong> provider catalog and policy review are ongoing; per-provider API/capability drift requires maintenance; blocking on unknown processor terms reduces availability.</li>
+<li><strong>Privacy:</strong> customer data remains an external processing risk even after minimization; contracts, jurisdiction, retention and deletion obligations must be verified.</li>
+<li><strong>Availability:</strong> no fallback preserves consent but means AI can be unavailable during provider outage; core CARES remains operational.</li>
+<li><strong>Cost:</strong> provider token pricing and estimates vary; hard limits and actual usage reconciliation are required.</li>
+<li><strong>Security:</strong> endpoint allow-listing constrains flexibility; customer custom endpoints need a separate review path.</li>
+</ul>
+<h2>Implementation requirements</h2>
+<ul>
+<li>Implement the provider-neutral interface and only owner-approved provider adapters; never add local inference.</li>
+<li>Keep adapter behavior provider-independent at the CARES boundary: validated config/capabilities, normalized success/error, usage metadata, and explicit timeout behavior; adapters cannot authorize data or invoke privileged tools.</li>
+<li>Persist explicit tenant provider selection, region, consent, data-policy version, quota, and secret reference.</li>
+<li>Implement endpoint validation, egress restrictions, secret rotation/revocation, privacy gate, data minimization, audit, and independent tool authorization before enabling calls.</li>
+<li>Publish provider data residency, retention, and training/data-use characteristics in the configuration workflow.</li>
+<li>Do not log prompts, credentials, or sensitive provider responses by default.</li>
+<li>Define hard AI request/token/cost quotas and behavior when cost/usage data is unavailable.</li>
+</ul>
+<h2>Verification requirements</h2>
+<ul>
+<li>Use a capture/mock transport to prove there are zero outbound calls when disabled, unconfigured, consent is absent, policy denies, residency is disallowed, or quota is exhausted.</li>
+<li>Verify that only the explicitly selected provider/region is contacted and no automatic fallback occurs after timeout, error, or rate limit.</li>
+<li>Test endpoint parsing, DNS rebinding, redirect, private/metadata IP, IPv6, non-HTTPS, and credential-in-URL cases.</li>
+<li>Test secret write-only behavior, rotation, revocation, tenant isolation, and log redaction.</li>
+<li>Test classification/minimization for structured, nested, malformed, IPv4/IPv6, free-form, and secret-bearing evidence.</li>
+<li>Attempt prompt injection and unauthorized tool calls; prove independently authorized actions and human approval cannot be bypassed by model output.</li>
+<li>Exhaust provider quotas and simulate provider/secret manager outages; verify explicit failure and continued core operation.</li>
+</ul>
+<h2>Unresolved owner decisions</h2>
+<ul>
+<li>Initial supported provider/vendor list and approved deployment regions.</li>
+<li>Customer BYOK versus CARES-managed provider billing and key custody.</li>
+<li>Consent scope and required approving customer roles.</li>
+<li>Allowed classification/data-category matrix, default retention, and provider-training requirements.</li>
+<li>Per-tenant daily/monthly request, token, spend, and concurrency ceilings.</li>
+<li>Custom endpoint enablement and who may allow-list a customer endpoint.</li>
+</ul>
+<h2>Revisit when</h2>
+<p>A provider, region, data-use term, or model capability changes. Reassess processor terms and security tests before enabling it. Silent failover and local inference remain prohibited.</p>
+
+</article>
+</div>
+
+</body>
+</html>

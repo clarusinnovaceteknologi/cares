@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES_PRODUCT_VISION</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/CARES_PRODUCT_VISION.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<p>CARES</p>
+<p>Comprehensive Assessment &amp; Risk Evaluation Service</p>
+<p>Integrated Cyber Defense Platform</p>
+<p>Powered by MELIRA AI</p>
+<hr />
+<ol>
+<li>PENDAHULUAN</li>
+</ol>
+<p>1.1. Gambaran Umum</p>
+<p>CARES (Comprehensive Assessment &amp; Risk Evaluation Service) merupakan platform keamanan siber terpadu yang dirancang untuk membantu organisasi memantau, menganalisis, mengevaluasi, dan merespons berbagai potensi ancaman keamanan informasi pada lingkungan teknologi mereka.</p>
+<p>CARES dikembangkan sebagai platform modular yang dapat diperluas secara bertahap untuk mendukung berbagai kebutuhan Security Operations Center (SOC), mulai dari pengumpulan data keamanan, monitoring endpoint dan jaringan, vulnerability management, threat intelligence, security event correlation, incident management, hingga security orchestration and automated response.</p>
+<p>CARES dirancang untuk dapat digunakan oleh berbagai organisasi melalui sistem akun pelanggan dengan hak akses, kuota perangkat, dan konfigurasi yang ditentukan oleh administrator platform.</p>
+<p>CARES juga menyediakan integrasi kecerdasan buatan melalui AI Copilot bernama MELIRA, yang dapat membantu pengguna melakukan analisis, investigasi, memahami ancaman, dan menyusun rekomendasi penanganan insiden.</p>
+<p>Penggunaan MELIRA bersifat opsional. Seluruh fungsi inti CARES harus tetap dapat beroperasi meskipun fitur AI dinonaktifkan atau layanan AI eksternal sedang tidak tersedia.</p>
+<p>1.2. Tujuan Pengembangan</p>
+<p>CARES dikembangkan dengan tujuan:</p>
+<ol>
+<li>Menyediakan platform SOC terpadu yang dapat memonitor berbagai perangkat dan infrastruktur teknologi.</li>
+<li>Mengumpulkan dan mengolah data keamanan dari endpoint, firewall, jaringan, server, dan perangkat SOC lainnya.</li>
+<li>Mengidentifikasi potensi kerentanan, ancaman, aktivitas mencurigakan, serta anomali keamanan.</li>
+<li>Menyediakan analisis keamanan berdasarkan korelasi berbagai sumber data.</li>
+<li>Membantu organisasi memahami tingkat risiko keamanan infrastruktur mereka.</li>
+<li>Menyediakan sistem pengelolaan insiden dan rekomendasi mitigasi.</li>
+<li>Mendukung otomatisasi respons keamanan melalui mekanisme yang terkontrol.</li>
+<li>Menyediakan AI Copilot yang dapat membantu pekerjaan analis SOC.</li>
+<li>Mendukung pengembangan dan integrasi modul keamanan baru tanpa harus membangun ulang keseluruhan platform.</li>
+</ol>
+<hr />
+<ol start="2">
+<li>ARSITEKTUR UTAMA CARES</li>
+</ol>
+<p>CARES terdiri dari empat komponen utama:</p>
+<ol>
+<li>CARES Dashboard.</li>
+<li>CARES Agent.</li>
+<li>CARES Core Engine.</li>
+<li>MELIRA AI.</li>
+</ol>
+<p>Keempat komponen tersebut bekerja secara terintegrasi, tetapi memiliki tanggung jawab masing-masing.</p>
+<p>2.1. CARES Dashboard</p>
+<p>CARES Dashboard merupakan antarmuka utama yang digunakan administrator dan pelanggan untuk mengakses, mengelola, memantau, serta menganalisis informasi keamanan.</p>
+<p>Dashboard berfungsi sebagai pusat interaksi pengguna dengan keseluruhan sistem CARES.</p>
+<p>Dashboard menyediakan:</p>
+<ul>
+<li>Security monitoring.</li>
+<li>Asset management.</li>
+<li>Security event management.</li>
+<li>Vulnerability management.</li>
+<li>Threat intelligence.</li>
+<li>Alert management.</li>
+<li>Incident management.</li>
+<li>Security reporting.</li>
+<li>Integration management.</li>
+<li>Agent management.</li>
+<li>User management.</li>
+<li>Configuration management.</li>
+<li>AI Copilot interface.</li>
+</ul>
+<p>2.2. CARES Agent</p>
+<p>CARES Agent merupakan aplikasi yang dipasang pada perangkat atau endpoint yang ingin dimonitor.</p>
+<p>Agent bertugas mengumpulkan informasi sistem dan keamanan dari perangkat tempatnya dipasang, kemudian mengirimkan data tersebut ke CARES Core Engine melalui koneksi internet yang aman.</p>
+<p>Agent dirancang agar dapat berjalan pada berbagai sistem operasi dengan kemampuan pengumpulan data yang menyesuaikan karakteristik dan batasan masing-masing sistem operasi.</p>
+<p>2.3. CARES Core Engine</p>
+<p>CARES Core Engine merupakan pusat pemrosesan data CARES.</p>
+<p>Komponen ini bertanggung jawab atas:</p>
+<ul>
+<li>Data ingestion.</li>
+<li>Data parsing.</li>
+<li>Data normalization.</li>
+<li>Data enrichment.</li>
+<li>Event correlation.</li>
+<li>Security detection.</li>
+<li>Risk assessment.</li>
+<li>Vulnerability analysis.</li>
+<li>Alert generation.</li>
+<li>Incident processing.</li>
+<li>Data storage.</li>
+<li>Reporting data preparation.</li>
+<li>Communication dengan Agent dan perangkat eksternal.</li>
+</ul>
+<p>Core Engine harus dirancang terpisah secara logis dari Dashboard agar proses pengumpulan dan analisis data tidak membebani antarmuka pengguna.</p>
+<p>Core Engine juga harus mendukung pemrosesan data dalam jumlah besar serta memungkinkan pengembangan dan pemisahan komponen secara bertahap sesuai kebutuhan kapasitas platform.</p>
+<p>2.4. MELIRA AI</p>
+<p>MELIRA merupakan AI Copilot yang terintegrasi dengan CARES.</p>
+<p>MELIRA dirancang sebagai asisten analis SOC yang dapat membantu pengguna memahami data keamanan, menganalisis aktivitas mencurigakan, melakukan investigasi, serta memberikan rekomendasi tindakan.</p>
+<p>MELIRA menggunakan Large Language Model (LLM) dari penyedia AI SaaS eksternal yang dipilih dan dikonfigurasi secara eksplisit oleh pengguna atau administrator yang berwenang. Inferensi LLM lokal, model lokal, dan infrastruktur GPU lokal bukan bagian dari model deployment CARES.</p>
+<p>MELIRA bukan komponen wajib bagi operasional CARES. Seluruh fungsi inti pengolahan, deteksi, korelasi, dan pelaporan harus tetap berjalan tanpa ketergantungan pada LLM.</p>
+<hr />
+<ol start="3">
+<li>SISTEM HAK AKSES DAN MULTI-TENANCY</li>
+</ol>
+<p>CARES menggunakan arsitektur multi-tenant untuk memungkinkan beberapa organisasi menggunakan satu platform dengan pemisahan data dan hak akses.</p>
+<p>Terdapat dua level akun utama:</p>
+<ol>
+<li>Administrator.</li>
+<li>Pelanggan.</li>
+</ol>
+<p>Pemisahan data antarorganisasi harus diterapkan pada tingkat aplikasi, API, dan database.</p>
+<p>Tidak boleh ada pelanggan yang dapat mengakses data pelanggan lain melalui Dashboard, API, integrasi, maupun MELIRA.</p>
+<p>3.1. Administrator</p>
+<p>Administrator memiliki kewenangan untuk mengelola keseluruhan platform CARES.</p>
+<p>Administrator dapat:</p>
+<p>A. Customer Management</p>
+<ul>
+<li>Membuat akun pelanggan baru.</li>
+<li>Mengedit informasi pelanggan.</li>
+<li>Mengaktifkan akun pelanggan.</li>
+<li>Menonaktifkan sementara akun pelanggan.</li>
+<li>Mengaktifkan kembali akun pelanggan.</li>
+<li>Menghapus akun pelanggan sesuai kebijakan retensi data.</li>
+<li>Mengatur kuota perangkat yang dapat dikoneksikan pelanggan.</li>
+<li>Mengatur kapasitas penyimpanan.</li>
+<li>Mengatur batas data ingestion.</li>
+<li>Mengatur masa retensi data.</li>
+<li>Mengatur fitur yang tersedia pada setiap pelanggan.</li>
+<li>Mengatur batas penggunaan AI dan API.</li>
+</ul>
+<p>B. Customer Monitoring</p>
+<p>Administrator dapat melihat keseluruhan informasi yang tersedia pada Dashboard pelanggan sesuai kewenangannya.</p>
+<p>Administrator dapat memilih salah satu pelanggan dari daftar pelanggan yang tersedia untuk melihat:</p>
+<ul>
+<li>Daftar perangkat.</li>
+<li>Status Agent.</li>
+<li>Hardware health.</li>
+<li>Security events.</li>
+<li>Network activity.</li>
+<li>Vulnerability findings.</li>
+<li>Security alerts.</li>
+<li>Incident reports.</li>
+<li>Integration status.</li>
+<li>Hasil analisis keamanan.</li>
+<li>Penggunaan kuota dan kapasitas.</li>
+</ul>
+<p>Aktivitas administrator ketika mengakses data pelanggan harus dicatat dalam audit log.</p>
+<p>C. Customer Configuration Management</p>
+<p>Administrator dapat mengelola konfigurasi pelanggan, termasuk konfigurasi yang juga tersedia bagi pelanggan.</p>
+<p>Setiap perubahan konfigurasi harus tercatat dan dapat ditelusuri.</p>
+<p>D. Installer Management</p>
+<p>Administrator memiliki menu untuk membuat dan mengelola installer CARES.</p>
+<p>Installer dibagi menjadi:</p>
+<ol>
+<li>CARES Server Installer.</li>
+<li>CARES Agent Installer.</li>
+</ol>
+<p>CARES Server Installer digunakan untuk memasang komponen server CARES.</p>
+<p>CARES Agent Installer digunakan untuk memasang Agent pada endpoint.</p>
+<p>Sistem harus mendukung pembuatan paket instalasi dalam format:</p>
+<ul>
+<li>&quot;.deb&quot;</li>
+<li>&quot;.rpm&quot;</li>
+<li>&quot;.tgz&quot;</li>
+</ul>
+<p>Paket harus dilengkapi mekanisme verifikasi integritas dan tanda tangan digital.</p>
+<p>Administrator dapat menentukan versi, target sistem operasi, arsitektur prosesor, serta konfigurasi instalasi yang diperlukan.</p>
+<p>E. Platform Monitoring</p>
+<p>Administrator memiliki akses terhadap informasi kesehatan platform CARES sendiri, termasuk:</p>
+<ul>
+<li>CPU utilization.</li>
+<li>Memory utilization.</li>
+<li>Storage utilization.</li>
+<li>Database status.</li>
+<li>Message queue status.</li>
+<li>Core Engine status.</li>
+<li>Ingestion throughput.</li>
+<li>API health.</li>
+<li>Service availability.</li>
+<li>Failed jobs.</li>
+<li>Security events internal CARES.</li>
+</ul>
+<p>CARES harus mampu memonitor kesehatannya sendiri agar administrator dapat mengetahui apabila terjadi gangguan pada layanan platform.</p>
+<p>3.2. Pelanggan</p>
+<p>Pelanggan hanya dapat mengakses data dan fungsi yang menjadi hak akses organisasinya.</p>
+<p>Pelanggan tidak boleh melihat atau memanipulasi data pelanggan lain.</p>
+<p>Pelanggan dapat:</p>
+<p>A. Asset and Agent Management</p>
+<ul>
+<li>Melihat daftar perangkat yang dimonitor.</li>
+<li>Melihat status setiap Agent.</li>
+<li>Melihat informasi perangkat.</li>
+<li>Melihat data keamanan yang dikirimkan Agent.</li>
+<li>Melihat riwayat komunikasi Agent.</li>
+<li>Menghapus koneksi Agent.</li>
+<li>Memantau penggunaan kuota perangkat.</li>
+</ul>
+<p>Jumlah perangkat yang dapat dikoneksikan ditentukan oleh administrator.</p>
+<p>Setiap Agent harus memiliki identitas unik dan kredensial komunikasi tersendiri.</p>
+<p>B. Agent Creation</p>
+<p>Pelanggan dapat membuat installer Agent melalui Dashboard.</p>
+<p>Pada saat membuat Agent, pelanggan dapat menentukan:</p>
+<ul>
+<li>Sistem operasi target.</li>
+<li>Versi sistem operasi.</li>
+<li>Arsitektur prosesor.</li>
+<li>Modul pengumpulan data yang akan diaktifkan.</li>
+<li>Konfigurasi koneksi ke server CARES.</li>
+</ul>
+<p>Installer yang dihasilkan dapat langsung diunduh melalui Dashboard.</p>
+<p>Untuk menghemat kapasitas penyimpanan server, file installer yang dihasilkan hanya tersedia selama satu jam sejak proses pembuatan selesai.</p>
+<p>Setelah melewati masa tersebut, file installer akan dihapus secara otomatis.</p>
+<p>Pelanggan harus membuat ulang installer apabila masa ketersediaannya telah berakhir.</p>
+<p>Penghapusan file installer tidak boleh menghapus identitas Agent yang sudah terdaftar atau mengganggu Agent yang telah terpasang.</p>
+<p>C. Agent Removal</p>
+<p>Pelanggan dapat menghapus koneksi Agent dari Dashboard.</p>
+<p>Proses penghapusan harus dilakukan melalui mekanisme yang aman:</p>
+<ol>
+<li>Pelanggan mengirimkan permintaan penghapusan.</li>
+<li>CARES memverifikasi hak akses dan autentikasi pengguna.</li>
+<li>Server mengirimkan perintah penghapusan yang ditandatangani secara digital.</li>
+<li>Agent memverifikasi keaslian perintah.</li>
+<li>Agent menjalankan proses uninstall.</li>
+<li>Agent mengirimkan konfirmasi penghapusan.</li>
+<li>Server mencabut kredensial Agent.</li>
+<li>Dashboard memperbarui status perangkat.</li>
+</ol>
+<p>Apabila perangkat sedang offline, perintah penghapusan dapat disimpan sementara hingga Agent kembali terhubung, dengan batas waktu dan masa berlaku yang jelas.</p>
+<p>Perintah penghapusan tidak boleh dapat dipalsukan atau dijalankan hanya berdasarkan pesan biasa dari server.</p>
+<p>D. External Security Integration</p>
+<p>Pelanggan dapat menghubungkan perangkat dan layanan keamanan yang telah dimiliki, seperti:</p>
+<ul>
+<li>Firewall.</li>
+<li>IDS/IPS.</li>
+<li>EDR.</li>
+<li>SIEM.</li>
+<li>Network monitoring.</li>
+<li>Vulnerability scanner.</li>
+<li>Identity management.</li>
+<li>Cloud security services.</li>
+<li>Threat intelligence platform.</li>
+</ul>
+<p>Dashboard menyediakan menu integrasi yang menampilkan daftar perangkat dan layanan yang didukung.</p>
+<p>Ketika pelanggan memilih salah satu integrasi, CARES menampilkan panduan konfigurasi sesuai jenis perangkat atau layanan tersebut.</p>
+<p>Panduan harus mencakup:</p>
+<ul>
+<li>Persyaratan koneksi.</li>
+<li>Informasi autentikasi.</li>
+<li>Konfigurasi API atau protokol.</li>
+<li>Data yang dapat dikumpulkan.</li>
+<li>Pengujian koneksi.</li>
+<li>Status integrasi.</li>
+<li>Penanganan kesalahan.</li>
+</ul>
+<p>Setiap integrasi yang diaktifkan dihitung dalam kuota monitored assets sesuai kebijakan lisensi CARES.</p>
+<p>CARES harus memiliki mekanisme untuk membedakan Agent endpoint dan integrasi perangkat eksternal, meskipun keduanya menggunakan sistem kuota yang sama.</p>
+<hr />
+<ol start="4">
+<li>SECURITY ASSET MANAGEMENT</li>
+</ol>
+<p>CARES harus memiliki modul Asset Management untuk mencatat seluruh perangkat dan aset teknologi yang diawasi.</p>
+<p>Informasi aset meliputi:</p>
+<ul>
+<li>Asset ID.</li>
+<li>Hostname.</li>
+<li>IP address.</li>
+<li>MAC address.</li>
+<li>Operating system.</li>
+<li>OS version.</li>
+<li>Hardware information.</li>
+<li>CPU.</li>
+<li>RAM.</li>
+<li>Storage.</li>
+<li>Network interfaces.</li>
+<li>Installed software.</li>
+<li>Running services.</li>
+<li>Open ports.</li>
+<li>Agent version.</li>
+<li>Last seen.</li>
+<li>Security status.</li>
+<li>Vulnerability status.</li>
+</ul>
+<p>CARES harus mampu mendeteksi perubahan informasi aset, termasuk:</p>
+<ul>
+<li>Perangkat baru.</li>
+<li>Perubahan IP address.</li>
+<li>Perubahan konfigurasi jaringan.</li>
+<li>Instalasi software baru.</li>
+<li>Penghapusan software.</li>
+<li>Perubahan service.</li>
+<li>Perubahan port terbuka.</li>
+<li>Perubahan konfigurasi keamanan.</li>
+<li>Agent yang tidak lagi aktif.</li>
+</ul>
+<p>Setiap aset harus memiliki identitas internal yang stabil agar perubahan IP atau konfigurasi jaringan tidak menyebabkan duplikasi aset.</p>
+<p>CARES juga perlu menyediakan pemetaan hubungan antarperangkat dan jaringan untuk membantu investigasi serta analisis risiko.</p>
+<hr />
+<ol start="5">
+<li>SECURITY EVENT MANAGEMENT</li>
+</ol>
+<p>CARES harus memiliki sistem pengumpulan dan pengolahan security events dari berbagai sumber.</p>
+<p>Sumber data meliputi:</p>
+<ol>
+<li>CARES Agent.</li>
+<li>Firewall.</li>
+<li>IDS/IPS.</li>
+<li>EDR.</li>
+<li>SIEM eksternal.</li>
+<li>Network monitoring.</li>
+<li>Server.</li>
+<li>Operating system.</li>
+<li>Cloud services.</li>
+<li>Identity management.</li>
+<li>Application logs.</li>
+<li>Perangkat keamanan lainnya.</li>
+</ol>
+<p>Setiap data yang diterima harus melewati proses:</p>
+<ol>
+<li>Collection.</li>
+<li>Parsing.</li>
+<li>Normalization.</li>
+<li>Enrichment.</li>
+<li>Correlation.</li>
+<li>Detection.</li>
+<li>Alert generation.</li>
+<li>Investigation.</li>
+</ol>
+<p>CARES harus memiliki format event internal yang konsisten agar data dari berbagai sumber dapat dianalisis bersama.</p>
+<p>Sistem dapat mengadopsi standar dan referensi seperti OpenTelemetry serta Elastic Common Schema untuk mempermudah integrasi.</p>
+<hr />
+<ol start="6">
+<li>SECURITY MONITORING AND ALERT MANAGEMENT</li>
+</ol>
+<p>CARES harus menyediakan monitoring keamanan secara terpusat.</p>
+<p>Fitur meliputi:</p>
+<ul>
+<li>Real-time monitoring.</li>
+<li>Security event visualization.</li>
+<li>Alert generation.</li>
+<li>Alert severity classification.</li>
+<li>Alert prioritization.</li>
+<li>Alert grouping.</li>
+<li>Alert deduplication.</li>
+<li>Event correlation.</li>
+<li>Alert assignment.</li>
+<li>Alert acknowledgment.</li>
+<li>Alert escalation.</li>
+<li>Alert suppression.</li>
+<li>False-positive marking.</li>
+<li>Alert closure.</li>
+</ul>
+<p>Setiap alert harus memiliki informasi yang memadai untuk investigasi, termasuk:</p>
+<ul>
+<li>Alert ID.</li>
+<li>Severity.</li>
+<li>Detection name.</li>
+<li>Source asset.</li>
+<li>Related user.</li>
+<li>First seen.</li>
+<li>Last seen.</li>
+<li>Related events.</li>
+<li>Detection rule.</li>
+<li>MITRE ATT&amp;CK reference apabila relevan.</li>
+<li>Evidence.</li>
+<li>Current status.</li>
+</ul>
+<p>CARES juga harus menyediakan Case Management untuk menggabungkan beberapa alert yang saling berkaitan menjadi satu kasus investigasi.</p>
+<p>Setiap kasus dapat memiliki:</p>
+<ul>
+<li>Case ID.</li>
+<li>Incident severity.</li>
+<li>Related alerts.</li>
+<li>Affected assets.</li>
+<li>Investigation timeline.</li>
+<li>Assigned analyst.</li>
+<li>Investigation notes.</li>
+<li>Evidence.</li>
+<li>Recommended actions.</li>
+<li>Remediation status.</li>
+<li>Closure reason.</li>
+</ul>
+<hr />
+<ol start="7">
+<li>VULNERABILITY MANAGEMENT</li>
+</ol>
+<p>CARES harus memiliki database kerentanan sendiri yang diperbarui secara berkala melalui sumber informasi terpercaya.</p>
+<p>Sumber data yang dapat digunakan meliputi:</p>
+<ul>
+<li>National Vulnerability Database (NVD).</li>
+<li>CISA Known Exploited Vulnerabilities (KEV).</li>
+<li>Exploit Prediction Scoring System (EPSS).</li>
+<li>Open Source Vulnerabilities (OSV).</li>
+<li>Vendor security advisories.</li>
+<li>GitHub Security Advisories.</li>
+</ul>
+<p>Database kerentanan harus memiliki mekanisme:</p>
+<ul>
+<li>Scheduled synchronization.</li>
+<li>Incremental update.</li>
+<li>Data validation.</li>
+<li>Duplicate detection.</li>
+<li>Versioning.</li>
+<li>Source attribution.</li>
+<li>Update history.</li>
+<li>Failed update notification.</li>
+</ul>
+<p>CARES harus mampu menghubungkan informasi kerentanan dengan inventaris software dan perangkat yang dimonitor.</p>
+<p>7.1. Vulnerability Assessment</p>
+<p>CARES harus mampu mengidentifikasi kemungkinan kerentanan berdasarkan:</p>
+<ul>
+<li>Operating system.</li>
+<li>Software version.</li>
+<li>Installed packages.</li>
+<li>Software dependencies.</li>
+<li>Known CVE.</li>
+<li>Vendor advisories.</li>
+<li>Configuration weaknesses.</li>
+<li>Exposed services.</li>
+</ul>
+<p>Setiap temuan harus memiliki informasi:</p>
+<ul>
+<li>Vulnerability ID.</li>
+<li>CVE ID apabila tersedia.</li>
+<li>Affected asset.</li>
+<li>Affected software.</li>
+<li>Severity.</li>
+<li>CVSS.</li>
+<li>EPSS apabila tersedia.</li>
+<li>KEV status.</li>
+<li>Evidence.</li>
+<li>Recommended remediation.</li>
+<li>First detected.</li>
+<li>Last detected.</li>
+<li>Remediation status.</li>
+</ul>
+<p>7.2. Risk-Based Vulnerability Prioritization</p>
+<p>CARES tidak boleh hanya menggunakan CVSS sebagai dasar penentuan prioritas.</p>
+<p>Sistem harus mempertimbangkan:</p>
+<ul>
+<li>CVSS score.</li>
+<li>EPSS score.</li>
+<li>CISA KEV status.</li>
+<li>Availability of exploit.</li>
+<li>Asset criticality.</li>
+<li>Network exposure.</li>
+<li>Internet accessibility.</li>
+<li>Existing security controls.</li>
+<li>Business impact.</li>
+</ul>
+<p>Hasilnya berupa risk assessment yang membantu pelanggan menentukan kerentanan mana yang harus diprioritaskan.</p>
+<p>7.3. Zero-Day and Unknown Threat Detection</p>
+<p>Database CVE tidak dapat menjamin pendeteksian seluruh zero-day vulnerability.</p>
+<p>Oleh karena itu, CARES juga harus memiliki kemampuan deteksi berbasis perilaku dan anomali.</p>
+<p>Contohnya:</p>
+<ul>
+<li>Anomalous process execution.</li>
+<li>Suspicious network connections.</li>
+<li>Unexpected privilege escalation.</li>
+<li>Unusual authentication behavior.</li>
+<li>Persistence mechanisms.</li>
+<li>Abnormal file modification.</li>
+<li>Lateral movement.</li>
+<li>Command-and-control behavior.</li>
+</ul>
+<p>CARES harus menggabungkan vulnerability intelligence dengan behavioral detection untuk meningkatkan kemampuan mendeteksi ancaman yang belum diketahui.</p>
+<hr />
+<ol start="8">
+<li>THREAT INTELLIGENCE</li>
+</ol>
+<p>CARES harus menyediakan modul Threat Intelligence untuk mengumpulkan, menyimpan, memperbarui, dan menghubungkan informasi ancaman dengan aktivitas yang ditemukan pada lingkungan pelanggan.</p>
+<p>Data yang dapat dikelola meliputi:</p>
+<ul>
+<li>Malicious IP addresses.</li>
+<li>Malicious domains.</li>
+<li>File hashes.</li>
+<li>URLs.</li>
+<li>Malware indicators.</li>
+<li>Attack patterns.</li>
+<li>Threat actor information.</li>
+<li>Exploit information.</li>
+<li>Indicators of Compromise (IoC).</li>
+</ul>
+<p>CARES dapat mengintegrasikan sumber threat intelligence eksternal dan platform seperti MISP atau OpenCTI.</p>
+<p>Threat intelligence harus memiliki mekanisme validasi, sumber informasi, waktu pembaruan, dan tingkat kepercayaan agar data yang sudah tidak relevan tidak menghasilkan false positive secara berlebihan.</p>
+<hr />
+<ol start="9">
+<li>MITRE ATT&amp;CK AND DETECTION FRAMEWORK</li>
+</ol>
+<p>CARES harus mendukung MITRE ATT&amp;CK sebagai salah satu kerangka klasifikasi aktivitas ancaman.</p>
+<p>Setiap detection rule dapat dikaitkan dengan teknik ATT&amp;CK yang relevan.</p>
+<p>Dashboard menyediakan visualisasi coverage untuk memperlihatkan teknik yang telah memiliki kemampuan deteksi dan area yang masih memerlukan pengembangan.</p>
+<p>CARES juga harus mendukung berbagai format detection rules, antara lain:</p>
+<ul>
+<li>Sigma.</li>
+<li>YARA.</li>
+<li>Suricata.</li>
+<li>Custom CARES detection rules.</li>
+</ul>
+<p>Detection Engine harus dapat bekerja tanpa ketergantungan terhadap MELIRA.</p>
+<hr />
+<ol start="10">
+<li>INCIDENT MANAGEMENT AND DIGITAL FORENSICS</li>
+</ol>
+<p>CARES harus memiliki modul pengelolaan insiden untuk membantu analis SOC melakukan investigasi dan dokumentasi.</p>
+<p>Fitur meliputi:</p>
+<ul>
+<li>Incident creation.</li>
+<li>Incident classification.</li>
+<li>Incident prioritization.</li>
+<li>Incident assignment.</li>
+<li>Investigation timeline.</li>
+<li>Evidence collection.</li>
+<li>Investigation notes.</li>
+<li>Related asset mapping.</li>
+<li>Related user mapping.</li>
+<li>Remediation tracking.</li>
+<li>Incident closure.</li>
+<li>Post-incident report.</li>
+</ul>
+<p>CARES juga perlu menyediakan kemampuan pengumpulan bukti digital secara terkontrol, termasuk metadata proses, file, koneksi jaringan, dan informasi sistem yang relevan.</p>
+<p>Pengumpulan bukti harus memiliki timestamp, sumber, identitas pengumpul, dan mekanisme integritas data.</p>
+<hr />
+<ol start="11">
+<li>SOAR — SECURITY ORCHESTRATION, AUTOMATION AND RESPONSE</li>
+</ol>
+<p>CARES harus memiliki modul SOAR untuk mengotomatisasi alur kerja keamanan.</p>
+<p>SOAR harus dapat bekerja secara mandiri tanpa ketergantungan pada MELIRA.</p>
+<p>Fitur meliputi:</p>
+<ul>
+<li>Workflow builder.</li>
+<li>Event triggers.</li>
+<li>Conditional logic.</li>
+<li>Automated actions.</li>
+<li>Approval steps.</li>
+<li>Execution history.</li>
+<li>Error handling.</li>
+<li>Workflow versioning.</li>
+<li>Rollback mechanism.</li>
+<li>Execution monitoring.</li>
+</ul>
+<p>Contoh workflow:</p>
+<ol>
+<li>CARES mendeteksi IP mencurigakan.</li>
+<li>Sistem memeriksa threat intelligence.</li>
+<li>Sistem menghubungkan aktivitas terkait.</li>
+<li>Sistem menghitung tingkat risiko.</li>
+<li>Sistem membuat incident.</li>
+<li>Sistem mengirimkan notifikasi.</li>
+<li>Sistem meminta persetujuan analis.</li>
+<li>Setelah disetujui, CARES mengirimkan perintah pemblokiran ke firewall.</li>
+<li>CARES memverifikasi hasil tindakan.</li>
+<li>Incident diperbarui sesuai hasilnya.</li>
+</ol>
+<p>Seluruh tindakan yang dapat mengubah kondisi sistem harus memiliki mekanisme otorisasi dan pencatatan.</p>
+<hr />
+<ol start="12">
+<li>CARES AGENT</li>
+</ol>
+<p>CARES Agent merupakan aplikasi endpoint monitoring dan security data collection.</p>
+<p>Agent dirancang untuk mendukung:</p>
+<ul>
+<li>Windows.</li>
+<li>GNU/Linux.</li>
+<li>BSD.</li>
+<li>macOS.</li>
+<li>Android.</li>
+<li>iOS.</li>
+</ul>
+<p>Implementasi Agent harus menyesuaikan kemampuan dan batasan masing-masing sistem operasi.</p>
+<p>Tidak semua platform memberikan akses yang sama terhadap proses, filesystem, dan network traffic.</p>
+<p>CARES harus memiliki matriks kemampuan per sistem operasi agar pengguna mengetahui fitur apa saja yang tersedia pada setiap platform.</p>
+<p>12.1. Hardware and System Monitoring</p>
+<p>Agent mengumpulkan informasi:</p>
+<ul>
+<li>CPU utilization.</li>
+<li>Memory utilization.</li>
+<li>Disk utilization.</li>
+<li>Disk health apabila tersedia.</li>
+<li>Network interface status.</li>
+<li>Hardware specification.</li>
+<li>System uptime.</li>
+<li>Operating system.</li>
+<li>OS version.</li>
+<li>Running processes.</li>
+<li>Running services.</li>
+</ul>
+<p>12.2. Security Monitoring</p>
+<p>Agent harus mampu mengumpulkan informasi keamanan, antara lain:</p>
+<ul>
+<li>Login success.</li>
+<li>Login failure.</li>
+<li>User account creation.</li>
+<li>User privilege changes.</li>
+<li>Process execution.</li>
+<li>Suspicious command execution.</li>
+<li>File integrity changes.</li>
+<li>Startup persistence.</li>
+<li>Scheduled task changes.</li>
+<li>Service installation.</li>
+<li>Firewall configuration changes.</li>
+<li>Security policy changes.</li>
+<li>Antivirus status.</li>
+</ul>
+<p>12.3. Network Monitoring</p>
+<p>Agent dapat mengumpulkan:</p>
+<ul>
+<li>Active network connections.</li>
+<li>Source IP.</li>
+<li>Destination IP.</li>
+<li>Source port.</li>
+<li>Destination port.</li>
+<li>Protocol.</li>
+<li>DNS queries.</li>
+<li>Network flow metadata.</li>
+<li>Connection duration.</li>
+<li>Traffic volume.</li>
+<li>Suspicious outbound connections.</li>
+</ul>
+<p>Packet capture dapat diaktifkan secara selektif sesuai kebutuhan.</p>
+<p>Pengiriman full packet capture bukan konfigurasi default karena dapat menimbulkan penggunaan bandwidth, storage, dan pemrosesan yang sangat besar serta berpotensi mengumpulkan informasi sensitif.</p>
+<p>CARES harus mendukung pengaturan selective packet capture dengan kontrol akses, retensi, dan batas kapasitas.</p>
+<p>12.4. File Integrity Monitoring</p>
+<p>Agent harus dapat memonitor perubahan file dan direktori yang dianggap penting.</p>
+<p>Contoh:</p>
+<ul>
+<li>Linux system configuration.</li>
+<li>SSH configuration.</li>
+<li>User account configuration.</li>
+<li>Sudoers.</li>
+<li>Critical application binaries.</li>
+<li>Windows registry.</li>
+<li>Windows startup locations.</li>
+<li>Application configuration files.</li>
+</ul>
+<p>Setiap perubahan harus menghasilkan event yang dapat dianalisis oleh Core Engine.</p>
+<p>12.5. Agent Communication</p>
+<p>Komunikasi Agent dengan CARES Server harus menggunakan koneksi terenkripsi.</p>
+<p>Setiap Agent memiliki identitas dan kredensial unik.</p>
+<p>Sistem harus mendukung:</p>
+<ul>
+<li>Secure enrollment.</li>
+<li>Mutual authentication.</li>
+<li>Certificate management.</li>
+<li>Credential rotation.</li>
+<li>Agent health monitoring.</li>
+<li>Heartbeat.</li>
+<li>Configuration synchronization.</li>
+<li>Secure command execution.</li>
+<li>Agent update.</li>
+<li>Connection recovery.</li>
+</ul>
+<p>Agent harus memiliki mekanisme offline buffering untuk menyimpan event sementara ketika koneksi internet terputus.</p>
+<p>Ketika koneksi pulih, Agent mengirimkan data yang belum terkirim sesuai kebijakan penyimpanan dan retensi lokal.</p>
+<p>12.6. Agent Self-Protection</p>
+<p>Agent harus memiliki perlindungan terhadap:</p>
+<ul>
+<li>Unauthorized termination.</li>
+<li>Configuration tampering.</li>
+<li>Binary replacement.</li>
+<li>Credential theft.</li>
+<li>Unauthorized uninstall.</li>
+<li>Communication interception.</li>
+</ul>
+<p>Agent juga harus mendukung secure update dengan verifikasi tanda tangan digital.</p>
+<p>Pembaruan harus dapat dikendalikan melalui Dashboard, termasuk staged rollout, update monitoring, dan rollback apabila diperlukan.</p>
+<p>12.7. Agent Capability Matrix</p>
+<p>Kemampuan Agent dapat berbeda berdasarkan sistem operasi.</p>
+<p>CARES harus menyediakan matriks fitur yang menjelaskan kemampuan aktual setiap platform, termasuk keterbatasan permission dan API.</p>
+<p>Untuk Android dan iOS, implementasi harus mengikuti batasan sandbox, permission, dan mekanisme keamanan sistem operasi.</p>
+<p>Untuk macOS, penggunaan API keamanan dan kemampuan monitoring tertentu harus menyesuaikan mekanisme serta entitlement yang disediakan Apple.</p>
+<hr />
+<ol start="13">
+<li>MELIRA AI COPILOT</li>
+</ol>
+<p>MELIRA merupakan AI Copilot yang terintegrasi dengan Dashboard CARES.</p>
+<p>MELIRA hadir sebagai floating chat interface ketika fitur AI diaktifkan.</p>
+<p>MELIRA dirancang untuk membantu analis SOC melakukan pekerjaan secara lebih cepat dan terstruktur.</p>
+<p>13.1. AI Provider Management</p>
+<p>MELIRA harus menggunakan sistem provider abstraction agar dapat terhubung dengan penyedia AI SaaS eksternal yang didukung dan dikonfigurasi secara eksplisit.</p>
+<p>Provider yang dapat dipertimbangkan (subject to owner/privacy/legal/security approval):</p>
+<ul>
+<li>OpenAI.</li>
+<li>Anthropic.</li>
+<li>Google Gemini.</li>
+<li>Penyedia AI SaaS eksternal lain yang kompatibel dan disetujui.</li>
+<li>External compatible API endpoint hanya jika secara eksplisit disetujui dan memenuhi kebijakan transport, egress, privasi, dan keamanan yang berlaku.</li>
+</ul>
+<p>Inferensi LLM lokal, model lokal (misalnya runtime/model self-hosted), dan infrastruktur GPU lokal tidak didukung dalam model deployment CARES. CARES tidak boleh melakukan failover diam-diam ke provider, model, region, atau endpoint lain.</p>
+<p>Pengguna yang memiliki hak konfigurasi dapat menentukan:</p>
+<ul>
+<li>LLM provider.</li>
+<li>Model.</li>
+<li>API endpoint.</li>
+<li>API key.</li>
+<li>Temperature.</li>
+<li>Maximum tokens.</li>
+<li>Context window.</li>
+<li>System instruction.</li>
+<li>Parameter lain yang didukung provider.</li>
+</ul>
+<p>API key harus disimpan secara aman dan tidak boleh ditampilkan kembali secara utuh kepada pengguna.</p>
+<p>13.2. AI Analyst</p>
+<p>Pada tingkat pertama, MELIRA berfungsi sebagai AI Analyst dengan kemampuan:</p>
+<ul>
+<li>Menjelaskan security alerts.</li>
+<li>Meringkas security events.</li>
+<li>Menganalisis aktivitas mencurigakan.</li>
+<li>Menghubungkan event dengan MITRE ATT&amp;CK.</li>
+<li>Menjelaskan vulnerability.</li>
+<li>Mengidentifikasi kemungkinan attack pattern.</li>
+<li>Memberikan rekomendasi mitigasi.</li>
+<li>Membuat ringkasan incident.</li>
+<li>Menyusun laporan keamanan.</li>
+</ul>
+<p>13.3. AI Investigator</p>
+<p>Pada tingkat kedua, MELIRA dapat melakukan investigasi menggunakan tool yang telah diizinkan.</p>
+<p>Contohnya:</p>
+<p>Pengguna meminta MELIRA melakukan investigasi terhadap sebuah IP address.</p>
+<p>MELIRA dapat:</p>
+<ol>
+<li>Mencari event terkait IP tersebut.</li>
+<li>Memeriksa histori koneksi.</li>
+<li>Mengidentifikasi perangkat yang berkomunikasi dengannya.</li>
+<li>Memeriksa threat intelligence.</li>
+<li>Menghubungkan aktivitas dengan security events lainnya.</li>
+<li>Menilai tingkat risiko.</li>
+<li>Menyusun hasil investigasi beserta evidence dan sumber data.</li>
+</ol>
+<p>MELIRA harus membedakan fakta, indikasi, dan hipotesis.</p>
+<p>Setiap kesimpulan harus dapat ditelusuri ke data yang mendasarinya.</p>
+<p>13.4. AI Responder</p>
+<p>Pada tingkat ketiga, MELIRA dapat membantu menyiapkan tindakan respons keamanan.</p>
+<p>Contohnya:</p>
+<ul>
+<li>Endpoint isolation.</li>
+<li>IP blocking.</li>
+<li>Account disabling.</li>
+<li>Process termination.</li>
+<li>File quarantine.</li>
+<li>Firewall rule modification.</li>
+</ul>
+<p>Tindakan yang dapat mengubah kondisi sistem harus melewati mekanisme otorisasi dan persetujuan yang sesuai.</p>
+<p>MELIRA tidak boleh mengeksekusi tindakan berisiko hanya berdasarkan instruksi percakapan tanpa pemeriksaan hak akses dan approval.</p>
+<p>Default permission MELIRA adalah read-only.</p>
+<p>13.5. Tenant Isolation</p>
+<p>MELIRA harus mengikuti seluruh kebijakan hak akses CARES.</p>
+<p>MELIRA pada akun pelanggan A hanya dapat mengakses data dan fungsi yang diizinkan untuk pelanggan A.</p>
+<p>MELIRA tidak boleh mengakses data pelanggan B maupun ruang kerja administrator melalui konteks pelanggan A.</p>
+<p>MELIRA pada akun administrator dapat mengakses informasi seluruh pelanggan sesuai hak akses administrator.</p>
+<p>Namun, tindakan perubahan tetap harus melewati authorization dan approval yang sesuai.</p>
+<p>Pemisahan ini harus diterapkan pada backend dan tool authorization, bukan hanya melalui system prompt atau instruksi kepada LLM.</p>
+<p>13.6. AI Data Privacy</p>
+<p>Karena MELIRA dapat menggunakan LLM eksternal, CARES harus menyediakan kontrol terhadap data yang dikirimkan kepada penyedia AI.</p>
+<p>Pengguna dapat menentukan kebijakan mengenai:</p>
+<ul>
+<li>IP address masking.</li>
+<li>Hostname masking.</li>
+<li>Username masking.</li>
+<li>Sensitive log filtering.</li>
+<li>File content restrictions.</li>
+<li>Data classification.</li>
+<li>Data transmission policy.</li>
+</ul>
+<p>CARES juga harus menyediakan perlindungan terhadap prompt injection dari data eksternal, seperti log, command line, file names, dan konten lain yang dianalisis oleh MELIRA.</p>
+<p>Konten tersebut harus diperlakukan sebagai data yang tidak tepercaya, bukan instruksi yang otomatis boleh dijalankan.</p>
+<p>13.7. AI Availability</p>
+<p>Jika MELIRA dinonaktifkan atau provider LLM tidak tersedia, CARES harus tetap beroperasi normal.</p>
+<p>Seluruh proses ingestion, normalization, correlation, detection, vulnerability assessment, alert management, incident management, dan reporting harus tetap berfungsi.</p>
+<hr />
+<ol start="14">
+<li>INTEGRATION FRAMEWORK</li>
+</ol>
+<p>CARES harus menyediakan framework integrasi agar dapat terhubung dengan berbagai perangkat, aplikasi, dan layanan keamanan.</p>
+<p>Kategori integrasi meliputi:</p>
+<p>Kategori| Contoh
+Firewall| Fortinet, Palo Alto, Sophos, pfSense
+IDS/IPS| Suricata, Snort, Zeek
+EDR| Microsoft Defender, CrowdStrike
+SIEM| Splunk, Elastic
+Identity| Active Directory, LDAP, Entra ID
+Cloud| AWS, Azure, Google Cloud
+Email Security| Microsoft 365, Google Workspace
+Vulnerability Scanner| Greenbone, Nessus
+Threat Intelligence| MISP, OpenCTI
+Network| NetFlow, IPFIX, Syslog</p>
+<p>Setiap integrasi harus menyediakan:</p>
+<ul>
+<li>Connection wizard.</li>
+<li>Credential configuration.</li>
+<li>Connection test.</li>
+<li>Data mapping.</li>
+<li>Data collection status.</li>
+<li>Last successful synchronization.</li>
+<li>Error logging.</li>
+<li>Reconnection.</li>
+<li>Disconnect.</li>
+<li>Credential rotation.</li>
+</ul>
+<p>CARES harus mendukung berbagai mekanisme integrasi sesuai kemampuan masing-masing perangkat, seperti:</p>
+<ul>
+<li>REST API.</li>
+<li>Webhook.</li>
+<li>Syslog.</li>
+<li>SNMP.</li>
+<li>NetFlow.</li>
+<li>IPFIX.</li>
+<li>Agent-based collection.</li>
+<li>Protokol lain yang relevan.</li>
+</ul>
+<hr />
+<ol start="15">
+<li>REPORTING AND COMPLIANCE</li>
+</ol>
+<p>CARES harus menyediakan sistem pelaporan untuk kebutuhan teknis maupun manajemen.</p>
+<p>15.1. Security Reporting</p>
+<p>Laporan dapat mencakup:</p>
+<ul>
+<li>Security posture.</li>
+<li>Vulnerability summary.</li>
+<li>Critical findings.</li>
+<li>Incident summary.</li>
+<li>Endpoint health.</li>
+<li>Threat detection.</li>
+<li>Security event trends.</li>
+<li>Remediation progress.</li>
+<li>Network security overview.</li>
+<li>Agent status.</li>
+<li>Risk assessment.</li>
+</ul>
+<p>15.2. Compliance Reporting</p>
+<p>CARES dapat menyediakan pemetaan hasil pengawasan keamanan terhadap framework seperti:</p>
+<ul>
+<li>ISO 27001.</li>
+<li>NIST Cybersecurity Framework.</li>
+<li>CIS Controls.</li>
+<li>PCI DSS.</li>
+<li>NIST SP 800-53.</li>
+</ul>
+<p>Laporan harus menunjukkan evidence, coverage, dan status kontrol berdasarkan data yang tersedia.</p>
+<p>CARES tidak boleh secara otomatis menyatakan sebuah organisasi telah compliant hanya berdasarkan sebagian data monitoring.</p>
+<p>15.3. Export and Scheduling</p>
+<p>Laporan harus dapat diekspor dalam format:</p>
+<ul>
+<li>PDF.</li>
+<li>CSV.</li>
+<li>JSON.</li>
+<li>XLSX.</li>
+</ul>
+<p>CARES juga harus mendukung scheduled reporting dan pengiriman laporan melalui email sesuai konfigurasi pelanggan.</p>
+<hr />
+<ol start="16">
+<li>PLATFORM SECURITY</li>
+</ol>
+<p>CARES merupakan platform yang mengelola data keamanan sensitif dari berbagai organisasi.</p>
+<p>Oleh karena itu, keamanan platform sendiri harus menjadi bagian dari desain utama.</p>
+<p>Fitur yang diperlukan meliputi:</p>
+<ul>
+<li>Multi-Factor Authentication.</li>
+<li>Single Sign-On melalui standar yang sesuai.</li>
+<li>Role-Based Access Control.</li>
+<li>Attribute-Based Access Control.</li>
+<li>Tenant isolation.</li>
+<li>Audit logging.</li>
+<li>API security.</li>
+<li>Encryption at rest.</li>
+<li>TLS/mTLS.</li>
+<li>Secret management.</li>
+<li>Session management.</li>
+<li>IP allowlisting.</li>
+<li>Login anomaly detection.</li>
+<li>Backup and restore.</li>
+<li>Data retention management.</li>
+<li>Credential rotation.</li>
+</ul>
+<p>Seluruh aktivitas penting harus dicatat dalam audit log, termasuk:</p>
+<ul>
+<li>User login.</li>
+<li>Failed login.</li>
+<li>Configuration changes.</li>
+<li>Agent enrollment.</li>
+<li>Agent removal.</li>
+<li>Integration changes.</li>
+<li>Data export.</li>
+<li>Administrative access.</li>
+<li>AI tool execution.</li>
+<li>Security response actions.</li>
+</ul>
+<p>CARES harus menyediakan monitoring aktivitas administrator.</p>
+<p>Akses administrator terhadap data pelanggan harus dapat ditelusuri.</p>
+<p>Untuk akses dukungan teknis, CARES dapat menggunakan mekanisme just-in-time access dengan alasan akses, ruang lingkup, dan masa berlaku yang ditentukan.</p>
+<hr />
+<ol start="17">
+<li>LICENSING AND SUBSCRIPTION MANAGEMENT</li>
+</ol>
+<p>CARES dikembangkan untuk dapat dipasarkan melalui sistem subscription.</p>
+<p>Administrator dapat menentukan paket layanan dan batas penggunaan masing-masing pelanggan.</p>
+<p>Parameter lisensi dapat mencakup:</p>
+<ul>
+<li>Monitored asset quota.</li>
+<li>Agent quota.</li>
+<li>External integration quota.</li>
+<li>User quota.</li>
+<li>Storage quota.</li>
+<li>Daily ingestion quota.</li>
+<li>Data retention period.</li>
+<li>AI usage quota.</li>
+<li>API rate limit.</li>
+<li>Available modules.</li>
+</ul>
+<p>Dashboard harus menampilkan penggunaan sumber daya pelanggan.</p>
+<p>Contoh:</p>
+<p>Customer: ACME</p>
+<ul>
+<li>Licensed Assets: 100.</li>
+<li>Connected Assets: 82.</li>
+<li>Available Assets: 18.</li>
+<li>Daily Ingestion: 12 GB.</li>
+<li>Storage Usage: 240 GB.</li>
+<li>Retention: 90 Days.</li>
+<li>AI Usage: 68%.</li>
+<li>Subscription Status: Active.</li>
+</ul>
+<p>CARES harus mampu memberikan notifikasi ketika penggunaan mendekati atau melampaui batas lisensi.</p>
+<p>Sistem lisensi harus memisahkan batas jumlah aset dari batas penggunaan sumber daya teknis.</p>
+<hr />
+<ol start="18">
+<li>DEPLOYMENT AND INSTALLATION</li>
+</ol>
+<p>CARES dikembangkan dengan target distribusi yang mendukung sistem GNU/Linux.</p>
+<p>Lingkungan pengembangan awal menggunakan:</p>
+<ul>
+<li>Ubuntu 26.04 LTS.</li>
+<li>Visual Studio Code.</li>
+<li>AI Coding Assistant / GitHub Copilot.</li>
+</ul>
+<p>CARES harus dapat didistribusikan melalui beberapa format instalasi:</p>
+<p>Format| Target
+DEB| Debian, Ubuntu, dan distro kompatibel
+RPM| RHEL, Rocky Linux, AlmaLinux, Fedora, dan distro kompatibel
+TGZ| Instalasi manual dan distribusi GNU/Linux lainnya</p>
+<p>CARES harus memiliki dua kategori installer.</p>
+<p>18.1. CARES Server Installer</p>
+<p>Digunakan untuk memasang komponen server CARES.</p>
+<p>Installer harus mendukung pemasangan dan konfigurasi:</p>
+<ul>
+<li>Dashboard.</li>
+<li>Core Engine.</li>
+<li>Database.</li>
+<li>Message broker.</li>
+<li>Storage.</li>
+<li>Supporting services.</li>
+<li>Service management.</li>
+<li>Initial administrator setup.</li>
+</ul>
+<p>Komponen yang dipasang dapat disesuaikan dengan deployment profile.</p>
+<p>18.2. CARES Agent Installer</p>
+<p>Digunakan untuk memasang Agent pada endpoint.</p>
+<p>Installer harus mendukung:</p>
+<ul>
+<li>OS detection.</li>
+<li>Architecture detection.</li>
+<li>Dependency checking.</li>
+<li>Configuration generation.</li>
+<li>Secure enrollment.</li>
+<li>Service registration.</li>
+<li>Service management.</li>
+<li>Log management.</li>
+<li>Uninstallation.</li>
+<li>Upgrade mechanism.</li>
+</ul>
+<p>18.3. Deployment Profile</p>
+<p>CARES harus dirancang agar dapat dikembangkan untuk dua model deployment:</p>
+<p>A. SaaS Deployment</p>
+<p>CARES dijalankan pada infrastruktur penyedia layanan dan digunakan oleh berbagai pelanggan melalui arsitektur multi-tenant.</p>
+<p>B. Self-Hosted Deployment</p>
+<p>CARES dapat dipasang pada infrastruktur milik pelanggan sesuai kebutuhan dan kapasitas yang didukung.</p>
+<p>Pemisahan deployment profile harus dirancang sejak awal agar tidak mengharuskan pengembangan ulang aplikasi.</p>
+<hr />
+<ol start="19">
+<li>SYSTEM MONITORING AND MAINTENANCE</li>
+</ol>
+<p>CARES harus memiliki mekanisme monitoring terhadap kondisi internal platform.</p>
+<p>Informasi yang dipantau meliputi:</p>
+<ul>
+<li>Application health.</li>
+<li>Database health.</li>
+<li>Storage capacity.</li>
+<li>Message queue health.</li>
+<li>CPU utilization.</li>
+<li>Memory utilization.</li>
+<li>Network utilization.</li>
+<li>Failed processing jobs.</li>
+<li>API availability.</li>
+<li>Agent connection status.</li>
+<li>Integration health.</li>
+<li>Threat intelligence synchronization.</li>
+<li>Backup status.</li>
+</ul>
+<p>CARES juga harus menyediakan:</p>
+<ul>
+<li>Automated backup.</li>
+<li>Restore procedure.</li>
+<li>Database migration.</li>
+<li>Application update.</li>
+<li>Configuration backup.</li>
+<li>Log rotation.</li>
+<li>Data retention enforcement.</li>
+<li>Service recovery.</li>
+</ul>
+<p>Seluruh komponen harus memiliki mekanisme logging dan error reporting yang dapat digunakan untuk troubleshooting.</p>
+<hr />
+<ol start="20">
+<li>ARSITEKTUR PENGEMBANGAN</li>
+</ol>
+<p>Pengembangan CARES harus menggunakan arsitektur modular agar setiap fungsi dapat dikembangkan, diuji, dan dipelihara secara terpisah.</p>
+<p>Pada tahap awal, pendekatan modular monolith dapat digunakan untuk mempercepat pengembangan tanpa mengorbankan batas tanggung jawab antar-modul.</p>
+<p>Pemisahan menjadi layanan independen dapat dilakukan ketika kebutuhan kapasitas dan kompleksitas operasional meningkat.</p>
+<p>Teknologi yang dapat dievaluasi:</p>
+<p>Komponen| Kandidat / Keputusan Teknologi
+Backend CARES| Python (keputusan backend yang ditetapkan; alternatif backend tidak diperlakukan sebagai kandidat setara)
+Frontend| React / TypeScript
+Database utama| PostgreSQL
+Event analytics| ClickHouse
+Message broker| NATS / Kafka
+Cache| Redis
+Search engine| OpenSearch
+Agent| Go / Rust
+Container| Docker / Podman
+Deployment| Docker Compose / Kubernetes
+Authentication| OIDC / Keycloak
+AI integration| External AI SaaS provider abstraction (tanpa inferensi lokal/GPU lokal)</p>
+<p>Pemilihan teknologi final harus mempertimbangkan performa, skalabilitas, kemudahan pemeliharaan, kompatibilitas sistem operasi, serta kemampuan distribusi melalui paket DEB dan RPM.</p>
+<p>Tidak semua komponen harus digunakan sejak tahap pertama.</p>
+<hr />
+<ol start="21">
+<li>DEVELOPMENT ROADMAP</li>
+</ol>
+<p>Pengembangan CARES dilakukan secara bertahap.</p>
+<p>Phase 1 — Core Platform</p>
+<ul>
+<li>Project structure.</li>
+<li>Backend foundation.</li>
+<li>Frontend foundation.</li>
+<li>Authentication.</li>
+<li>Authorization.</li>
+<li>Multi-tenancy.</li>
+<li>Database design.</li>
+<li>Audit logging.</li>
+<li>Initial administrator interface.</li>
+<li>Initial customer interface.</li>
+</ul>
+<p>Phase 2 — Linux Agent and Data Ingestion</p>
+<ul>
+<li>Linux Agent.</li>
+<li>Secure enrollment.</li>
+<li>Agent identity.</li>
+<li>Hardware monitoring.</li>
+<li>System monitoring.</li>
+<li>Security event collection.</li>
+<li>Network metadata collection.</li>
+<li>Offline buffering.</li>
+<li>Secure communication.</li>
+<li>Agent management.</li>
+<li>Asset management.</li>
+</ul>
+<p>Phase 3 — Core Security Engine</p>
+<ul>
+<li>Data parsing.</li>
+<li>Data normalization.</li>
+<li>Data enrichment.</li>
+<li>Event processing.</li>
+<li>Event correlation.</li>
+<li>Detection engine.</li>
+<li>Alert management.</li>
+<li>Case management.</li>
+</ul>
+<p>Phase 4 — Vulnerability and Threat Intelligence</p>
+<ul>
+<li>Vulnerability database.</li>
+<li>CVE synchronization.</li>
+<li>CISA KEV integration.</li>
+<li>EPSS integration.</li>
+<li>OSV integration.</li>
+<li>Vulnerability assessment.</li>
+<li>Risk-based prioritization.</li>
+<li>Threat intelligence integration.</li>
+</ul>
+<p>Phase 5 — Dashboard and Reporting</p>
+<ul>
+<li>Security dashboard.</li>
+<li>Asset dashboard.</li>
+<li>Alert dashboard.</li>
+<li>Incident dashboard.</li>
+<li>Vulnerability dashboard.</li>
+<li>Security reporting.</li>
+<li>Customer management.</li>
+<li>Usage monitoring.</li>
+</ul>
+<p>Phase 6 — External Integrations and Windows Agent</p>
+<ul>
+<li>Windows Agent.</li>
+<li>Firewall integration.</li>
+<li>IDS/IPS integration.</li>
+<li>EDR integration.</li>
+<li>External SIEM integration.</li>
+<li>Cloud integration.</li>
+<li>Identity integration.</li>
+<li>Integration management.</li>
+</ul>
+<p>Phase 7 — MELIRA AI</p>
+<ul>
+<li>LLM provider abstraction.</li>
+<li>AI configuration.</li>
+<li>Floating chat interface.</li>
+<li>AI Analyst.</li>
+<li>AI Investigator.</li>
+<li>Evidence-based response.</li>
+<li>Tenant isolation.</li>
+<li>AI privacy controls.</li>
+<li>Tool authorization.</li>
+</ul>
+<p>Phase 8 — SOAR and Advanced Response</p>
+<ul>
+<li>Workflow engine.</li>
+<li>Workflow builder.</li>
+<li>Approval management.</li>
+<li>Automated response.</li>
+<li>Endpoint isolation.</li>
+<li>Firewall blocking.</li>
+<li>Incident response automation.</li>
+<li>Execution audit.</li>
+<li>Rollback mechanism.</li>
+</ul>
+<p>Phase 9 — Cross-Platform Agent</p>
+<ul>
+<li>BSD Agent.</li>
+<li>macOS Agent.</li>
+<li>Android Agent.</li>
+<li>iOS Agent.</li>
+<li>Platform-specific monitoring.</li>
+<li>Platform-specific permission handling.</li>
+<li>Compatibility testing.</li>
+</ul>
+<p>Phase 10 — Production Readiness</p>
+<ul>
+<li>DEB packaging.</li>
+<li>RPM packaging.</li>
+<li>TGZ distribution.</li>
+<li>Server installer.</li>
+<li>Agent installer.</li>
+<li>Digital package signing.</li>
+<li>Upgrade mechanism.</li>
+<li>Backup and recovery.</li>
+<li>Performance testing.</li>
+<li>Security testing.</li>
+<li>Load testing.</li>
+<li>Documentation.</li>
+<li>Deployment validation.</li>
+</ul>
+<p>Setiap fase harus memiliki acceptance criteria dan pengujian sebelum dinyatakan selesai.</p>
+<hr />
+<ol start="22">
+<li>QUALITY AND SECURITY REQUIREMENTS</li>
+</ol>
+<p>CARES harus dikembangkan dengan prinsip security by design dan testability.</p>
+<p>Setiap modul wajib memiliki pengujian yang sesuai.</p>
+<p>Pengujian meliputi:</p>
+<ul>
+<li>Unit testing.</li>
+<li>Integration testing.</li>
+<li>API testing.</li>
+<li>Authentication testing.</li>
+<li>Authorization testing.</li>
+<li>Tenant isolation testing.</li>
+<li>Security testing.</li>
+<li>Load testing.</li>
+<li>Performance testing.</li>
+<li>Failure recovery testing.</li>
+<li>Data integrity testing.</li>
+<li>Agent compatibility testing.</li>
+<li>Installer testing.</li>
+</ul>
+<p>Setiap fitur harus memiliki dokumentasi teknis dan kriteria penerimaan yang jelas.</p>
+<p>Implementasi tidak boleh dinyatakan selesai hanya karena antarmuka berhasil ditampilkan atau endpoint API mengembalikan respons.</p>
+<p>Fitur harus benar-benar menjalankan fungsi yang dijanjikan, memiliki mekanisme penanganan kesalahan, dan dapat diuji.</p>
+<hr />
+<ol start="23">
+<li>PRINSIP UTAMA PENGEMBANGAN CARES</li>
+</ol>
+<p>Seluruh pengembangan CARES harus mengikuti prinsip berikut:</p>
+<ol>
+<li>Modular Architecture
+Setiap komponen memiliki tanggung jawab yang jelas dan dapat dikembangkan secara independen.</li>
+<li>Security by Design
+Keamanan harus menjadi bagian dari desain setiap modul sejak awal.</li>
+<li>Multi-Tenant Isolation
+Data dan hak akses setiap organisasi harus terisolasi secara ketat.</li>
+<li>AI Optionality
+CARES harus tetap berfungsi penuh tanpa MELIRA.</li>
+<li>Evidence-Based Analysis
+Setiap hasil deteksi dan analisis harus dapat ditelusuri ke data pendukungnya.</li>
+<li>Human Approval for High-Risk Actions
+Tindakan yang mengubah kondisi sistem harus mengikuti kebijakan otorisasi dan persetujuan.</li>
+<li>Cross-Platform Compatibility
+Agent dan installer harus mengikuti kemampuan aktual setiap sistem operasi.</li>
+<li>Scalability
+Arsitektur harus dapat dikembangkan untuk menangani peningkatan jumlah pelanggan, perangkat, dan volume data.</li>
+<li>Maintainability
+Kode, konfigurasi, dokumentasi, dan database harus mudah dipelihara.</li>
+<li>Testability
+Setiap fitur harus memiliki kriteria penerimaan dan pengujian yang dapat diulang.</li>
+<li>Data Privacy
+Data pelanggan harus dilindungi, termasuk ketika digunakan oleh layanan AI eksternal.</li>
+<li>Interoperability
+CARES harus mendukung integrasi dengan berbagai perangkat, aplikasi, protokol, dan standar keamanan.</li>
+</ol>
+<hr />
+<ol start="24">
+<li>VISI AKHIR</li>
+</ol>
+<p>CARES dikembangkan sebagai Integrated Cyber Defense Platform yang mampu membantu organisasi mengelola keamanan infrastruktur teknologi secara terpusat.</p>
+<p>CARES bukan hanya sistem pengumpul log atau visualisasi event.</p>
+<p>CARES harus mampu mengumpulkan data, memahami kondisi aset, mengidentifikasi kerentanan, mendeteksi aktivitas mencurigakan, menghubungkan berbagai indikasi ancaman, membantu investigasi, serta mendukung respons keamanan secara terkontrol.</p>
+<p>MELIRA menjadi lapisan kecerdasan tambahan yang membantu analis SOC memahami dan memanfaatkan informasi tersebut.</p>
+<p>Dengan arsitektur modular, CARES diharapkan dapat berkembang secara bertahap menjadi platform SOC terpadu yang mendukung kebutuhan organisasi dengan berbagai skala dan kompleksitas infrastruktur.</p>
+<p>CARES — Comprehensive Assessment &amp; Risk Evaluation Service</p>
+<p>An Integrated Cyber Defense Platform.</p>
+<p>Powered by MELIRA AI.</p>
+
+</article>
+</div>
+
+</body>
+</html>

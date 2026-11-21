@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Requirements Traceability</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/REQUIREMENTS_TRACEABILITY.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Requirements Traceability</h1>
+<p><strong>Status key:</strong> <code>Prototype</code> means code exists as an incomplete, non-production demonstration. <code>Planned</code> means documented target work. <code>Not implemented</code> means no corresponding working product feature exists. These classifications describe current implementation, not requirement approval. Rows sourced from the Architecture Review identify proposed design requirements; numeric performance assumptions remain unapproved until the owner accepts them.</p>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Source</th>
+<th>Current evidence</th>
+<th>Status</th>
+<th>Target design / verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python is primary backend language</td>
+<td>Master Development Prompt</td>
+<td>Python package contains dataclasses and in-memory helpers only</td>
+<td>Prototype</td>
+<td><a href="TECHNOLOGY_SELECTION.md.html">TECHNOLOGY_SELECTION.md</a>; backend foundation and API planned</td>
+</tr>
+<tr>
+<td>PostgreSQL primary relational database</td>
+<td>Master Development Prompt</td>
+<td>No driver, schema, connection, migration, or DB tests</td>
+<td>Not implemented</td>
+<td><a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>; Phase 1 PostgreSQL integration and RLS verification</td>
+</tr>
+<tr>
+<td>External AI SaaS; no local GPU requirement</td>
+<td>Master Development Prompt</td>
+<td>AI policy/status objects only; no HTTP client or provider request</td>
+<td>Not implemented</td>
+<td><a href="ARCHITECTURE.md.html">ARCHITECTURE.md</a>, Phase 8; provider transport tests required</td>
+</tr>
+<tr>
+<td>Customer selects supported AI provider; no silent failover</td>
+<td>Master Development Prompt</td>
+<td>Config dataclass has provider name/endpoint; no selection persistence/client/failover behavior</td>
+<td>Prototype</td>
+<td>Provider-specific adapter with explicit selection and no failover; Phase 8</td>
+</tr>
+<tr>
+<td>AI privacy policy enforced before provider transmission</td>
+<td>Master Development Prompt</td>
+<td>Local classification predicate; no transmission exists; redactor is unsafe as a privacy control</td>
+<td>Prototype</td>
+<td><a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a>; mock transport tests proving denied calls never occur</td>
+</tr>
+<tr>
+<td>AI optional and core works without it</td>
+<td>Master Development Prompt</td>
+<td><code>MELIRAAIService</code> returns unavailable when disabled; no core platform exists</td>
+<td>Prototype</td>
+<td>Keep AI isolated from core modules; provider outage acceptance tests in Phase 8</td>
+</tr>
+<tr>
+<td>Exactly one license per unique device independent of device/source type</td>
+<td>Master Development Prompt; Product Vision §§3–4, 17</td>
+<td>Same explicit stable string maps to one in-memory asset; narrow unit test covers multiple source IDs</td>
+<td>Prototype</td>
+<td><a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>; canonical identity, alias resolution, atomic quota, cross-source tests</td>
+</tr>
+<tr>
+<td>Stable identity; IP not sole identity</td>
+<td>Master Development Prompt; Product Vision §4</td>
+<td>Caller must supply a string; code does not itself reconcile identity; no IP fields or identity types</td>
+<td>Prototype</td>
+<td>Tenant-scoped aliases with provenance and deterministic resolution; ambiguous merges reviewed</td>
+</tr>
+<tr>
+<td>Canonical immutable asset identity, separate from source identity</td>
+<td>Master Development Prompt; Product Vision §4; Architecture Review</td>
+<td>No persistent canonical identity or source-binding model</td>
+<td>Not implemented</td>
+<td>CARES-generated tenant-scoped canonical UUID; namespaced source-device bindings (a connector may report many devices) and protected identity claims in <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>; Phase 3</td>
+</tr>
+<tr>
+<td>Identity provenance, confidence, deterministic match and conflict handling</td>
+<td>Architecture Review</td>
+<td>No identity evidence, provenance, confidence, or matching rules in code</td>
+<td>Not implemented</td>
+<td>Authenticated source binding and unique authoritative namespaced claims may match; weak claims only suggest candidates; conflicting claims enter review; Phase 3</td>
+</tr>
+<tr>
+<td>Audited manual merge/split with history and protection against incorrect merging</td>
+<td>Master Development Prompt; Product Vision §4; Architecture Review</td>
+<td>No merge, split, lineage, or audit implementation</td>
+<td>Not implemented</td>
+<td>Privileged tenant-scoped operation, explicit evidence/reason, immutable IDs, atomic usage and audit; <a href="adr/0003-device-identity-and-asset-licensing.md.html">ADR 0003</a>; Phase 3</td>
+</tr>
+<tr>
+<td>Asset history, status, last seen, removal history, quota reporting</td>
+<td>Master Development Prompt</td>
+<td>Fields and local methods partly exist; remove deletes active dictionary entry; no persistence</td>
+<td>Prototype</td>
+<td>Durable lifecycle/tombstone/history and consistent API/Dashboard usage in Phase 3</td>
+</tr>
+<tr>
+<td>Per-customer licensed quota</td>
+<td>Master Development Prompt; Product Vision §17</td>
+<td>Manager has one quota shared for every tenant in that instance</td>
+<td>Not implemented</td>
+<td>Per-tenant subscription/quota tables and atomic enforcement, Phase 3</td>
+</tr>
+<tr>
+<td>Atomic quota enforcement under concurrent registrations and retries</td>
+<td>Architecture Review; Master Development Prompt</td>
+<td>Sequential in-memory comparison only; no transactions, locks, DB constraints, or race tests</td>
+<td>Not implemented</td>
+<td>PostgreSQL per-tenant serialized transaction, alias/source uniqueness, idempotency; concurrency/failure injection against real PostgreSQL; <a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">ADR 0006</a>; Phase 3</td>
+</tr>
+<tr>
+<td>Deactivation, removal, quota release, and historical licensing policy</td>
+<td>Master Development Prompt; Product Vision §§3, 17; Architecture Review</td>
+<td>In-memory removal pops the active record; no grace, durable history, or commercial policy</td>
+<td>Not implemented</td>
+<td>Proposed source revocation and 30-day quota reservation with tombstone; owner approval required; implementation/verification in Phase 3</td>
+</tr>
+<tr>
+<td>Sustained/peak ingestion and processing targets</td>
+<td>Architecture Review (proposed non-functional assumptions; owner approval pending)</td>
+<td>No ingestion, worker, benchmark environment, or capacity test</td>
+<td>Not implemented</td>
+<td>Proposed 25 EPS sustained, 100 EPS for five minutes, worker &gt;=150 EPS, p95/p99 latency targets; Phase 1 harness, Phase 4 ingestion test, Phase 5 worker test, Phase 10 full-profile validation</td>
+</tr>
+<tr>
+<td>Event size, storage growth, retention, partitioning, backpressure, retries and dead-letter behavior</td>
+<td>Architecture Review; Product Vision §§5, 19</td>
+<td>No event store, retention job, worker, or recovery mechanism</td>
+<td>Not implemented</td>
+<td>Proposed max 256 KiB event, 4 MiB decompressed batch, 30-day event retention, daily PostgreSQL partitions, bounded workers/retries and monitored backpressure; owner approval required; Phases 1, 4, 5, 10</td>
+</tr>
+<tr>
+<td>Broker and analytical database adoption criteria</td>
+<td>Architecture Review</td>
+<td>No broker or analytical database configured</td>
+<td>Not implemented</td>
+<td>PostgreSQL outbox initially; proposed measured thresholds and separate ADR/owner/ops gate in <a href="adr/0005-event-processing-and-broker-evolution.md.html">ADR 0005</a></td>
+</tr>
+<tr>
+<td>Secure multi-tenancy in app and database</td>
+<td>Master Development Prompt; Product Vision §3, 13.5</td>
+<td>Predicate helper test only; no API, authentication, DB or RLS</td>
+<td>Prototype</td>
+<td>Backend authorization + PostgreSQL RLS, cross-tenant API/DB tests, Phase 2</td>
+</tr>
+<tr>
+<td>Customer cannot access other tenant; admin access controlled and audited</td>
+<td>Product Vision §§3.1–3.2, 16</td>
+<td><code>can_access</code> trusts constructible <code>User.role</code>/<code>tenant_id</code>; admin can access any target; no audit</td>
+<td>Prototype</td>
+<td>Trusted membership, least privilege, scoped JIT access, audit and isolation acceptance suite</td>
+</tr>
+<tr>
+<td>Secure Agent enrollment and per-device credentials</td>
+<td>Product Vision §§3.2, 12.5</td>
+<td>No agent, enrollment API, certificate issuance, or credential storage</td>
+<td>Not implemented</td>
+<td><a href="ARCHITECTURE.md.html">ARCHITECTURE.md</a>; Phase 4</td>
+</tr>
+<tr>
+<td>Data ingestion, parsing, normalization, enrichment, correlation, detection</td>
+<td>Product Vision §§2.3, 5</td>
+<td>No ingestion or processing code</td>
+<td>Not implemented</td>
+<td>Outbox/worker target; Phase 4–5</td>
+</tr>
+<tr>
+<td>Alerts, cases, vulnerabilities, threat intel, integrations, reports</td>
+<td>Product Vision §§6–10, 14–15</td>
+<td>No product modules</td>
+<td>Not implemented</td>
+<td>Roadmap Phases 5–7</td>
+</tr>
+<tr>
+<td>SOAR requires authorization/approval and audit</td>
+<td>Product Vision §11, 13.4</td>
+<td>No workflow or response-action code</td>
+<td>Not implemented</td>
+<td>Phase 9; read-only default and explicit human approval</td>
+</tr>
+<tr>
+<td>Installation packages and secure update</td>
+<td>Product Vision §§3.1, 12.6, 18</td>
+<td>No build or installer artifacts</td>
+<td>Not implemented</td>
+<td>Signed artifacts and staged rollout, Phase 10</td>
+</tr>
+<tr>
+<td>Security monitoring, backup, retention, recovery</td>
+<td>Product Vision §§19, 22</td>
+<td>No deployment or operational controls</td>
+<td>Not implemented</td>
+<td>Phase 1 and Phase 10 operational exit criteria</td>
+</tr>
+<tr>
+<td>Explicit customer AI provider/region choice, provider abstraction and no fallback</td>
+<td>Master Development Prompt; Architecture Review</td>
+<td>Descriptive config only; no customer selection persistence or provider client</td>
+<td>Prototype</td>
+<td>Versioned supported-provider catalog, selected provider/model/region per call, no fallback or local inference; Phase 8</td>
+</tr>
+<tr>
+<td>AI credential storage, rotation, endpoint validation and SSRF controls</td>
+<td>Master Development Prompt; Architecture Review</td>
+<td>No credential loading, secret store, network call, or endpoint validation</td>
+<td>Not implemented</td>
+<td>Tenant-scoped secret references, write-only UI, rotation/revocation, HTTPS allow-list and egress protections; Phase 8</td>
+</tr>
+<tr>
+<td>AI data classification, minimization, consent, residency, retention and training policy</td>
+<td>Master Development Prompt; Architecture Review</td>
+<td>Local classification predicate only; no policy gate before an external request</td>
+<td>Prototype</td>
+<td>Consent/policy gate, field minimization, provider data-processing catalog and deny-by-default; owner policy/provider approval required; Phase 8</td>
+</tr>
+<tr>
+<td>AI provider-call audit, per-tenant usage/cost limits and outage behavior</td>
+<td>Master Development Prompt; Architecture Review</td>
+<td>No requests, audit, usage metering, quotas or cost controls</td>
+<td>Not implemented</td>
+<td>Audited metadata without full prompts, hard request/token/spend ceilings, fail closed on unknown usage; Phase 8</td>
+</tr>
+<tr>
+<td>Independent AI tool authorization and high-impact action approval</td>
+<td>Product Vision §13.4–13.5; Architecture Review</td>
+<td>No tools or action system</td>
+<td>Not implemented</td>
+<td>CARES-side authorization independent of model output; read-only default; human approval for high-impact actions; Phases 8–9</td>
+</tr>
+</tbody>
+</table>
+<h2>Test evidence and limitations</h2>
+<p>The existing suite consists of five <code>unittest</code> cases in <code>tests/test_cares_core.py</code>. It covers a narrow local demonstration: repeated identical stable identity across three source IDs, sequential quota rejection, same-tenant/cross-tenant behavior of the helper predicate, AI classification blocking, and disabled-AI status. Passing these tests does not establish persistence, concurrency correctness, external transmission privacy, database tenant isolation, secure authentication, or production readiness.</p>
+<p>Target acceptance criteria are listed in the <a href="DEVELOPMENT_ROADMAP.md.html">DEVELOPMENT_ROADMAP.md</a>, <a href="THREAT_MODEL.md.html">THREAT_MODEL.md</a>, and <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>.</p>
+<h2>Proposed performance assumptions (not confirmed requirements)</h2>
+<p>The following initial capacity figures were introduced for planning and require owner approval: up to 10 tenants / 5,000 active assets; 25 EPS sustained aggregate and 100 EPS for a five-minute burst; 1 KiB average and 256 KiB maximum event; 30-day event retention; 25 EPS ingest acknowledgment p95 &lt;=1 second / p99 &lt;=3 seconds; worker throughput &gt;=150 EPS; accepted-to-detection p95 &lt;=30 seconds / p99 &lt;=60 seconds; outbox p95 lag &lt;30 seconds. Hardware, realistic event distribution, retention/legal requirements, and all test evidence remain to be agreed/validated. See <a href="DEVELOPMENT_ROADMAP.md.html">DEVELOPMENT_ROADMAP.md</a>, <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>, and <a href="adr/0005-event-processing-and-broker-evolution.md.html">ADR 0005</a>.</p>
+
+</article>
+</div>
+
+</body>
+</html>

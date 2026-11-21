@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Data Architecture</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/DATA_ARCHITECTURE.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Data Architecture</h1>
+<p><strong>Status: target design only (reconciled documentation baseline; NOT IMPLEMENTED, NOT TESTED).</strong> There is no PostgreSQL driver, database URL, ORM model, schema, migration, persistence layer, or database test in the current repository. No security, integrity, licensing, or isolation control described here is implemented or validated.</p>
+<h2>Database decision and boundaries</h2>
+<p>PostgreSQL is the required primary relational database and system of record. The proposed initial design stores tenant administration, identities and memberships, assets and source relationships, licensing state, configuration, audit records, processing metadata, alerts/cases, and the initial event store in PostgreSQL.</p>
+<p>Do not treat the current <code>AssetLicenseManager</code> dictionaries or <code>AccessController</code> dictionaries as persistence. They are process-local prototypes and disappear on restart. The Python files do not import a PostgreSQL client or execute database operations.</p>
+<p>Use PostgreSQL transactions and constraints for quota and identity correctness. Use migrations to version schema changes. An initial event representation may preserve validated source payload as JSONB with normalized indexed columns. Partition high-volume, time-series event tables only after retention and workload are measured. Keep canonical licensing and tenant authorization data relational and authoritative; a future search/analytics store is a derived index only.</p>
+<h2>Proposed logical data model</h2>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Important fields / constraints (illustrative, proposed)</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tenant</code></td>
+<td>immutable ID, state, plan reference, policy</td>
+<td>Organization boundary</td>
+</tr>
+<tr>
+<td><code>user</code> / <code>tenant_membership</code></td>
+<td>identity-provider subject, tenant ID, role, status; unique membership</td>
+<td>Bind authenticated identity to authorized tenant(s)</td>
+</tr>
+<tr>
+<td><code>support_access_grant</code></td>
+<td>admin subject, target tenant, reason, scope, expires-at, approver</td>
+<td>Explicit just-in-time cross-tenant access (owner/security approval required)</td>
+</tr>
+<tr>
+<td><code>asset</code></td>
+<td>tenant ID, stable internal canonical asset UUID, lifecycle state, created/last-seen; immutable/non-reusable ID</td>
+<td>One canonical record per monitored device</td>
+</tr>
+<tr>
+<td><code>asset_identity_alias</code></td>
+<td>tenant ID, asset ID, identity namespace/type, protected equality key/fingerprint material, provenance, confidence, validity/state, algorithm/key-version context as applicable; scoped uniqueness</td>
+<td>Reconcile stable external identity claims without relying solely on IP/hostname</td>
+</tr>
+<tr>
+<td><code>data_source</code></td>
+<td>tenant ID, <code>data_source_id</code> UUID, source/connector-instance type, credential reference, state, last-seen</td>
+<td>Agent/integration channel; not an asset count and may report many devices</td>
+</tr>
+<tr>
+<td><code>asset_data_source</code></td>
+<td>tenant ID, canonical asset ID, <code>data_source_id</code>, stable <code>source_device_key_id</code>, binding state/provenance/timestamps; tenant-inclusive relationship to asset/data source</td>
+<td>Stable source-device binding relationship between a canonical CARES asset and a data-source device identity context (one binding per stable source-device key in context; many bindings may attach to one asset; adding bindings to an already-resolved asset does not create licensed usage)</td>
+</tr>
+<tr>
+<td><code>source_device_fingerprint_alias</code></td>
+<td>tenant ID, stable <code>source_device_key_id</code> (or binding reference), algorithm, key version, protected fingerprint value, alias state/validity/overlap metadata; tenant-scoped uniqueness over approved dimensions (e.g. tenant, data source/binding context, algorithm, key version, protected fingerprint)</td>
+<td>Versioned/rotatable fingerprint aliases for lookup and rotation; multiple active aliases may map to the same stable binding during approved overlap, never to different bindings/assets</td>
+</tr>
+<tr>
+<td><code>asset_lifecycle_event</code></td>
+<td>tenant ID, asset ID, transition, actor/reason, evidence/provenance references, timestamp</td>
+<td>Auditable registration, state changes, merge/split/removal history (append-oriented)</td>
+</tr>
+<tr>
+<td><code>subscription</code> / <code>license_usage</code></td>
+<td>tenant ID, effective entitlement/quota, proposed accounting counters/state context (active billable usage, reserved capacity, pending identity reservation as approved), usage/versioning, effective period</td>
+<td>Per-tenant commercial entitlement and licensing accounting support</td>
+</tr>
+<tr>
+<td><code>asset_license_event</code></td>
+<td>tenant ID, asset ID (as applicable), allocation/reservation/release/merge/split transition, entitlement/quota/policy-version context, counter before/after or delta, actor/reason, idempotency/result linkage, timestamp</td>
+<td>Append-oriented licensing history and reconciliation evidence</td>
+</tr>
+<tr>
+<td><code>identity_operation_idempotency</code></td>
+<td>tenant ID, operation type, idempotency key, canonical request hash, actor/source context, processing/completed/failed state, stored result/reference, timestamps/attempt metadata (proposed)</td>
+<td>Durable idempotency ledger for licensing/identity operations (not application-memory-only); distinct from <code>event_receipt</code></td>
+</tr>
+<tr>
+<td><code>security_event</code></td>
+<td>tenant ID, event ID, event time, source, asset, schema version, classification, payload/reference</td>
+<td>Normalized event and permitted source evidence</td>
+</tr>
+<tr>
+<td><code>event_receipt</code></td>
+<td>tenant ID, source ID, connector-normalized <code>source_event_key</code>, payload hash, first-ingested time; unique <code>(tenant_id, source_id, source_event_key)</code></td>
+<td>Global ingestion idempotency guard across time partitions</td>
+</tr>
+<tr>
+<td><code>outbox</code></td>
+<td>tenant ID where applicable, work/message ID, event/operation reference, state, attempts/lease/replay metadata (scope-specific; see outbox semantics)</td>
+<td>Transactional handoff/reliable processing and controlled replay metadata</td>
+</tr>
+<tr>
+<td><code>audit_event</code></td>
+<td>actor, tenant context, action, target, reason, timestamp, outcome</td>
+<td>Operational/security administrative accountability (distinct from forensic evidence custody)</td>
+</tr>
+<tr>
+<td><code>forensic_evidence</code> / evidence metadata (proposed)</td>
+<td>tenant-scoped evidence identifiers, immutable provenance/hash/object references, classification/retention/legal-hold/availability state as governed by approved policy and controlled procedures</td>
+<td>Tenant-scoped forensic evidence references and controlled lifecycle state (see <a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a> and <a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a>)</td>
+</tr>
+<tr>
+<td><code>evidence_custody_event</code> (proposed)</td>
+<td>tenant ID, evidence ID, <code>custody_sequence</code>, action, actor, reason/policy reference, hash-chain linkage fields, timestamp</td>
+<td>Append-only custody/integrity history for forensic evidence</td>
+</tr>
+<tr>
+<td><code>ai_provider_config</code></td>
+<td>tenant ID, provider/model/region, endpoint policy, secret reference, consent/policy version, enabled state, quota reference</td>
+<td>Per-tenant provider selection and policy without plaintext secret</td>
+</tr>
+</tbody>
+</table>
+<p>Every tenant-owned row must have a non-null <code>tenant_id</code>, and relationships must prevent cross-tenant references (tenant-inclusive composite foreign keys/constraints where applicable). Global reference catalogs (such as CVE metadata) are explicitly non-tenant data; customer findings that reference them remain tenant-scoped. Exact table/column names, constraint/index definitions, DDL, and policy catalogs are <strong>not finalized</strong> and require formal PostgreSQL schema/security review.</p>
+<h2>Database architecture diagram</h2>
+<pre class="mermaid">flowchart LR
+  API[&quot;Python API / ingestion services&lt;br/&gt;(trusted application code)&quot;]
+  WORK[&quot;Python workers&quot;]
+  MAINT[&quot;Controlled maintenance jobs&quot;]
+  MIG[&quot;Migration identity&lt;br/&gt;(privileged, controlled)&quot;]
+  subgraph PG[&quot;PostgreSQL (private network, proposed)&quot;]
+    RTAPI[&quot;cares_api_runtime&quot;]
+    RTING[&quot;cares_ingest_runtime&quot;]
+    RTWORK[&quot;cares_worker_runtime&quot;]
+    MIGROLE[&quot;cares_migration&quot;]
+    MAINTROLE[&quot;cares_maintenance&quot;]
+    SECCTX[&quot;Verified transaction context&lt;br/&gt;+ security-internal helpers/records&quot;]
+    TENANT[(&quot;Tenant + membership&quot;)]
+    ASSET[(&quot;Asset + identity bindings/aliases/sources&quot;)]
+    LIC[(&quot;Entitlement + licensing + idempotency&quot;)]
+    EVENT[(&quot;Events + receipts + outbox&quot;)]
+    CASES[(&quot;Alerts + cases&quot;)]
+    AUDIT[(&quot;Audit, lifecycle, evidence metadata/custody refs&quot;)]
+    POLICY[&quot;RLS policies&lt;br/&gt;(verified tenant/scope context)&quot;]
+  end
+  BACKUP[&quot;Encrypted backup / restore verification (proposed)&quot;]
+  API --&gt; RTAPI
+  API --&gt; RTING
+  WORK --&gt; RTWORK
+  MAINT --&gt; MAINTROLE
+  MIG --&gt; MIGROLE
+  RTAPI --&gt; SECCTX
+  RTING --&gt; SECCTX
+  RTWORK --&gt; SECCTX
+  SECCTX --&gt; POLICY
+  RTAPI --&gt; TENANT
+  RTAPI --&gt; ASSET
+  RTAPI --&gt; LIC
+  RTING --&gt; EVENT
+  RTING --&gt; LIC
+  RTWORK --&gt; EVENT
+  RTWORK --&gt; CASES
+  RTAPI --&gt; AUDIT
+  RTWORK --&gt; AUDIT
+  POLICY -. applies to tenant tables .-&gt; TENANT
+  POLICY -. applies to tenant tables .-&gt; ASSET
+  POLICY -. applies to tenant tables .-&gt; LIC
+  POLICY -. applies to tenant tables .-&gt; EVENT
+  POLICY -. applies to tenant tables .-&gt; CASES
+  POLICY -. applies to tenant tables .-&gt; AUDIT
+  PG --&gt; BACKUP
+</pre>
+<h2>Verified transaction context, RLS, and PostgreSQL role separation</h2>
+<h3>Verified transaction-bound tenant context (required direction)</h3>
+<p>RLS and authorization-relevant data access must rely on a <strong>protected, verifier-written, transaction-bound verified context</strong>, not on a user-settable/custom PostgreSQL GUC used as an authentication or authorization source.</p>
+<ul>
+<li>Trusted backend code must verify the signed tenant assertion (issuer, audience, principal, tenant, scopes, nonce/freshness, expiry, and request/job binding as designed) before establishing context.</li>
+<li>Verified claims must be bound to the current transaction/backend session context in protected, security-internal storage that ordinary runtime and worker roles cannot forge or mutate. Narrow, hardened helper functions expose only the required authorization decisions/values to policies (not the full context record to ordinary roles).</li>
+<li><code>SET app.tenant_id</code> or any custom GUC may be used only for non-authoritative diagnostics/observability and must never be treated as proof of tenant identity, scope, or authorization.</li>
+<li>Connection-pool reuse requires transaction-bound isolation, explicit cleanup, and fail-closed behavior when binding/cleanup state is uncertain. Backend PID/transaction identifier reuse must not authorize a later transaction.</li>
+<li>Runtime and worker access must fail closed if verified context is absent, invalid, expired, mismatched, or not established by the approved verifier path.</li>
+</ul>
+<p>Detailed technical direction and unresolved mechanism decisions are in <a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a>, <a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a>, and <a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a>.</p>
+<h3>PostgreSQL logical roles and privileges (proposed)</h3>
+<p>Logical role separation (privilege boundaries, not necessarily separate applications):</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Primary responsibility (proposed)</th>
+<th>Key restrictions (proposed)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cares_api_runtime</code></td>
+<td>API/control-plane transactions under verified context</td>
+<td>Least privilege; no SUPERUSER/BYPASSRLS/table ownership/security-function-or-policy ownership; no migration/maintenance privileges</td>
+</tr>
+<tr>
+<td><code>cares_ingest_runtime</code></td>
+<td>Authenticated ingestion/receipt/outbox writes under verified context</td>
+<td>Same prohibitions; scoped to ingestion-needed tables/operations</td>
+</tr>
+<tr>
+<td><code>cares_worker_runtime</code></td>
+<td>Background processing/outbox claim handling under verified context and worker authorization rules</td>
+<td>Same prohibitions; scoped to worker-needed tables/operations</td>
+</tr>
+<tr>
+<td><code>cares_migration</code></td>
+<td>Schema migrations and controlled DDL in approved deployment windows</td>
+<td>Separate from runtime; tightly controlled; not used for ordinary request processing</td>
+</tr>
+<tr>
+<td><code>cares_maintenance</code></td>
+<td>Controlled maintenance (partition ops, approved repairs/reconciliation jobs) with audited procedures</td>
+<td>Separate from runtime/migration; no routine business authorization bypass; tightly controlled</td>
+</tr>
+</tbody>
+</table>
+<p>Ordinary runtime/worker roles must not own protected tenant tables or security-critical functions/policies. Direct access to partitioned child tables and maintenance operations must be restricted and audited per approved design. Exact grants, ownership, <code>SECURITY DEFINER</code> boundaries, and <code>search_path</code> hardening require schema/security review (see <a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a>).</p>
+<h3>RLS posture, FORCE RLS, and policy composition (proposed)</h3>
+<ul>
+<li>RLS is a required defense in depth, not a substitute for authentication, service-layer authorization, or support-administrator authorization.</li>
+<li>Tenant tables should use <code>ENABLE ROW LEVEL SECURITY</code> and, where applicable and ownership/role design permits, <code>FORCE ROW LEVEL SECURITY</code> so that table-owner/runtime contexts do not unintentionally bypass tenant boundaries; exact applicability is subject to PostgreSQL/version/ownership review.</li>
+<li>Policies should follow the verified-context model (restrictive tenant boundary + permissive/action-scope gates as designed) and fail closed when context is missing/invalid.</li>
+<li>PostgreSQL <code>UPDATE</code>/<code>SELECT</code> interaction must be designed explicitly: row qualification, column reads, and <code>RETURNING</code> require the necessary <code>SELECT</code> visibility/privileges and RLS qualification in addition to <code>UPDATE</code> checks. Proposed direction: <code>asset:write</code> (or equivalent approved scope) implies required read visibility for row-addressed workflows unless an approved alternative is selected (owner/security decision; see <a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a> Workstream D and <a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a>).</li>
+<li>Test policies, grants, and partition behavior using exact non-owner runtime-equivalent roles and realistic connection pooling. RLS does not make arbitrary SQL execution safe.</li>
+</ul>
+<h2>Asset identity and exactly-one licensing</h2>
+<h3>Required semantics (preserved)</h3>
+<ol>
+<li>A monitored device has one tenant-scoped CARES canonical <code>asset_id</code>, regardless of type or source count.</li>
+<li>Agent, firewall API, syslog, SIEM, or other source registrations attach to the same canonical asset when evidence identifies the same device. Sources/connectors are not billable assets.</li>
+<li>IP address is an observed attribute, never the sole canonical identity. It may change or be shared.</li>
+<li>Asset quota/licensing is per tenant and separate from ingestion bytes, storage, agent count, API use, and AI usage/technical quotas.</li>
+<li>Registration, identity reconciliation, quota/capacity checks, and usage/counter/lifecycle updates must be atomic, protected by tenant-inclusive uniqueness constraints and locking/serialization strategy, and idempotent under retries and unknown-commit recovery.</li>
+<li>Preserve registration, merge/split, deactivation, and removal history. A source disconnect is not automatically device removal.</li>
+<li>Identity ambiguity must be explicit. Do not silently merge potentially different devices or count uncertain signals as proven deduplication.</li>
+</ol>
+<h3>Canonical asset, stable source-device binding, and fingerprint aliases (proposed reconciled model)</h3>
+<ul>
+<li><strong>Canonical CARES asset:</strong> immutable, randomly generated, tenant-scoped UUID representing one monitored physical or logical device; never reused (including after merge, removal, or tenant deletion). A logical device lifecycle must not be silently merged with its underlying host.</li>
+<li><strong><code>data_source</code>:</strong> identifies a collection channel/connector instance (not a device). One <code>data_source_id</code> may report many devices.</li>
+<li><strong><code>asset_data_source</code> (stable binding relationship):</strong> tenant-scoped stable relationship between a canonical asset and a source-device identity context for a specific data source. It references a stable <code>source_device_key_id</code> (or equivalent stable binding identity) and provenance/state metadata. A fingerprint is <strong>not</strong> the permanent identity of this binding.</li>
+<li><strong><code>source_device_key_id</code>:</strong> stable internal identity for the source-device binding within the approved tenant/data-source context. It remains stable across fingerprint algorithm/key-version rotations and alias overlap for the same binding and maps to at most one canonical asset at a time under approved lifecycle/invariant rules.</li>
+<li><strong><code>source_device_fingerprint_alias</code>:</strong> versioned fingerprint alias records associated with a stable binding (<code>source_device_key_id</code>). Aliases carry algorithm/key-version/protected-fingerprint material and validity/overlap state.</li>
+</ul>
+<p><strong>Binding and alias rules (proposed):</strong></p>
+<ul>
+<li>Binding uniqueness must prevent the same stable source-device binding from attaching to multiple canonical assets or creating conflicting active bindings, while allowing one <code>data_source_id</code> to have many distinct bindings and one canonical asset to have bindings from many sources.</li>
+<li>Alias uniqueness must be tenant-scoped and include the approved dimensions (at minimum: tenant, data-source/binding context, algorithm, key version, and protected fingerprint value, or approved equivalent). No uniqueness constraint may use an unprotected raw source identifier.</li>
+<li>Multiple active aliases may reference the same stable binding during an approved overlap window and must resolve to the same canonical asset/binding. Overlap does not authorize a second binding, second asset, or additional licensed usage.</li>
+<li>Lookup: any currently valid/active alias resolves to the same stable binding/canonical asset. No valid binding =&gt; unresolved/new-candidate per identity rules (not automatic merge). Conflicting bindings/assets or alias collisions =&gt; fail closed to conflict/pending review; never auto-create or auto-merge.</li>
+<li>Rotation: add new alias/version material, preserve required overlap, verify lookup/uniqueness/binding consistency, and retire old aliases/keys by approved controlled process. Rotation must be atomic/idempotent where required and must not rewrite identity history in place.</li>
+<li>Migration/re-fingerprinting/reprocessing: idempotent, resumable, and auditable; must not create duplicate assets, duplicate active bindings, duplicate uniqueness-violating aliases, or duplicate/inflated licensed usage. Old and new aliases may overlap only for the approved period and must map to the same stable binding.</li>
+</ul>
+<p>Store identity claims/observations separately with tenant ID, canonical asset linkage as applicable, namespaced identifier type/namespace, protected equality key/fingerprint used for exact matching, provenance (authenticated source/data-source, vendor, collection method, observed time, actor for manual claims, rule/normalization version), confidence class, validity/lifecycle state, and decision/change metadata. Source-local IDs must be namespaced to the authenticated connector/source-device context. IP addresses and hostnames are mutable observations/weak correlation attributes only; never canonical IDs and never authorization for automatic merge. Raw source identifiers, if retained by approved policy, are sensitive protected data and never database uniqueness keys.</p>
+<p>Fingerprint/equality-key protection, algorithm/key-versioning, KMS/secret-manager key custody, rotation overlap, retention/deletion, and tenant-deletion behavior require security/privacy/owner decisions and formal design (see <a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a>).</p>
+<h3>Deterministic matching rules (proposed)</h3>
+<p>Apply in order within an authenticated tenant and verified tenant context; never search/match across tenants:</p>
+<ol>
+<li><strong>Existing stable binding/alias resolution:</strong> if a valid alias resolves to a stable <code>source_device_key_id</code>/binding with a valid canonical asset association, use that asset. A connector instance alone is not a device identity when it can report multiple devices. A binding cannot be reassigned merely because a payload names another asset.</li>
+<li><strong>Exact authoritative claim:</strong> exact match on a unique, namespaced, authenticated enrollment/provider/vendor identity resolves to its single current asset; attach/bind source as appropriate and record rule/provenance; do not increment licensed count.</li>
+<li><strong>Administrator-confirmed claim:</strong> exact active manual mapping resolves only if actor is authorized for that tenant and claim is not conflicted.</li>
+<li><strong>Corroborating or weak attributes:</strong> hostname, IP, MAC, serial, OS details, similarities may suggest candidates but do not automatically merge or bind.</li>
+<li><strong>No match with trusted identity:</strong> create a new canonical asset subject to atomic tenant quota/capacity checks and approved policy.</li>
+<li><strong>Conflicting, missing, or ambiguous identity:</strong> create/maintain pending identity-resolution state; do not silently merge. Hold/quarantine affected data per approved policy and technical limits; do not treat as confirmed billable device. Pending reservation/capacity/quarantine semantics are <strong>owner decisions</strong> (see unresolved owner decisions in <a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a> and ADR 0006).</li>
+</ol>
+<p>If an exact authoritative key appears to map to multiple current assets, treat as an integrity conflict: stop automatic attribution, preserve evidence/input, alert/review, and require authorized remediation.</p>
+<h3>Manual merge, split, and history (proposed)</h3>
+<p>Merge and split are tenant-scoped, privileged, authorized operations requiring explicit reason/evidence and append-only audit/lifecycle/identity-resolution records. They must execute atomically under verified tenant context, defined lock ordering, post-lock rechecks, and durable idempotency handling.</p>
+<ul>
+<li><strong>Merge:</strong> explicitly select surviving canonical asset; lock affected licensing/asset/binding/alias rows in deterministic order; verify no unresolved conflicts; reassign eligible bindings and associated aliases to survivor; never reuse losing canonical IDs (tombstone/merged state retained); apply approved licensing counter/history effects without creating duplicate licensed usage.</li>
+<li><strong>Split:</strong> create a new canonical UUID only when evidence/authorization justifies separation; atomically verify required capacity/state before committing if additional active billable asset/reservation is created; move specified bindings and their aliases; preserve original attribution/lineage; reject or leave ambiguous bindings for review rather than duplicating.</li>
+<li>All automated/manual decisions record rule/namespace, evidence/provenance, algorithm/key-version context, confidence, actor/service identity, timestamps, and before/after linkage. Corrections are compensating/auditable actions, not silent history rewrites.</li>
+</ul>
+<p>Detailed transaction behavior, lock ordering, idempotency, and verification requirements are proposed in <a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a>.</p>
+<h3>Atomic licensing, accounting, and lifecycle policy (proposed model)</h3>
+<p>Each tenant has entitlement/licensing state and proposed accounting measures: <strong>Active billable usage</strong>, <strong>Reserved capacity</strong>, <strong>Pending identity reservation</strong> (if approved), <strong>Available capacity</strong>, and <strong>Historical/tombstone records</strong>. Asset licensing is separate from technical resource quotas.</p>
+<p><strong>Proposed accounting model (technical support model; commercial meaning owner-approved):</strong></p>
+<ul>
+<li><code>available_capacity = entitled_quota - active_billable_usage - reserved_capacity - pending_identity_reservation_adjustment</code> (illustrative; adjustment included only if owner-approved policy reserves capacity for pending cases).</li>
+<li>State-to-counter mapping for active, deactivated/grace-reserved, pending, merged/tombstone, removed/tombstone, and reactivated states must be explicitly defined and applied atomically with append-only licensing/lifecycle history. Deactivation/reactivation/removal grace, pending reservation duration/capacity impact, and billable treatment are <strong>owner decisions</strong> and must not be assumed here.</li>
+</ul>
+<p><strong>Proposed atomicity/invariant rules:</strong></p>
+<ul>
+<li>Licensing/identity operations (registration, attachment, merge, split, deactivation, reactivation, removal, fingerprint rotation as applicable) must run in PostgreSQL transactions under verified tenant context: resolve/recheck identity and state after locks, serialize per-tenant quota/counter changes as designed, enforce tenant-inclusive uniqueness constraints, apply counter/state/history effects, persist durable idempotency outcome/result, and commit or roll back fully.</li>
+<li>Use deterministic lock ordering and mandatory post-lock identity/state/capacity rechecks (see ADR 0006). The tenant licensing/usage row is a serialization point for quota/counter correctness, not a substitute for uniqueness constraints, RLS, or authorization.</li>
+<li>Append <code>asset_license_event</code>/lifecycle records in the same transaction for allocation, reservation, release, merge, split, entitlement adjustment, and relevant state transitions with entitlement/policy/version context and before/after or delta evidence.</li>
+<li>Periodic reconciliation may compare counters to authoritative state/history and report discrepancies; it must not silently rewrite history.</li>
+</ul>
+<p>Owner decisions (billing/reservation/grace/release/removal/pending semantics, authorization/approval policy, retention) remain pending and must be recorded separately; the core identity structure must support approved decisions without redesign.</p>
+<h3>Unified idempotency taxonomy and atomic persistence (proposed)</h3>
+<p>Different operation classes require different idempotency mechanisms; they must not be conflated:</p>
+<table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Mechanism (proposed)</th>
+<th>Key/identity</th>
+<th>Atomic persistence expectation (proposed)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Event ingestion acceptance</td>
+<td><code>event_receipt</code> (global ingestion idempotency guard)</td>
+<td><code>(tenant_id, source_id, source_event_key)</code> + payload hash</td>
+<td>Insert receipt, accepted partitioned event record(s), and ingestion outbox record(s) atomically for durably acknowledged ingestion; duplicate same payload returns prior acknowledgment, same key different hash is rejected/audited per policy</td>
+</tr>
+<tr>
+<td>Licensing/identity operations</td>
+<td><code>identity_operation_idempotency</code> ledger (durable, tenant-scoped)</td>
+<td>e.g. tenant + operation type + idempotency key + request hash (exact design TBD)</td>
+<td>Persist/lock idempotency record with operation state and committed result/reference in the same transactional discipline as licensing/asset/binding/alias/lifecycle/audit effects; same key+hash returns original outcome, same key different hash conflicts</td>
+</tr>
+<tr>
+<td>Outbox processing and replay</td>
+<td>Outbox attempt/replay records (<code>attempt_number</code>, cumulative <code>attempt_count</code>, <code>replay_generation</code>, generation-scoped counters/state as designed)</td>
+<td>work/message ID + attempt/replay identifiers; preserve original side-effect idempotency references unless approved new logical side effect</td>
+<td>Claim/lease/fence, attempt outcome, state transition, and durable result/audit linkage recorded per designed transaction boundaries; ambiguous external delivery (<code>delivery_unknown</code>) requires reconciliation evidence/authorization before replay as applicable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Atomicity clarification (proposed):</strong> for each operation, business state changes, idempotency state/result, required audit/lifecycle/licensing records, and outbox records must be committed together when they are part of the same correctness boundary. External side effects cannot be made exactly-once by database transaction alone; designs must use idempotency keys, fencing, reconciliation, and explicit unknown-commit handling. Exact operation-by-operation boundaries are prepared in <a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a>.</p>
+<h3>Required race-condition verification (proposed)</h3>
+<p>Integration tests must run against PostgreSQL using production-equivalent non-owner runtime roles (and separately controlled migration/maintenance roles as applicable), not SQLite or in-memory-only mocks:</p>
+<ul>
+<li>Synchronize concurrent registration transactions for the same tenant and same authoritative identity: exactly one canonical asset/binding outcome, all valid sources bind correctly, and licensed usage increases only once as applicable.</li>
+<li>Synchronize more unique registrations than remaining quota/capacity: no over-allocation; rejected transactions leave no partial asset, binding, alias, lifecycle, counter, or idempotency side effects.</li>
+<li>Retry the same idempotency key after timeout/connection loss/unknown commit: no duplicate asset, binding, licensed usage, or conflicting side effects; original result/reconciliation outcome returned.</li>
+<li>Race source attachment against new-asset registration, alias conflict/rotation, deactivation/reactivation, merge, and split; verify invariants, deterministic locking/post-lock rechecks, and deadlock/serialization retry handling.</li>
+<li>Inject failure between each write and before commit; verify rollback leaves counters and canonical records consistent.</li>
+<li>Reconcile per-tenant counters against authoritative state/history after restart and restore.</li>
+<li>Verify cross-tenant isolation under RLS/verified context for assets, bindings, aliases, counters, idempotency records, and history.</li>
+</ul>
+<p>Representative contention/load tests must measure lock wait, retry/deadlock rates, and throughput before changing locking/idempotency design.</p>
+<h3>Decisions pending owner approval</h3>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Current proposal</th>
+<th>Required approver / evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Authoritative identifiers by device/connector</td>
+<td>Exact authenticated namespaced IDs; connector-specific catalog</td>
+<td>Product and integration owners; validate coverage per supported connector</td>
+</tr>
+<tr>
+<td>Confidence classes and matching rule versioning</td>
+<td>Authoritative claims auto-match; weak/conflicting claims require review</td>
+<td>Product/security owners; false-merge and ambiguity test cases</td>
+</tr>
+<tr>
+<td>Identity equality-key protection and rotation</td>
+<td>Protected fingerprint/alias design with tightly controlled raw identifier retention where required</td>
+<td>Security/privacy owners; key custody, rotation, overlap, tenant-deletion design</td>
+</tr>
+<tr>
+<td>Pending identity handling</td>
+<td>Proposal only: quarantine/review handling and possible separate pending reservation/capacity impact; not confirmed billing behavior</td>
+<td>Product, security, privacy, commercial owners; customer-impact and quota policy</td>
+</tr>
+<tr>
+<td>Manual merge/split authorization</td>
+<td>Tenant-scoped privileged authorization, reason, lineage, evidence, audit; multi-person approval not decided</td>
+<td>Product/security owners</td>
+</tr>
+<tr>
+<td>Deactivation grace and quota/capacity release</td>
+<td>Proposed grace/reservation semantics require policy mapping; duration and exceptions not decided</td>
+<td>Commercial/product/legal/security owners</td>
+</tr>
+<tr>
+<td>Accounting policy mapping</td>
+<td>Active billable/reserved/pending/available/tombstone semantics and billability</td>
+<td>Commercial/product/legal owners</td>
+</tr>
+<tr>
+<td>Performance/load baseline</td>
+<td>10 tenants, 5,000 assets, 25 EPS sustained, 100 EPS five-minute burst on stated reference hardware (assumptions)</td>
+<td>Product/operations owners; representative workload and benchmark acceptance</td>
+</tr>
+<tr>
+<td>Event, audit, evidence, idempotency, backup retention</td>
+<td>Provisional values exist in this document; customer/contract/legal/privacy requirements may override</td>
+<td>Customer, privacy, legal, operations, security owners</td>
+</tr>
+<tr>
+<td>Broker/analytics thresholds</td>
+<td>Proposed measured thresholds in ADR 0005</td>
+<td>Platform/operations owners; capacity and cost evidence</td>
+</tr>
+</tbody>
+</table>
+<h3>Current prototype gap analysis</h3>
+<p><code>cares/licensing.py</code> keys an in-memory dictionary by <code>tenant_id</code> plus the caller-supplied, stripped <code>stable_identity</code>. Repeating exactly that value within one process attaches source IDs to the existing <code>Asset</code>. This demonstrates a narrow, tested example of “multiple sources, one provided identity, one count.”</p>
+<p>It does <strong>not</strong> establish that identities from different sources represent the same physical device, produce a stable identity, reconcile aliases/bindings, enforce verified transaction context/RLS, provide concurrency protection, durable idempotency, PostgreSQL constraints/persistence, lifecycle retention, or auditable merge/split/rotation workflows. <code>remove_asset</code> pops the record from the active dictionary, and generated IDs use the current dictionary length, so IDs can be reused after removal. The prototype is not a production licensing engine.</p>
+<h2>Event capacity and processing design</h2>
+<p><strong>Capacity figures below are proposed initial planning assumptions, not approved requirements, verified product capacity, customer-facing SLAs or service commitments.</strong> They establish a benchmark target for one initial SaaS deployment. The owner must approve the reference profile, retention policy, workload profile and target SLOs before they become acceptance commitments.</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Proposed initial assumption / target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deployment scale</td>
+<td>Up to 10 tenants and 5,000 active monitored assets in one initial deployment</td>
+</tr>
+<tr>
+<td>Ingestion rate</td>
+<td>25 events/second sustained aggregate; 100 events/second aggregate burst for five minutes</td>
+</tr>
+<tr>
+<td>Average event payload</td>
+<td>1 KiB uncompressed; measure representative customer payloads before final sizing</td>
+</tr>
+<tr>
+<td>Maximum event</td>
+<td>256 KiB uncompressed per event; reject larger payloads explicitly</td>
+</tr>
+<tr>
+<td>Request envelope</td>
+<td>At most 4 MiB decompressed per batch; enforce count, nesting, and parsing limits</td>
+</tr>
+<tr>
+<td>Ingest durability</td>
+<td>Acknowledged event is durably committed; zero acknowledged-event loss in crash/restart tests</td>
+</tr>
+<tr>
+<td>Ingest latency</td>
+<td>At the reference profile, p95 durable acknowledgment &lt;=1 second and p99 &lt;=3 seconds</td>
+</tr>
+<tr>
+<td>Worker throughput</td>
+<td>At least 150 events/second sustained in a representative replay test</td>
+</tr>
+<tr>
+<td>Processing latency</td>
+<td>At 25 events/second, accepted-to-normalized/detection result p95 &lt;=30 seconds and p99 &lt;=60 seconds</td>
+</tr>
+<tr>
+<td>Outbox lag</td>
+<td>p95 &lt;30 seconds; no sustained interval above 120 seconds during the defined burst test</td>
+</tr>
+<tr>
+<td>Valid-event failures</td>
+<td>&lt;0.1% at the target load, excluding explicitly rejected invalid, unauthorized, or over-quota requests</td>
+</tr>
+</tbody>
+</table>
+<p>Benchmark reference environment, also subject to owner approval: application/API/worker host with 4 vCPU and 8 GiB RAM; PostgreSQL with 4 vCPU, 16 GiB RAM, and 500 GiB provisioned SSD; same region and private network. Record PostgreSQL version, storage IOPS, connection limits, API/worker process count, schema/index version, payload fixture distribution, and test duration with each result. A target without a fixed reference environment is not reproducible.</p>
+<p>Representative workload profiles are required by device type and source type. The 25-EPS aggregate is not a valid assumption that every one of 5,000 assets emits 0.005 EPS, nor is it evidence of realistic event coverage. At an initial benchmark level, 25 EPS across 5,000 assets could correspond to approximately 0.005 events/second per asset average, but actual SOC telemetry is bursty and heterogeneous across server, workstation, firewall, IDS/IPS, EDR, cloud, identity and network sources. The benchmark therefore must include event composition and concurrency profiles for at least:</p>
+<ul>
+<li>Agent heartbeat, host inventory and security collection.</li>
+<li>Firewall and network telemetry.</li>
+<li>IDS/IPS and SIEM event bursts.</li>
+<li>EDR process and detection activity.</li>
+<li>Cloud and identity audit activity.</li>
+<li>Integration poll and webhook patterns.</li>
+<li>Duplicate, replay and burst behavior.</li>
+</ul>
+<p>Each profile must record active assets, sources, events per source per hour, payload size distribution, burst duration, batch size, parsing cost and normalized event/result growth. A realistic test may need substantially higher peak ingestion and storage even if the aggregate sustained benchmark remains low. 25 EPS sustained is only an initial aggregate test target and does not establish customer telemetry coverage or SOC feature completeness.</p>
+<p>At 25 events/second and 1 KiB/event, payload growth is approximately 2.06 GiB/day and 61.8 GiB for 30 days. A provisional 2x factor for normalized columns and indexes yields about 124 GiB for the 30-day event window; reserve approximately 150 GiB for that event data set. This estimate excludes WAL, replicas, backups, temporary space, unusually large events, and non-event data; measure actual physical growth and retain separate disk headroom.</p>
+<h3>PostgreSQL storage, partitioning, retention</h3>
+<p>PostgreSQL remains the primary relational database and initial event store. Persist the validated event envelope, normalized fields, processing state, and outbox record transactionally. Use JSONB only for bounded source-specific payload fields; index known query fields rather than adding broad indexes to arbitrary payload.</p>
+<p>Proposed initial event partitioning is daily RANGE partitions in UTC on <code>ingested_at</code>, not sender-provided event time. Late or malicious timestamps therefore cannot direct writes into arbitrary or missing partitions. Maintain the next 14 days of partitions with an operationally monitored database maintenance job. Retain raw and normalized event records for a proposed 30 days and drop eligible daily partitions after the approved cutoff (up to one day of partition-boundary rounding). Keep alerts/cases and audit/lifecycle history for a proposed 365 days, subject to contract, legal, and customer retention requirements. Backup retention is a separate proposed 35 days and must not be treated as event retention. These defaults require owner, privacy, and legal approval; customer-specific retention must be supported where contracted.</p>
+<p>Because PostgreSQL global unique constraints on partitioned tables must include the partition key, keep an unpartitioned (or independently partitioned by the unique key) <code>event_receipt</code> ingestion idempotency ledger with a unique <code>(tenant_id, source_id, source_event_key)</code> constraint. The connector-normalized key must be unique within its source namespace; if a vendor's event ID is only unique per device, include the namespaced source-device key. Insert the receipt, partitioned event row, and ingestion outbox row atomically for durably acknowledged ingestion. Retain receipts for at least the maximum supported agent retry/replay window; a duplicate key with the same payload hash returns the prior acknowledgment, while the same key with a different hash is rejected and audited. Test receipt pruning only after retry/replay eligibility expires.</p>
+<p>Partition by ingestion time enables predictable pruning and retention without deleting millions of rows individually. Use a small, justified set of indexes (tenant/time, tenant/asset/time, idempotency/source key). Verify query plans and RLS (including FORCE RLS applicability and policy composition as approved) on partitioned tables and ensure retention/drop operations cannot bypass audit, custody, or legal holds.</p>
+<h3>Outbox semantics, worker concurrency, backpressure, retries, and dead letters</h3>
+<p>Start with PostgreSQL transactional outbox patterns and bounded Python workers; do not introduce a broker for the initial target profile. Proposed initial worker setting is up to eight total in-flight processing jobs per deployment, configurable only within the PostgreSQL connection/resource budget. Benchmark and tune with representative parse and detection work; do not scale concurrency without measuring DB contention.</p>
+<p><strong>Scope distinction (proposed, to be finalized):</strong></p>
+<ul>
+<li><strong>Event-processing outbox:</strong> decouples accepted ingestion from normalization/enrichment/detection/case updates. Processing should be idempotent by <code>(tenant_id, source_id, source_event_key)</code> (or approved equivalent) and preserve original event identity on replay.</li>
+<li><strong>External-side-effect / controlled-delivery outbox (e.g. identity/provider operations):</strong> requires stricter ambiguity handling where side effects may be irreversible or non-idempotent. <a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a> §3 defines proposed semantics including fenced leases/tokens, cumulative <code>attempt_count</code>, unique <code>attempt_number</code>, <code>replay_generation</code>, generation-scoped attempt limits/counters, <code>delivery_unknown</code> safety state, reconciliation evidence/authorization before ambiguous replay, enforcement of <code>duplicate_risk_accepted</code> where applicable, and preservation of original side-effect idempotency references unless a separately approved new logical side effect is created.</li>
+</ul>
+<p>Workers claim bounded batches using recoverable leases/fencing as designed. Retry transient errors with exponential backoff and jitter, up to approved limits (generation-scoped where applicable for controlled-delivery outboxes). Record terminal failure/dead-letter states with sanitized error reason, timestamps, attempt metadata, and original message/event reference; alert on it. Authorized replay after remediation must preserve original identities/idempotency references and add audit/replay records as required. Permanent validation or schema failures are rejected/quarantined, not retried indefinitely.</p>
+<p>Alert when oldest outbox age exceeds 60 seconds for five minutes; page/escalate if it exceeds five minutes or continues growing. Apply per-tenant and global request/rate limits. When storage headroom or processing capacity crosses a configured safety threshold, reject new uncommitted batches with a retryable 429/503 and <code>Retry-After</code>, allowing agents to use bounded offline buffers. Never acknowledge an event before durable commit, and never silently drop an acknowledged event to recover capacity.</p>
+<h3>Criteria for additional infrastructure</h3>
+<p>An event broker (for example NATS or Kafka) is not part of the baseline. Reconsider only when a representative load test or production telemetry demonstrates at least one of:</p>
+<ul>
+<li>Sustained aggregate ingestion above 250 events/second or bursts above 1,000 events/second are a committed product requirement.</li>
+<li>The PostgreSQL outbox consumes &gt;10% of database CPU or causes query/transaction SLO violations after query, partition, and worker tuning.</li>
+<li>Required replay/fan-out to multiple independent consumers cannot be met safely by the transactional outbox.</li>
+</ul>
+<p>An analytical database (for example ClickHouse) is also deferred. Reconsider only when representative dashboard/analytics queries remain above p95 2 seconds after partitioning/index/query optimization, analytics consumes &gt;25% of primary database CPU for 30 minutes at target load, or retained event volume exceeds 1 TiB and benchmark data shows OLTP impact. Any added store is derived/analytical: PostgreSQL remains authority for tenants, assets, licensing, access decisions, and event acceptance metadata. Every addition requires a new ADR, tenant-security review, operational owner, backup/retention plan, and measured proof that it solves the bottleneck.</p>
+<h2>Event, audit, and forensic evidence lifecycle</h2>
+<h3>Event lifecycle</h3>
+<p>Validate and bound the incoming envelope before persistence. Preserve source, tenant binding, event time, ingestion time, schema version, classification, and idempotency key. Each source must provide a stable event identifier or a connector-specific stable batch/cursor sequence; construct <code>source_event_key</code> so it is unique within that connector's namespace, including the namespaced source-device key when needed. Do not use a content hash alone because two legitimate identical events may occur. Treat payload content as untrusted. Keep raw source data only where customer policy and retention permit; store normalized, queryable fields separately. Use an outbox to coordinate post-commit processing. Apply tenant-specific retention and deletion policies to records, indexes, backups, and exports.</p>
+<h3>Audit, forensic evidence metadata/objects, and custody (proposed distinctions)</h3>
+<ul>
+<li><strong>Operational/security audit records (<code>audit_event</code> and related operational logs as designed):</strong> record administrative/security-relevant actions and outcomes for accountability; distinct from forensic evidence custody.</li>
+<li><strong>Forensic evidence metadata and evidence objects:</strong> tenant-scoped evidence references/objects require immutable identity/provenance/hash/object linkage fields, controlled lifecycle state, and authorized access/export logging/redaction as applicable. Immutable evidence metadata fields and controlled mutable fields must be explicitly governed; direct updates/deletes by ordinary runtime roles must be prohibited per approved design.</li>
+<li><strong>Evidence custody events:</strong> append-only, tenant-scoped, ordered custody/integrity history (e.g. custody sequence and hash-chain linkage as proposed) recorded atomically with authorized controlled transitions.</li>
+<li><strong>Controlled evidence transitions:</strong> must use protected, transaction-bound authorization created only by authorized hardened <code>SECURITY DEFINER</code> procedures (not a custom GUC), with atomic authorization-create/update/custody-append/consume and fail-closed behavior, as proposed in <a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a> and <a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a> §4.</li>
+</ul>
+<p>A database hash chain is tamper-evident within the database trust boundary but not independently tamper-proof against privileged database administrators; external immutable storage/WORM or equivalent controls are separate potential owner/security-approved measures. Evidence/object storage, retention, legal hold, purge/restore, and export controls remain proposed and require owner/privacy/legal/security approval.</p>
+<h2>Retention, backup, and migrations</h2>
+<p>Define separate policies for raw events, normalized records, audit/lifecycle records, AI interaction metadata, forensic evidence metadata/objects/custody records, licensing/identity history, idempotency records (<code>event_receipt</code>, identity operation ledger, outbox/replay records as applicable), and backups. Deletion or anonymization must consider derived data and legal holds. Backups must be encrypted, access-limited, retention-controlled, and restoration-tested. Backup retention is separate from event/evidence retention.</p>
+<p>Migrations should be additive where possible, reviewed, and run under <code>cares_migration</code> (separate from runtime roles) with controlled procedures. Fingerprint/identity migrations and reprocessing must be idempotent, resumable, auditable, and must not create duplicate assets, bindings, aliases, or licensed usage. Retention/pruning windows for idempotency and outbox records must not undermine supported retry/reconciliation/audit requirements and are subject to owner/security/operations decisions. None of these controls exists in the current repository.</p>
+
+</article>
+</div>
+<script src="../assets/mermaid.min.js"></script>
+<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,securityLevel:'loose'});}</script>
+</body>
+</html>

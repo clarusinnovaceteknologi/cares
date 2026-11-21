@@ -1,0 +1,1256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Architecture Decision Package</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/ARCHITECTURE_DECISION_PACKAGE.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Architecture Decision Package</h1>
+<p><strong>Status:</strong> Proposed architecture preparation; not implemented; not tested.</p>
+<p>This package resolves the design gaps identified in the repository documentation. It is a decision record, not a database or application implementation. Mandatory CARES requirements are not changed.</p>
+<h2>Status labels</h2>
+<ul>
+<li><strong>EXISTING APPROVED REQUIREMENT:</strong> established by the project owner or mandatory master instruction.</li>
+<li><strong>EXISTING PROPOSAL:</strong> already proposed in the repository documentation.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> a recommendation added by this package.</li>
+<li><strong>OWNER DECISION REQUIRED:</strong> cannot be made without project-owner approval.</li>
+<li><strong>NOT IMPLEMENTED:</strong> no corresponding working implementation exists.</li>
+<li><strong>NOT TESTED:</strong> no end-to-end or PostgreSQL verification exists.</li>
+</ul>
+<hr />
+<h2>1. Executive summary</h2>
+<p>The repository has a clear identity and licensing requirement but no implementation evidence:</p>
+<ul>
+<li>PostgreSQL is mandatory, but there is no PostgreSQL integration.</li>
+<li>The one-device/one-licensed-asset requirement is mandatory.</li>
+<li>A data source is a collection channel or credentialed connector instance, not a device.</li>
+<li>One data source may report many devices.</li>
+<li>One device may receive data from many data sources.</li>
+<li>A canonical CARES asset represents one physical or logical monitored device.</li>
+<li>The current prototype is process-local and cannot enforce quota or identity atomically.</li>
+</ul>
+<p>This package recommends:</p>
+<ol>
+<li>Represent source-device identity as a <code>source_device_binding</code> plus one or more versioned fingerprint aliases.</li>
+<li>Recalculate a source-device fingerprint only through an audited migration run.</li>
+<li>Never derive canonical asset identity from the fingerprint.</li>
+<li>Serialize registration per tenant with the PostgreSQL tenant quota row.</li>
+<li>Use tenant-scoped identity uniqueness and a stable canonical asset ID.</li>
+<li>Keep 30-day deactivation grace and pending-identity quota reservation as owner decisions.</li>
+<li>Keep the original ten-phase roadmap as the approved baseline.</li>
+<li>Treat the revised roadmap and all cross-platform destinations as proposals.</li>
+</ol>
+<p><strong>PostgreSQL implementation readiness:</strong> <strong>NOT READY FOR FULL SCHEMA IMPLEMENTATION</strong>. Core tenant, identity and quota structures need owner decisions and formal schema review first. Read-only tenant/admin tables may be specified later, but asset, source binding and licensing migrations should not begin until the unresolved lifecycle and fingerprint-rotation decisions are closed.</p>
+<hr />
+<h2>2. Current architectural gaps</h2>
+<h3>Confirmed gaps</h3>
+<table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>State</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PostgreSQL integration</td>
+<td>NOT IMPLEMENTED</td>
+<td>No persistence or database uniqueness</td>
+</tr>
+<tr>
+<td>Tenant RLS and trusted tenant context</td>
+<td>NOT DESIGNED</td>
+<td>Cross-tenant writes or reads</td>
+</tr>
+<tr>
+<td>Canonical asset identity</td>
+<td>EXISTING PROPOSAL</td>
+<td>Duplicate or false device merge</td>
+</tr>
+<tr>
+<td>Source-device identity</td>
+<td>EXISTING PROPOSAL</td>
+<td>Connector-wide IDs may be mistaken for device IDs</td>
+</tr>
+<tr>
+<td>Fingerprint key rotation</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Interrupted or concurrent migration</td>
+</tr>
+<tr>
+<td>Atomic quota</td>
+<td>EXISTING PROPOSAL</td>
+<td>Concurrent registration may oversubscribe</td>
+</tr>
+<tr>
+<td>Merge/split</td>
+<td>EXISTING PROPOSAL</td>
+<td>Licensing and event lineage corruption</td>
+</tr>
+<tr>
+<td>Lifecycle/grace</td>
+<td>OWNER DECISION REQUIRED</td>
+<td>Billing ambiguity</td>
+</tr>
+<tr>
+<td>Cross-platform roadmap</td>
+<td>OWNER DECISION REQUIRED</td>
+<td>No revised destination for BSD, macOS, Android or iOS</td>
+</tr>
+</tbody>
+</table>
+<h3>Remaining contradictions</h3>
+<ul>
+<li>The revised roadmap does not assign a destination to BSD, macOS, Android or iOS development.</li>
+<li>The existing data model says source-device identifiers are namespaced and fingerprinted, but it does not specify the exact overlap state machine or migration resume protocol.</li>
+<li>The 30-day grace and pending reservations are sometimes presented as technical defaults. They remain commercial policy proposals.</li>
+</ul>
+<hr />
+<h2>3. Workstream A: source-device fingerprint rotation</h2>
+<h3>3.1 Identity model</h3>
+<h4>Existing approved requirement</h4>
+<p>Each unique monitored device is exactly one licensed asset. Different data sources may report the same device. A data source is not itself an asset.</p>
+<h4>Existing proposed tuple</h4>
+<pre><code class="hljs language-text">(tenant_id, data_source_id, protected_source_device_key_fingerprint)
+</code></pre>
+<h4>New technical recommendation</h4>
+<p>Use two related representations:</p>
+<ol>
+<li>A canonical <code>source_device_binding</code> representing the stable relationship between one source, one source-local device key and one CARES asset.</li>
+<li>A versioned <code>source_device_fingerprint_alias</code> representing each fingerprint used to discover that binding.</li>
+</ol>
+<pre class="mermaid">flowchart LR
+  R[&quot;Raw source-device identifier&quot;] --&gt;|protect| F[&quot;Fingerprint alias&quot;]
+  F --&gt;|same binding| B[&quot;Source-device binding&quot;]
+  B --&gt; A[&quot;Canonical CARES asset&quot;]
+  DS[&quot;Data source / connector instance&quot;] --&gt; B
+</pre>
+<p>The raw identifier is not the canonical identity. It is not used as a PostgreSQL uniqueness key. The canonical asset UUID is not derived from the fingerprint.</p>
+<h3>3.2 Proposed data model</h3>
+<pre><code class="hljs language-sql"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">fingerprint_key</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">key_version</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">algorithm</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">scope</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">secret_ref</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">activated_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">retire_after</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">retired_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">key_version</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">fingerprint_key_state</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;draft&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;overlap&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retiring&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retired&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">source_device_binding</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">binding_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_source_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">canonical_asset_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">source_device_key_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">first_seen_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_seen_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">binding_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">UNIQUE</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">source_device_key_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">source_device_binding_state</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;pending&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;inactive&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;merged&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;removed&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">source_device_fingerprint_alias</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_source_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">fingerprint_digest</span><span class="w"> </span><span class="n">bytea</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">algorithm</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">key_version</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">binding_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">state</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_seen_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_digest</span><span class="p">),</span>
+<span class="w">    </span><span class="k">UNIQUE</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">data_source_id</span><span class="p">,</span><span class="w"> </span><span class="n">fingerprint_digest</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">fingerprint_alias_state</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">state</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;overlap&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;deprecated&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retired&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">fingerprint_rotation_run</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">run_id</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">old_key_version</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">new_key_version</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">algorithm</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_binding_id</span><span class="w"> </span><span class="n">uuid</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_seen_at</span><span class="w"> </span><span class="n">timestamptz</span><span class="p">,</span>
+<span class="w">    </span><span class="n">processed_count</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">conflict_count</span><span class="w"> </span><span class="nb">bigint</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">verification_status</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;not_started&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span><span class="w"> </span><span class="n">run_id</span><span class="p">),</span>
+<span class="w">    </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">rotation_status</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="n">status</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;authorized&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;running&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;paused&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;verifying&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;completed&#39;</span><span class="p">,</span>
+<span class="w">                   </span><span class="s1">&#39;failed&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cancelled&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">);</span>
+</code></pre>
+<p>The examples omit tenant foreign keys in their shortened form. A complete implementation must include tenant-aware foreign keys for <code>data_source_id</code>, <code>canonical_asset_id</code>, and <code>binding_id</code>. The exact SQL representation must be reviewed by PostgreSQL and security engineers before migration creation.</p>
+<p><strong>NOT IMPLEMENTED:</strong> these example structures are design proposals, not schema.</p>
+<h3>3.3 Fingerprint key scope and custody</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong></p>
+<ul>
+<li>Use HMAC-SHA-256 or a stronger approved keyed digest.</li>
+<li>Use a separate HMAC key for each tenant or for the platform with a tenant-scoped key derivation context.</li>
+<li>Store key material in a secret manager or KMS-backed envelope.</li>
+<li>Store only secret references and key metadata in PostgreSQL.</li>
+<li>Never log raw source identifiers or HMAC keys.</li>
+<li>Require two-person approval for key activation and retirement where platform policy requires it.</li>
+<li>Record actor, run ID, old/new key version, algorithm, activation time and retirement time.</li>
+</ul>
+<p>The exact key scope is <strong>OWNER DECISION REQUIRED</strong>. Tenants need stronger separation, but global key rotation is easier operationally. The recommended default is tenant-derived/platform-managed keys, subject to security and tenancy review.</p>
+<h3>3.4 Initial source-device identification</h3>
+<p>Initial registration pseudocode:</p>
+<pre><code class="hljs language-text">begin tenant transaction
+  authenticate data_source_id
+  resolve tenant_id from trusted source credential
+  normalize raw source_device_key
+  load current fingerprint key (active or overlap)
+  digest = keyedFingerprint(raw, algorithm, key_version)
+
+  find aliases for:
+    exact (tenant_id, data_source_id, digest)
+    and, if migration overlap is active,
+    possible old-key aliases associated with source_device_key_id
+
+  if exactly one alias and it points to one binding:
+      lock binding
+      lock canonical asset
+      mark alias last_seen
+      add no asset usage
+      commit
+
+  if multiple aliases point to the same binding:
+      use that binding
+      add no asset usage
+      record alias convergence
+      commit
+
+  if aliases point to different bindings:
+      create pending identity conflict
+      quarantine data
+      add no usage
+      commit for review
+
+  if no alias exists:
+      evaluate existing authoritative, namespace-specific identity claims
+      if exactly one asset match:
+          lock tenant license row
+          create binding
+          create fingerprint alias
+          add no usage
+          commit
+      else if no strong match:
+          lock tenant license row
+          recheck quota and alias uniqueness
+          if quota available:
+              create canonical asset
+              create binding
+              create fingerprint alias
+              append lifecycle/license records
+              increment usage
+          else reject or create pending case according to owner policy
+commit
+</code></pre>
+<p>The no-alias branch must never derive canonical identity from hostname, IP address or weak similarity.</p>
+<h3>3.5 Overlap representation</h3>
+<p>The overlap has these states:</p>
+<pre class="mermaid">stateDiagram-v2
+  [*] --&gt; OldActive
+  OldActive --&gt; Overlap: authorize key rotation
+  Overlap --&gt; NewActive: old key registered aliases verified
+  NewActive --&gt; RetiringOld: overlap grace complete
+  RetiringOld --&gt; RetiredOld: verification and removal complete
+  RetiredOld --&gt; [*]
+</pre>
+<p>During overlap:</p>
+<ul>
+<li>The old key remains usable.</li>
+<li>The new key is installed.</li>
+<li>Registration may produce either fingerprint.</li>
+<li>Both aliases reference the same <code>binding_id</code>.</li>
+<li>Both aliases remain linked to the same canonical asset.</li>
+<li>The unique triple is enforced independently for each <code>(tenant_id, data_source_id, fingerprint_digest)</code>.</li>
+<li>The old and new fingerprint rows do not create or increment a usage counter.</li>
+</ul>
+<p>The exact tuple for lookup is always:</p>
+<pre><code class="hljs language-text">(tenant_id, data_source_id, protected_source_device_key_fingerprint)
+</code></pre>
+<p>The application never compares raw identifiers as database keys.</p>
+<h3>3.6 Lookup during overlap</h3>
+<p>Lookup order:</p>
+<ol>
+<li>Calculate the presented fingerprint with the provided or negotiated key version.</li>
+<li>Search exact <code>(tenant_id, data_source_id, fingerprint_digest)</code>.</li>
+<li>If exactly one alias resolves, lock and use its <code>binding_id</code>.</li>
+<li>If no alias matches but a current raw identifier or a stable source key exists, verify it against existing aliases through an authorized, audited migration/identity service.</li>
+<li>If two aliases resolve to the same binding, continue with no usage change.</li>
+<li>If aliases resolve to different bindings, enter conflict quarantine.</li>
+</ol>
+<p>The application must not silently choose one asset based on a different raw value or weak similarity.</p>
+<h3>3.7 Rotation transaction boundaries</h3>
+<p>One rotation run is not one long transaction across all tenants. Use small tenant-scoped batches.</p>
+<p>One batch transaction must contain:</p>
+<ul>
+<li>Migration run and batch checkpoint.</li>
+<li>Locked binding or range of bindings.</li>
+<li>One new alias per binding if it does not exist.</li>
+<li>Conflict and verification status.</li>
+<li>No asset, license counter or canonical identity modifications for successful rows.</li>
+</ul>
+<p>The batch pseudocode:</p>
+<pre><code class="hljs language-text">begin transaction
+  lock migration run row
+  verify run state is running
+  load next binding batch after last_binding_id
+  for each binding:
+      lock binding
+      find all old aliases
+      for each old alias:
+          derive new digest from protected source identifier
+          insert new alias only if absent
+          if new digest already belongs to another binding:
+              mark conflict
+              do not merge assets
+          else attach new alias to original binding
+          mark old alias overlap or deprecated according to policy
+  update run checkpoint and counters
+  append rotation audit event
+commit
+</code></pre>
+<h3>3.8 Batch idempotency</h3>
+<p>Use:</p>
+<pre><code class="hljs language-text">(tenant_id, run_id, binding_id)
+</code></pre>
+<p>as the batch item key.</p>
+<p>If the batch is retried:</p>
+<ul>
+<li>Existing aliases are a no-op.</li>
+<li>Existing checkpoints remain valid.</li>
+<li>No asset or usage record is added.</li>
+<li>Conflict state is preserved and reported.</li>
+<li>The batch item cannot advance past an unresolved conflict.</li>
+</ul>
+<p>The migration run must not advance to complete while unresolved conflicts remain.</p>
+<h3>3.9 Crash and interruption recovery</h3>
+<p>The migration state is persisted on every batch:</p>
+<ul>
+<li><code>last_binding_id</code></li>
+<li>processed count</li>
+<li>conflict count</li>
+<li>checkpoint time</li>
+<li>verification status</li>
+</ul>
+<p>After application or PostgreSQL restart:</p>
+<ol>
+<li>Load the run by <code>run_id</code>.</li>
+<li>Lock the run row.</li>
+<li>Resume after the last committed checkpoint.</li>
+<li>Re-evaluate all rows in the next batch.</li>
+<li>Use database uniqueness and idempotency keys to prevent duplicate aliases.</li>
+<li>Never restart by recounting assets or allocating quota again.</li>
+</ol>
+<p>If PostgreSQL commits the checkpoint but returns an application timeout, re-run the next batch. PostgreSQL row uniqueness and binding identity prevent duplicate work.</p>
+<h3>3.10 Duplicate prevention</h3>
+<p>Duplicate assets and usage are prevented by:</p>
+<ul>
+<li>One canonical asset UUID.</li>
+<li>Transactional tenant quota locking.</li>
+<li>Stable <code>binding_id</code> and <code>source_device_key_id</code>.</li>
+<li>Unique source-device alias triples.</li>
+<li>Identity re-check inside the migration/registration transaction.</li>
+<li>No asset or usage write for successful fingerprint aliases.</li>
+<li>No retry allocation without the original idempotency key.</li>
+<li>Conflict state instead of weighted or automatic merge.</li>
+</ul>
+<p>If a new fingerprint already exists and points to a different binding, do not create an asset or merge assets. The migration stops at a conflict and requires reviewed resolution.</p>
+<h3>3.11 Retirement</h3>
+<p>Old key retirement must occur only after:</p>
+<ul>
+<li>Both old and new key aliases are present.</li>
+<li>Registration traffic proves new fingerprint lookup.</li>
+<li>Verification confirms every binding has exactly one canonical asset.</li>
+<li>Conflict count is zero.</li>
+<li>Owner-defined overlap period is complete.</li>
+<li>New key secrets are operational and backed up.</li>
+</ul>
+<p>Retirement transaction:</p>
+<ul>
+<li>Mark old aliases <code>deprecated</code>.</li>
+<li>Verify no registration is using the old key.</li>
+<li>Mark old key <code>retiring</code>.</li>
+<li>After retention expiry, mark aliases <code>retired</code>.</li>
+<li>Revoke old key material.</li>
+<li>Record retention and deletion evidence.</li>
+</ul>
+<p>Keeping an old fingerprint row after key retirement must not allow an old key to be used. The row may remain only for audit or deterministic lookup according to policy.</p>
+<h3>3.12 Concurrency and races</h3>
+<p>Registration and migration may occur concurrently.</p>
+<p>Required rules:</p>
+<ul>
+<li>Migration inserts aliases, never canonical assets.</li>
+<li>Registration locks the binding before alias updates.</li>
+<li>A tenant row is locked for every possible new asset or quota state change.</li>
+<li>Both old and new aliases reference the same binding through no-merge invariants.</li>
+<li>Alias uniqueness is checked under PostgreSQL constraints.</li>
+<li>Split/merge operations lock canonical assets in deterministic UUID order.</li>
+<li>Migration workers cannot advance past unresolved conflicts.</li>
+</ul>
+<h3>3.13 Verification and rollback</h3>
+<p>Verification must establish:</p>
+<ul>
+<li>Every overlap alias has exactly one binding.</li>
+<li>Every binding is linked to exactly one canonical asset.</li>
+<li>No canonical asset has a duplicate active source-device binding in a conflict state.</li>
+<li>The tenant usage counter equals active/approved billable states.</li>
+<li>No migration batch changed licensed usage.</li>
+<li>Old and new aliases agree on the same canonical asset.</li>
+</ul>
+<p>Rollback strategy:</p>
+<ul>
+<li>Before key retirement, migration can stop and remain in overlap.</li>
+<li>Registration can continue on the old key.</li>
+<li>New aliases can be marked deprecated and removed only by audited migration.</li>
+<li>The canonical assets and license counters are not rolled back merely to undo key migration.</li>
+<li>Materialized key retirement is irreversible; key retirement must follow successful verification.</li>
+</ul>
+<h3>3.14 Security risks</h3>
+<ul>
+<li>Fingerprint collision or weak HMAC configuration.</li>
+<li>Key access by migration workers.</li>
+<li>Tenant cross-key reuse.</li>
+<li>Raw identifier exposure.</li>
+<li>Migration conflict that conceals two devices.</li>
+<li>Premature key retirement.</li>
+<li>Migration worker operating before tenant authorization.</li>
+<li>Lookups trusting payload-provided key versions.</li>
+<li>Duplicate aliases or bindings caused by missing tenant-inclusive constraints.</li>
+</ul>
+<h3>3.15 Missing requirements</h3>
+<p>Before implementation is sufficient, define:</p>
+<ul>
+<li>Key scope by tenant/platform.</li>
+<li>Exact HMAC algorithm and key derivation.</li>
+<li>Fingerprint key rotation overlap length.</li>
+<li>Old-fingerprint grace behavior.</li>
+<li>Conflict approval workflow.</li>
+<li>Lookup behavior if old and new aliases disagree.</li>
+<li>Migration retry and batch-size policy.</li>
+<li>Key retirement retention and audit.</li>
+</ul>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> migration should be asynchronous, resumable and tenant-scoped. It should not alter canonical assets or quota counts.</p>
+<hr />
+<h2>4. Workstream B: asset licensing lifecycle</h2>
+<h3>4.1 Technical invariant and commercial boundary</h3>
+<p><strong>EXISTING APPROVED REQUIREMENT:</strong> exactly one licensed asset for every unique monitored device; all data sources are distinct from that licensed asset.</p>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> each lifecycle transition must be transactional and update the canonical asset, source bindings, license usage and lifecycle history together.</p>
+<h3>4.2 Lifecycle state table</h3>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th style="text-align:right">Canonical record exists</th>
+<th style="text-align:right">Active asset count</th>
+<th style="text-align:right">Reserved slot</th>
+<th>Incoming data</th>
+<th>Authorization</th>
+<th>Audit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pending identity resolution</td>
+<td style="text-align:right"><strong>Proposed yes</strong>: canonical UUID may exist as pending; owner policy decides whether provisional/hidden</td>
+<td style="text-align:right">No, proposed</td>
+<td style="text-align:right">Proposed one slot, owner decision</td>
+<td>Quarantine or reject; no normal analysis</td>
+<td>Customer or administrator may be required to resolve</td>
+<td>Conflict, source, evidence, policy and expiration</td>
+</tr>
+<tr>
+<td>Active</td>
+<td style="text-align:right">Yes</td>
+<td style="text-align:right">Yes, exactly one</td>
+<td style="text-align:right">No extra reservation</td>
+<td>Accepted and processed</td>
+<td>Source credential authorized</td>
+<td>Seen/source binding/event/license</td>
+</tr>
+<tr>
+<td>Inactive/offline</td>
+<td style="text-align:right">Yes</td>
+<td style="text-align:right">Technical policy decides if still active</td>
+<td style="text-align:right">Usually none, owner decision</td>
+<td>Accepted if source credential remains valid; may buffer</td>
+<td>No state change solely due timeout</td>
+<td>Last-seen, heartbeats, offline transition</td>
+</tr>
+<tr>
+<td>Deactivated</td>
+<td style="text-align:right">Yes, tombstone or lifecycle record</td>
+<td style="text-align:right">No, proposed</td>
+<td style="text-align:right">Proposed 30-day grace slot, owner decision</td>
+<td>Reject normal source data or keep quarantine</td>
+<td>Customer or administrator authorization, owner approval for policy</td>
+<td>Deactivation reason, actor, source revocation and timestamp</td>
+</tr>
+<tr>
+<td>Reserved</td>
+<td style="text-align:right">Yes/tombstone</td>
+<td style="text-align:right">No, unless owner defines billable</td>
+<td style="text-align:right">Yes</td>
+<td>Reactivate or reject according to grace state</td>
+<td>Customer or administrator, owner policy</td>
+<td>Reservation/release and expiry</td>
+</tr>
+<tr>
+<td>Reactivated</td>
+<td style="text-align:right">Yes</td>
+<td style="text-align:right">Yes, exactly one</td>
+<td style="text-align:right">Release reservation within transaction</td>
+<td>Accepted</td>
+<td>Customer or authorized administrator</td>
+<td>Reuse canonical ID and source/license history</td>
+</tr>
+<tr>
+<td>Permanently removed</td>
+<td style="text-align:right">Tombstone/history recommended</td>
+<td style="text-align:right">No</td>
+<td style="text-align:right">No, unless owner exception</td>
+<td>Reject</td>
+<td>Permanent removal authorization owner decision</td>
+<td>Removal actor, reason, deactivation source, tombstone</td>
+</tr>
+<tr>
+<td>Merged</td>
+<td style="text-align:right">Survivor and tombstone for losing asset</td>
+<td style="text-align:right">Survivor one; losing no usage</td>
+<td style="text-align:right">No new billable asset</td>
+<td>Redirect source bindings to survivor; no duplicate</td>
+<td>Privileged authorized merge</td>
+<td>Before/after, alias/source transfer, usage delta</td>
+</tr>
+<tr>
+<td>Split</td>
+<td style="text-align:right">Survivor plus new canonical asset</td>
+<td style="text-align:right">Survivor and new asset after verification</td>
+<td style="text-align:right">One additional slot must be available</td>
+<td>Split source bindings and quarantine ambiguous data</td>
+<td>Privileged authorized split</td>
+<td>Before/after, source mapping and usage delta</td>
+</tr>
+</tbody>
+</table>
+<h3>4.3 State transitions</h3>
+<pre class="mermaid">stateDiagram-v2
+  [*] --&gt; PendingIdentity: ambiguous or missing identity
+  PendingIdentity --&gt; Active: identity verified and quota available
+  PendingIdentity --&gt; [*]: rejected or expired
+  [*] --&gt; Active: authoritative first registration
+  Active --&gt; InactiveOffline: no heartbeat / timeout
+  InactiveOffline --&gt; Active: data or heartbeat resumes
+  InactiveOffline --&gt; Deactivated: last source revoked or policy
+  Active --&gt; Deactivated: last active source revoked
+  Deactivated --&gt; Reserved: owner-approved grace policy
+  Reserved --&gt; Reactivated: authorized source reconnect
+  Reserved --&gt; PermanentlyRemoved: grace expiry or owner approval
+  Deactivated --&gt; PermanentlyRemoved: immediate removal policy
+  Reactivated --&gt; Active: registration accepted
+  Active --&gt; Merged: reviewed merge
+  Merged --&gt; Active: survivor continues
+  Active --&gt; Split: reviewed split
+  Split --&gt; Active: both canonical assets active
+</pre>
+<p>The diagram intentionally leaves commercial grace and reservation behavior as proposals.</p>
+<h3>4.4 Transition requirements</h3>
+<h4>Pending identity resolution</h4>
+<ul>
+<li>Canonical asset record may exist as pending only if it is explicitly not billable.</li>
+<li>Incoming payload should be quarantined or rejected. It must not enter normal detection as confirmed attribution.</li>
+<li>A pending case may reserve quota, but this remains <strong>OWNER DECISION REQUIRED</strong>.</li>
+<li>Resolution to an existing asset releases the reservation.</li>
+<li>Resolution to a new device atomically creates one active asset and increments usage.</li>
+</ul>
+<h4>Active</h4>
+<ul>
+<li>Has at least one active source binding.</li>
+<li>Counts as exactly one asset.</li>
+<li>Source attachment does not increase usage.</li>
+<li>Quota lock and uniqueness are required for first registration.</li>
+</ul>
+<h4>Inactive/offline</h4>
+<ul>
+<li>Canonical asset and source credentials remain.</li>
+<li>It must not be removed or deactivated merely because a heartbeat is missed.</li>
+<li>Timeouts require offline policy and last-seen records.</li>
+<li>It may remain active billable until a separate lifecycle transition.</li>
+</ul>
+<h4>Deactivated</h4>
+<ul>
+<li>No active source binding is accepted.</li>
+<li>It should not be considered a unique currently monitored device by default.</li>
+<li>30-day grace is <strong>PROPOSED — OWNER APPRO APPROVAL REQUIRED</strong>.</li>
+<li>Reserving quota is <strong>OWNER DECISION REQUIRED</strong>.</li>
+</ul>
+<h4>Reserved</h4>
+<ul>
+<li>The canonical record/tombstone remains.</li>
+<li>It may reserve capacity separately from billable count, if owner policy approves.</li>
+<li>Incoming source data may reactivate only through authorized re-enrollment or owner-approved process.</li>
+</ul>
+<h4>Reactivated</h4>
+<ul>
+<li>Reuse the canonical UUID during grace.</li>
+<li>Convert reservation to active in the same transaction.</li>
+<li>Add no usage increment if already counted as active? The implementation must define this explicitly. During grace, a reserved slot should not be treated as both billable and reserved.</li>
+</ul>
+<h4>Permanently removed</h4>
+<ul>
+<li>Requires explicit permanent-removal authorization according to owner policy.</li>
+<li>Preserve tombstone and licensing history when required.</li>
+<li>Raw event retention is separate from asset licensing.</li>
+<li>A later re-enrollment after removal must pass current quota and identity rules.</li>
+</ul>
+<h4>Merged</h4>
+<ul>
+<li>Exactly one canonical asset survives.</li>
+<li>Losing asset becomes merged/tombstone.</li>
+<li>Source bindings move under constraints.</li>
+<li>Licensed count decreases only after verifying two assets represent one device.</li>
+<li>Event lineage must preserve the original canonical IDs.</li>
+</ul>
+<h4>Split</h4>
+<ul>
+<li>Exactly one existing canonical asset remains plus a newly created canonical asset.</li>
+<li>Available quota must be checked atomically.</li>
+<li>Source-device bindings and evidence must be mapped to each asset.</li>
+<li>Ambiguous records remain quarantined until reviewed.</li>
+<li>Licensed count increases by one only after the split commits.</li>
+</ul>
+<h3>4.5 Technical invariants</h3>
+<p>These must always hold in implementation:</p>
+<ul>
+<li>One canonical asset per unique monitored device.</li>
+<li>A source attachment never changes asset count.</li>
+<li>Quota changes occur only in one transaction.</li>
+<li>Per-tenant usage cannot become negative.</li>
+<li>Canonical UUID is never reused.</li>
+<li>A source-device binding belongs to exactly one tenant.</li>
+<li>An active source-device binding belongs to exactly one canonical asset.</li>
+<li>Merge or split usage update is audited and reversible through history.</li>
+<li>Source disconnection alone is not a permanent removal.</li>
+<li>Pending and removed states do not silently masquerade as active assets.</li>
+</ul>
+<h3>4.6 Commercial policy decisions</h3>
+<p>The following are <strong>OWNER DECISION REQUIRED</strong>:</p>
+<ul>
+<li>30-day reactivation grace.</li>
+<li>Whether pending identities reserve quota.</li>
+<li>Whether deactivated assets reserve quota.</li>
+<li>Whether reserved assets count as billable usage.</li>
+<li>Immediate quota release exceptions.</li>
+<li>Permanent removal authorization.</li>
+<li>Pending identity quarantine duration.</li>
+<li>Whether one-person or two-person removal/merge/split approval is required.</li>
+</ul>
+<p>Reasonable alternative:</p>
+<table>
+<thead>
+<tr>
+<th>Choice</th>
+<th>Technical consequence</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pending identity reserves quota</td>
+<td>Conservative admission; false positives can block new devices</td>
+<td>PROPOSED — reserve only for a short owner-approved period</td>
+</tr>
+<tr>
+<td>Pending identity does not reserve quota</td>
+<td>False positive does not consume quota</td>
+<td>Accept pending as technical quarantine only</td>
+</tr>
+<tr>
+<td>Deactivation frees slot immediately</td>
+<td>Re-enrollment can become expensive; easy to avoid stale billing</td>
+<td>Safer for strict current-usage billing</td>
+</tr>
+<tr>
+<td>Deactivated asset has 30-day grace</td>
+<td>Retains reactivation and avoids churn</td>
+<td>PROPOSED — owner approval only</td>
+</tr>
+<tr>
+<td>Reserved asset is billable</td>
+<td>Prevents slot reuse; may overcharge after disconnection</td>
+<td>Requires commercial approval</td>
+</tr>
+<tr>
+<td>Reserved asset is non-billable</td>
+<td>Allows a grace reservation separately from licensed count</td>
+<td>PROPOSED — owner approval only</td>
+</tr>
+</tbody>
+</table>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> define four separate counters: active, reserved, pending and available quota. Do not use only one billable counter for all lifecycle states.</p>
+<hr />
+<h2>5. Workstream C: roadmap reconciliation</h2>
+<h3>5.1 Original roadmap baseline</h3>
+<p>The approved original sequence remains:</p>
+<ol>
+<li>Core Platform</li>
+<li>Linux Agent and Data Ingestion</li>
+<li>Core Security Engine</li>
+<li>Vulnerability and Threat Intelligence</li>
+<li>Dashboard and Reporting</li>
+<li>External Integrations and Windows Agent</li>
+<li>MELIRA AI</li>
+<li>SOAR and Advanced Response</li>
+<li>Cross-Platform Agent</li>
+<li>Production Readiness</li>
+</ol>
+<p>It must not be changed in this package.</p>
+<h3>5.2 Original-to-revised mapping</h3>
+<table>
+<thead>
+<tr>
+<th>Original deliverable</th>
+<th>Revised destination</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core Platform backend/auth/multi-tenancy/database/audit/UI foundations</td>
+<td>Revised Phase 1 backend/database; Revised Phase 2 identity/authorization/audit</td>
+<td>PROPOSED — split and reordered</td>
+</tr>
+<tr>
+<td>Linux Agent and Data Ingestion</td>
+<td>Revised Phase 4 Linux vertical slice</td>
+<td>PROPOSED — moved later</td>
+</tr>
+<tr>
+<td>Core Security Engine</td>
+<td>Revised Phase 5</td>
+<td>PROPOSED — moved later</td>
+</tr>
+<tr>
+<td>Vulnerability and Threat Intelligence</td>
+<td>Revised Phase 7 combined with integrations</td>
+<td>PROPOSED — moved later</td>
+</tr>
+<tr>
+<td>Dashboard and Reporting</td>
+<td>Revised Phase 6</td>
+<td>PROPOSED — moved earlier</td>
+</tr>
+<tr>
+<td>Windows Agent and external integrations</td>
+<td>Revised Phase 7; Windows may be placed earlier if a Linux/core/connector foundation supports it</td>
+<td>PROPOSED</td>
+</tr>
+<tr>
+<td>MELIRA AI</td>
+<td>Revised Phase 8</td>
+<td>PROPOSED — relative order preserved</td>
+</tr>
+<tr>
+<td>SOAR</td>
+<td>Revised Phase 9</td>
+<td>PROPOSED — moved only by revised numbering</td>
+</tr>
+<tr>
+<td>BSD Agent</td>
+<td>No destination assigned</td>
+<td>OWNER DECISION REQUIRED / unresolved</td>
+</tr>
+<tr>
+<td>macOS Agent</td>
+<td>No destination assigned</td>
+<td>OWNER DECISION REQUIRED / unresolved</td>
+</tr>
+<tr>
+<td>Android Agent</td>
+<td>No destination assigned</td>
+<td>OWNER DECISION REQUIRED / unresolved</td>
+</tr>
+<tr>
+<td>iOS Agent</td>
+<td>No destination assigned</td>
+<td>OWNER DECISION REQUIRED / unresolved</td>
+</tr>
+<tr>
+<td>Platform-specific monitoring</td>
+<td>No revised destination assigned; must follow each selected platform agent</td>
+<td>OWNER DECISION REQUIRED</td>
+</tr>
+<tr>
+<td>Compatibility testing</td>
+<td>No revised destination assigned; must be part of each platform phase and production readiness</td>
+<td>OWNER DECISION REQUIRED</td>
+</tr>
+<tr>
+<td>Production readiness</td>
+<td>Revised Phase 10</td>
+<td>Proposed but phase number preserved</td>
+</tr>
+</tbody>
+</table>
+<h3>5.3 Cross-platform options</h3>
+<h4>Option A: retain original numbering</h4>
+<p>Keep Phases 1-10 unchanged and add architecture discovery as a pre-implementation gate.</p>
+<p>Advantages:</p>
+<ul>
+<li>Lowest commercial/documentation disruption.</li>
+<li>Preserves owner-approved scope.</li>
+<li>Platform work remains in original Phase 9.</li>
+<li>Production phase remains original Phase 10.</li>
+</ul>
+<p>Disadvantages:</p>
+<ul>
+<li>Database, authorization and asset licensing foundations are not explicitly separated for dependency tracking.</li>
+</ul>
+<h4>Option B: revised dependency sequence</h4>
+<p>Use Revised Phases 0-10 from the current roadmap.</p>
+<p>Advantages:</p>
+<ul>
+<li>Security/identity prerequisites precede tenant data and AI.</li>
+<li>Asset identity precedes broad Agent and integration work.</li>
+<li>Work is easier to stage vertically.</li>
+</ul>
+<p>Disadvantages:</p>
+<ul>
+<li>Existing numbering changes materially.</li>
+<li>Cross-platform platforms have no explicit destination.</li>
+<li>Vulnerability and dashboard work are repositioned.</li>
+</ul>
+<h4>Option C: split platform delivery</h4>
+<p>Keep original phases as baseline and assign:</p>
+<ul>
+<li>Linux Agent: original Phase 2, because it is the first operational Agent.</li>
+<li>Windows Agent and external integrations: original Phase 6.</li>
+<li>BSD/macOS: a proposed cross-platform Phase 9 subphase.</li>
+<li>Android/iOS: a separate mobile subphase after permission and policy review.</li>
+<li>Platform-specific monitoring and compatibility testing: inside each platform subphase and Phase 10.</li>
+</ul>
+<p>This option increases test and schedule accuracy but requires explicit owner approval.</p>
+<h3>5.4 Recommended revised sequence</h3>
+<p><strong>NEW TECHNICAL RECOMMENDATION:</strong> retain the original ten-phase numbering as the approved roadmap baseline. Add <strong>pre-implementation architecture gates</strong> without renumbering implementation phases.</p>
+<p><strong>PROPOSED — OWNER APPROVAL REQUIRED:</strong> for the revised sequence, place:</p>
+<ul>
+<li>Architecture discovery before implementation.</li>
+<li>Database and tenant authorization foundations in the Core Platform phase.</li>
+<li>Linux Agent first.</li>
+<li>BSD and macOS in original Cross-Platform Agent Phase 9 after Linux/Windows platform capability patterns mature.</li>
+<li>Android and iOS in a platform subtrack inside original Phase 9, but only after OS permission, sandbox and privacy constraints are documented.</li>
+<li>Compatibility testing for every platform as a phase exit criterion and again in Production Readiness.</li>
+</ul>
+<p>Do not assume generic &quot;cross-platform&quot; coverage for mobile or desktop platforms.</p>
+<h3>5.5 Cross-platform assessment</h3>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Dependencies</th>
+<th>Risk</th>
+<th>Proposed revised destination</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux</td>
+<td>Core identity, database, asset/licensing, installer</td>
+<td>Medium</td>
+<td>Revised Phase 4 in current document or original Phase 2</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>Core identity, agent update/signing, OS API</td>
+<td>Medium-high</td>
+<td>Revised Phase 7 or original Phase 6</td>
+</tr>
+<tr>
+<td>BSD</td>
+<td>Linux capability patterns plus BSD native APIs</td>
+<td>Medium</td>
+<td>Proposed original Phase 9 subtrack</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>Entitlements, privacy APIs, signing/notarization</td>
+<td>High</td>
+<td>Proposed original Phase 9 subtrack</td>
+</tr>
+<tr>
+<td>Android</td>
+<td>Sandbox, Play/enterprise distribution, permissions</td>
+<td>High</td>
+<td>Proposed original Phase 9 mobile subtrack</td>
+</tr>
+<tr>
+<td>iOS</td>
+<td>Sandbox, Apple API and distribution constraints</td>
+<td>High</td>
+<td>Proposed original Phase 9 mobile subtrack</td>
+</tr>
+</tbody>
+</table>
+<p>Owner approval is required before changing the baseline.</p>
+<hr />
+<h2>6. Workstream D: PostgreSQL implementation readiness</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Classification</th>
+<th>Reason / gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mandatory PostgreSQL direction</td>
+<td>READY FOR IMPLEMENTATION</td>
+<td>Confirmed by mandatory requirements</td>
+</tr>
+<tr>
+<td>Tenant isolation model</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Tenant context and RLS role setup remain unspecified</td>
+</tr>
+<tr>
+<td>Tenant-aware foreign keys</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Composite-key pattern is proposed, but exact constraints are absent</td>
+</tr>
+<tr>
+<td>PostgreSQL RLS</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Policy and runtime-role behavior are proposed</td>
+</tr>
+<tr>
+<td>Trusted tenant context</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Identity/provider-to-tenant mapping is not implemented</td>
+</tr>
+<tr>
+<td>Canonical asset identity</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>UUID and lifecycle states need final schema review</td>
+</tr>
+<tr>
+<td>Source-device binding</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Tuple is specified, but exact schema and migration representation need finalization</td>
+</tr>
+<tr>
+<td>Fingerprint versioning</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Key and overlap design now specified, but implementation details remain unresolved</td>
+</tr>
+<tr>
+<td>Fingerprint rotation</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>No resumable migration implementation or exact schema</td>
+</tr>
+<tr>
+<td>Atomic quota/usage</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Transaction and constraints proposed, lifecycle policy unresolved</td>
+</tr>
+<tr>
+<td>Concurrent registration</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Requires PostgreSQL race tests before implementation</td>
+</tr>
+<tr>
+<td>Asset merge</td>
+<td>NOT YET DESIGNED</td>
+<td>Lifecycle and authorization need schema-level approval</td>
+</tr>
+<tr>
+<td>Asset split</td>
+<td>NOT YET DESIGNED</td>
+<td>Quota and source-binding effects need schema-level approval</td>
+</tr>
+<tr>
+<td>Lifecycle state machine</td>
+<td>OWNER DECISION REQUIRED</td>
+<td>Grace, pending and reservation behavior unresolved</td>
+</tr>
+<tr>
+<td>Licensing history</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Append model proposed, exact effective-dated schema not specified</td>
+</tr>
+<tr>
+<td>Idempotency</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Registration idempotency needs final key and conflict semantics</td>
+</tr>
+<tr>
+<td>Transactional outbox</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Delivery semantics and table design require implementation review</td>
+</tr>
+<tr>
+<td>Audit records</td>
+<td>NEEDS DESIGN CLARIFICATION</td>
+<td>Append-only ownership, retention and protection not specified</td>
+</tr>
+<tr>
+<td>Data retention</td>
+<td>OWNER DECISION REQUIRED</td>
+<td>Retention periods are proposals</td>
+</tr>
+<tr>
+<td>Backup/recovery</td>
+<td>NOT YET DESIGNED</td>
+<td>RPO/RTO, restore procedure and event-replay restore are absent</td>
+</tr>
+</tbody>
+</table>
+<p><strong>PostgreSQL implementation readiness result:</strong> not ready for first migration. The team may begin narrow read-only architecture testing and schema spike work, but production migrations for asset, source binding and quota need the unresolved decisions and formal constraints above.</p>
+<hr />
+<h2>7. Security and concurrency risks</h2>
+<h3>High-risk areas</h3>
+<ol>
+<li>Cross-tenant source binding or fingerprint collision.</li>
+<li>Per-tenant counter oversubscription.</li>
+<li>Fingerprint key rotation creating duplicate canonical assets.</li>
+<li>Split/merge count drift.</li>
+<li>Migration retry creating duplicate aliases or lifecycle records.</li>
+<li>Interrupted migration leaving old/new aliases that disagree.</li>
+<li>RLS context leaking across pooled database connections.</li>
+<li>Administrator access bypassing tenant context.</li>
+<li>Source credentials accepted outside stable source-device binding.</li>
+<li>Raw source identifiers used in logs or indexes.</li>
+</ol>
+<h3>Required pre-migration checks</h3>
+<ul>
+<li>Tenant-inclusive foreign keys for every tenant-owned relationship.</li>
+<li>Runtime database role cannot bypass RLS.</li>
+<li>Identity and quota transactions use explicit tenant locks.</li>
+<li>Fingerprint alias uniqueness cannot allow a data source to bind twice to conflicting assets.</li>
+<li>Migration cursor is recoverable and idempotent.</li>
+<li>Asset usage counter is reconciled against lifecycle state.</li>
+<li>Merge/split operations are privileged and audited.</li>
+<li>RPO, backup/restore and secret key recovery are documented.</li>
+</ul>
+<hr />
+<h2>8. Alternatives considered</h2>
+<h3>Fingerprint storage alternatives</h3>
+<ol>
+<li><strong>Raw source identifier as unique key:</strong> rejected; privacy and migration risk.</li>
+<li><strong>One fingerprint only, rotated in place:</strong> rejected; in-flight lookup can miss existing devices.</li>
+<li><strong>Old and new aliases on the binding:</strong> recommended.</li>
+<li><strong>Canonical asset ID derived from fingerprint:</strong> rejected; key rotation would invalidate identity.</li>
+<li><strong>Probabilistic merge by IP/hostname:</strong> rejected as automatic licensing evidence.</li>
+</ol>
+<h3>Lifecycle alternatives</h3>
+<ol>
+<li><strong>No grace:</strong> simple but disruptive; <strong>OWNER DECISION REQUIRED</strong>.</li>
+<li><strong>30-day grace:</strong> recommended technical default for reactivation; <strong>PROPOSED — OWNER APPROVAL REQUIRED</strong>.</li>
+<li><strong>Pending identity consumes quota:</strong> conservative but can block other registration; <strong>OWNER DECISION REQUIRED</strong>.</li>
+<li><strong>Pending identity consumes no quota:</strong> safer for false positives but may encourage re-enrollment; <strong>NEW TECHNICAL RECOMMENDATION</strong>.</li>
+</ol>
+<h3>Roadmap alternatives</h3>
+<ol>
+<li><strong>Preserve original numbering:</strong> recommended if owner accepts only dependency refinements.</li>
+<li><strong>Adopt revised numbered sequence:</strong> technically preferable for security dependencies, but owner approval is required.</li>
+<li><strong>Split Linux/Windows/BSD/macOS/mobile agent tracks:</strong> best platform delivery accuracy, but increases roadmap and testing scope.</li>
+</ol>
+<hr />
+<h2>9. PostgreSQL example sequence</h2>
+<p>The following is a proposed transaction sequence only:</p>
+<pre><code class="hljs language-sql"><span class="k">BEGIN</span><span class="p">;</span>
+
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">asset_tenant_license</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">tenant_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span>
+<span class="k">FOR</span><span class="w"> </span><span class="k">UPDATE</span><span class="p">;</span>
+
+<span class="k">SELECT</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="o">*</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">source_device_binding</span><span class="w"> </span><span class="n">b</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">source_device_fingerprint_alias</span><span class="w"> </span><span class="n">f</span>
+<span class="w">  </span><span class="k">ON</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">tenant_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">tenant_id</span>
+<span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">binding_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">binding_id</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">tenant_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span>
+<span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">data_source_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="mi">2</span>
+<span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">fingerprint_digest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="mi">3</span><span class="p">;</span>
+
+<span class="c1">-- If no binding and registration is authoritative:</span>
+<span class="c1">-- recheck identity aliases and quota;</span>
+<span class="c1">-- create asset, binding and alias;</span>
+<span class="c1">-- append lifecycle and license history;</span>
+
+<span class="k">COMMIT</span><span class="p">;</span>
+</code></pre>
+<p>No DDL or migration is created by this package.</p>
+<hr />
+<h2>10. Unresolved owner decisions</h2>
+<ol>
+<li>Revised roadmap approval.</li>
+<li>Revised destination for BSD, macOS, Android and iOS.</li>
+<li>30-day deactivation grace.</li>
+<li>Pending identity reservation and quarantine duration.</li>
+<li>Deactivated-asset quota reservation.</li>
+<li>Reserved-asset billing semantics.</li>
+<li>Immediate quota release exceptions.</li>
+<li>Permanent removal authorization.</li>
+<li>Pending-identity role and approval.</li>
+<li>Merge/split two-person approval.</li>
+<li>Fingerprint key scope: tenant-specific or platform-derived.</li>
+<li>Fingerprint algorithm and HMAC key custody.</li>
+<li>Fingerprint overlap duration.</li>
+<li>Old-fingerprint lookup and retirement policy.</li>
+<li>Migration interruption and conflict resolution procedure.</li>
+<li>Data, audit and backup retention.</li>
+<li>Reference workload profile and hardware.</li>
+</ol>
+<hr />
+<h2>11. Recommended next steps</h2>
+<ol>
+<li>Project owner approves or rejects the revised roadmap.</li>
+<li>Assign revised cross-platform destinations or retain original Phase 9.</li>
+<li>Decide commercial lifecycle policy alternatives.</li>
+<li>Approve fingerprint key custody and rotation scope.</li>
+<li>Complete a formal PostgreSQL DDL/data-constraint review.</li>
+<li>Design tenant RLS and trusted tenant context.</li>
+<li>Create migration and verification acceptance tests before implementation.</li>
+<li>Prototype only after these decisions are recorded.</li>
+</ol>
+<hr />
+<h2>12. Final implementation status</h2>
+<ul>
+<li><strong>NOT IMPLEMENTED:</strong> PostgreSQL, RLS, assets, source bindings, fingerprint migration or lifecycle enforcement.</li>
+<li><strong>NOT TESTED:</strong> concurrent registration, migration recovery, merge/split, restore or tenant isolation.</li>
+<li><strong>EXISTING APPROVED REQUIREMENT:</strong> Python backend, PostgreSQL primary database, external AI SaaS only, no local GPU, and one licensed asset per unique monitored device.</li>
+<li><strong>NEW TECHNICAL RECOMMENDATION:</strong> stable binding plus versioned fingerprint aliases; small resumable migration batches; tenant-row quota locking.</li>
+<li><strong>OWNER DECISION REQUIRED:</strong> roadmap numbering, cross-platform destinations, lifecycle grace, pending reservations and commercial billing semantics.</li>
+</ul>
+
+</article>
+</div>
+<script src="../assets/mermaid.min.js"></script>
+<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,securityLevel:'loose'});}</script>
+</body>
+</html>

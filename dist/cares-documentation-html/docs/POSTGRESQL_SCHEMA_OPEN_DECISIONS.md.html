@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Schema Open Decisions (Round 1)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Schema Open Decisions (Round 1)</h1>
+<p><strong>Status:</strong> Consolidated open-decision register for logical schema design; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. Items below record unresolved issues and required approvals. No item is decided by this document, and no proposed option here is promoted to accepted/required policy.</p>
+<h2>Register</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Issue</th>
+<th>What is known</th>
+<th>What is not known</th>
+<th>Why it matters to schema design</th>
+<th>Logical modeling can proceed without resolution?</th>
+<th>Approval/owner type required</th>
+<th>Blocks Round 2 physical schema design?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OD-001</td>
+<td>ADR 0006 acceptance and remaining schema-level ambiguity</td>
+<td>ADR 0006 is <strong>Proposed</strong> and preserves mandatory licensing semantics (atomic per-tenant enforcement, identity/binding/alias distinctions, idempotent retry safety). Reconciliation documents identify remaining schema ambiguities.</td>
+<td>Whether/when ADR 0006 is accepted and which schema-level interpretations become authoritative.</td>
+<td>Physical constraints, transaction patterns, and invariant enforcement depend on accepted semantics.</td>
+<td><strong>Yes (partially).</strong> Logical entities/relationships/invariants can be modeled as Proposed.</td>
+<td>Architecture/security owner approval; ADR governance process.</td>
+<td><strong>Partial blocker.</strong> Core physical licensing/identity constraints should not be finalized as accepted without ADR/owner resolution.</td>
+</tr>
+<tr>
+<td>OD-002</td>
+<td>Cardinality and stable ownership of <code>asset_data_source</code> vs <code>source_device_key_id</code></td>
+<td>Both concepts required; Round 1.1 evaluated alternatives A/B. <strong>Recommended (Proposed, not approved):</strong> Alternative A — <code>asset_data_source</code> is authoritative stable binding entity owning immutable <code>source_device_key_id</code> and lifecycle/provenance; any separate <code>source_device_key</code> record is 1:1 dependent/non-authoritative with identical lifecycle and no competing attributes. Aliases reference the same stable binding identity.</td>
+<td>Formal technical approval/acceptance of Alternative A (or an approved alternative), and whether a separate dependent <code>source_device_key</code> projection is materialized physically.</td>
+<td>Determines PK/FK structure, uniqueness constraints, update authority, join paths, alias references, and merge/split/rotation integrity.</td>
+<td><strong>Yes (for logical baseline).</strong> Logical model updated with recommended ownership to remove dual-authority ambiguity; approval still required.</td>
+<td>Architecture/data-model/security technical approval.</td>
+<td><strong>Yes (targeted blocker).</strong> Physical schema for identity binding tables requires explicit approved decision.</td>
+</tr>
+<tr>
+<td>OD-003</td>
+<td>Pending identity reservation and capacity accounting</td>
+<td>Ambiguous/weak identity must not auto-merge or auto-bill as confirmed device; pending/resolution flows and possible quota reservation are discussed as proposals.</td>
+<td>Whether pending cases reserve capacity, at what granularity, when reserved/converted/released, and how represented.</td>
+<td>Affects <code>tenant_license_usage_state</code>, reservation entity existence, transaction boundaries, and conflict handling.</td>
+<td><strong>Yes.</strong> Reservation modeled as optional/proposed entity with open semantics.</td>
+<td>Product/commercial owner approval; security/operations input.</td>
+<td><strong>Partial blocker.</strong> Physical counters/reservation constraints cannot be finalized without policy.</td>
+</tr>
+<tr>
+<td>OD-004</td>
+<td>Active, reserved, pending, available, and tombstone counter semantics</td>
+<td>Logical model must distinguish these states and must not double-count pending reservations.</td>
+<td>Exact definitions, inclusion/exclusion rules, accounting equations, and authoritative counter set.</td>
+<td>Drives usage-state schema, invariants, reporting views, and atomic update logic.</td>
+<td><strong>Yes.</strong> Concepts separated logically; equations not invented.</td>
+<td>Commercial/product owner approval; finance/billing as applicable.</td>
+<td><strong>Yes (for licensing accounting implementation).</strong> Non-accounting structural tables may proceed in draft, but quota enforcement semantics remain blocked.</td>
+</tr>
+<tr>
+<td>OD-005</td>
+<td>Merge/split approval authority and evidence requirements</td>
+<td>Merge/split must be authorized, auditable, preserve lineage/canonical IDs, and be atomic/idempotent as designed.</td>
+<td>Which roles may approve/execute, whether dual control is required, evidence standards, and workflow states.</td>
+<td>Impacts authorization records, operation entities, audit requirements, and possible approval tables.</td>
+<td><strong>Yes.</strong> Operations modeled with auditable records and authorization references as proposed/open.</td>
+<td>Security/governance/product owner approval; possibly compliance.</td>
+<td><strong>Partial blocker</strong> for workflow/authorization enforcement details.</td>
+</tr>
+<tr>
+<td>OD-006</td>
+<td>Fingerprint equality-key protection, key custody, and rotation</td>
+<td>Aliases are versioned lookup identities with protected fingerprint material; rotation/overlap must preserve binding consistency and avoid raw-ID uniqueness keys.</td>
+<td>Cryptographic mechanism, key custody (KMS/HSM/process), rotation cadence/authority, overlap duration, and re-fingerprinting migration process.</td>
+<td>Affects alias schema metadata, sensitive field handling, migration strategy, and operational runbooks.</td>
+<td><strong>Yes.</strong> Logical alias/version attributes and invariants captured.</td>
+<td>Security/cryptography/platform operations approval.</td>
+<td><strong>Partial blocker</strong> for physical sensitive-data handling and migration procedures.</td>
+</tr>
+<tr>
+<td>OD-007</td>
+<td>Agent reinstall/replacement/re-enrollment identity behavior</td>
+<td>Agent identity, enrollment credential, connector/data-source identity, source-device identity, and canonical asset identity must remain distinct.</td>
+<td>How reinstall/replacement/re-enrollment maps to data source/binding/key continuity, credential rotation, and conflict handling.</td>
+<td>Influences binding lifecycle states, provenance modeling, and dedupe/reattachment rules.</td>
+<td><strong>Yes.</strong> Distinctions modeled; lifecycle mappings left open.</td>
+<td>Architecture/product/operations approval.</td>
+<td><strong>Partial blocker</strong> for enrollment/binding lifecycle constraints.</td>
+</tr>
+<tr>
+<td>OD-008</td>
+<td>Idempotency ledger contract and transaction boundaries</td>
+<td>Durable idempotency required for identity/licensing operations; <code>event_receipt</code> and outbox attempts remain distinct. Round 1.1 defines a <strong>proposed</strong> contract (tenant+operation type+idempotency key scope, request canonicalization/hash, <code>in_progress</code>/<code>committed</code>/<code>failed_terminal</code>/<code>timeout_unknown_commit</code> semantics, replay/conflict/unknown-commit behavior, retention/reconciliation need) and compares single-transaction coupling (A, recommended default for DB-local operations) vs staged tracking (B).</td>
+<td>Formal technical approval of covered operation scopes, canonicalization/hash standard, state machine/terminal rules, retention window, reconciliation workflow, and whether any operation requires approved staged tracking with leases/fencing.</td>
+<td>Determines ledger schema, uniqueness/state constraints, transaction templates, concurrency handling, and unknown-commit recovery safety.</td>
+<td><strong>Yes (for logical baseline).</strong> Proposed contract documented; final approval still required.</td>
+<td>Technical architecture/data consistency approval.</td>
+<td><strong>Yes (targeted blocker).</strong> Physical idempotency constraints and transaction templates require explicit approved decisions.</td>
+</tr>
+<tr>
+<td>OD-009</td>
+<td>Outbox lease, fencing, replay, and &quot;delivery_unknown&quot; behavior</td>
+<td>Outbox pattern proposed; external side effects not exactly-once; delivery ambiguity must be representable and reconcilable.</td>
+<td>Lease duration, fencing token mechanism, retry/backoff/dead-letter thresholds, replay eligibility, and reconciliation workflow/SLA for <code>delivery_unknown</code>.</td>
+<td>Affects outbox/attempt schema, worker claim queries/state transitions, and operational safety.</td>
+<td><strong>Yes.</strong> Logical message/attempt states and ambiguity handling modeled.</td>
+<td>Technical/operations/reliability approval.</td>
+<td><strong>Partial blocker</strong> for worker-processing physical schema and run-time behavior.</td>
+</tr>
+<tr>
+<td>OD-010</td>
+<td>Evidence retention, legal hold, and controlled deletion</td>
+<td>Forensic evidence, custody, and controlled transitions are distinct from audit; no retention/legal-hold/deletion authority invented.</td>
+<td>Retention periods, legal-hold triggers/scope, deletion/anonymization authority and workflow, WORM/storage requirements.</td>
+<td>Drives immutability model, storage references, transition authorization, and lifecycle constraints.</td>
+<td><strong>Yes.</strong> Logical separation and controlled-transition entities modeled.</td>
+<td>Legal/compliance/privacy/security owner approval.</td>
+<td><strong>Partial blocker</strong> (major for compliant evidence lifecycle).</td>
+</tr>
+<tr>
+<td>OD-011</td>
+<td>AI provider consent, data classification, and usage budget policy</td>
+<td>External AI SaaS only; explicit selection; no silent failover/local inference; secret references (no plaintext); consent/policy/budget/audit concepts required.</td>
+<td>Consent granularity, permitted data classes/fields, provider/region/terms acceptance requirements, budget/spend/rate limits, and fail-closed conditions.</td>
+<td>Affects configuration, consent/policy reference schema, budget accounting, and pre-transmission audit records.</td>
+<td><strong>Yes.</strong> Logical entities and boundaries captured.</td>
+<td>Product/privacy/legal/security/commercial approval (as applicable).</td>
+<td><strong>Partial blocker</strong> for enforceable AI-governance schema details.</td>
+</tr>
+<tr>
+<td>OD-012</td>
+<td>Event/audit/evidence retention and workload requirements</td>
+<td>Proposed capacity/retention profiles exist in architecture docs as assumptions (not commitments); event receipt must protect dedupe independent of partitioning.</td>
+<td>Approved retention windows, partitioning horizons, archive tiers, query workloads, and growth/SLO targets per data class.</td>
+<td>Influences partition strategy, indexing expectations, archival tables/storage, and receipt/outbox retention compatibility with retry/audit needs.</td>
+<td><strong>Yes.</strong> Logical records and separation modeled; physical partitioning deferred.</td>
+<td>Product/operations/security/privacy/legal approval; capacity validation.</td>
+<td><strong>Partial blocker</strong> for physical storage/partition/retention design.</td>
+</tr>
+<tr>
+<td>OD-013</td>
+<td>Event receipt deduplication namespace and connector-specific event-ID behavior</td>
+<td>Round 1.1 defines proposed explicit namespace/provenance model: tenant + <code>dedup_namespace_type</code> + <code>dedup_namespace_id</code> + normalized <code>source_event_key</code>; device-scoped upstream IDs must use stable source-device binding identity namespace to prevent cross-device collisions in multi-device connectors. <code>event_receipt</code> remains distinct from identity/licensing idempotency.</td>
+<td>Connector capability classification (data-source-global vs device-scoped IDs), approved deterministic fallback/reject/quarantine behavior for unreliable or missing upstream event IDs, payload-hash conflict policy details, and namespace derivation for pre-binding/unresolved identity cases.</td>
+<td>Determines <code>event_receipt</code> uniqueness constraints, required provenance fields, ingestion acceptance/rejection behavior, and collision safety across devices/connectors.</td>
+<td><strong>Yes (partially).</strong> Logical namespace contract documented as proposed; connector-specific edge cases remain open.</td>
+<td>Architecture/integration/operations approval; security review for collision and replay risks.</td>
+<td><strong>Partial blocker.</strong> Physical uniqueness/constraint design and connector onboarding rules require explicit approved namespace behavior for supported connectors.</td>
+</tr>
+</tbody>
+</table>
+<h2>Technical blockers vs approval-required items</h2>
+<h3>Technical blockers (must be clarified for safe physical schema decisions)</h3>
+<ul>
+<li>
+<p><strong>OD-002:</strong> formal technical approval of recommended binding ownership/single source of truth (<code>asset_data_source</code> authoritative, dependent key projection only if materialized).</p>
+</li>
+<li>
+<p><strong>OD-008:</strong> formal approval of idempotency contract details (operation scope, canonicalization/hash, state machine/terminal rules, retention/reconciliation, and any staged exceptions).</p>
+</li>
+<li>
+<p><strong>OD-004 (technical representation aspects):</strong> precise counter state model once accounting semantics are approved (representation cannot be finalized before semantics).</p>
+</li>
+<li>
+<p><strong>OD-013 (partial, connector-dependent):</strong> approved namespace/fallback behavior for supported connectors (especially unreliable/missing upstream IDs and pre-binding device-scoped cases).</p>
+</li>
+</ul>
+<h3>Owner/security/privacy/commercial/legal approvals required</h3>
+<ul>
+<li><strong>OD-001, OD-003, OD-004, OD-005, OD-006, OD-007, OD-009, OD-010, OD-011, OD-012:</strong> involve ADR acceptance, commercial accounting, governance authority, cryptographic custody/operations, privacy/legal retention/consent, reliability operations, or policy approvals.</li>
+</ul>
+<h2>Recommended resolution order</h2>
+<ol>
+<li><strong>OD-002</strong> — finalize binding/key ownership and cardinality (foundational identity schema).</li>
+<li><strong>OD-008</strong> — define idempotency ledger semantics and operation coupling (correctness under retries/concurrency).</li>
+<li><strong>OD-013</strong> — approve connector namespace capabilities and fallback behavior for event receipt deduplication.</li>
+<li><strong>OD-001</strong> — resolve ADR 0006 schema-level acceptance/ambiguities aligned with OD-002/OD-008.</li>
+<li><strong>OD-003 and OD-004</strong> — obtain commercial/product decisions on pending reservation and counter semantics.</li>
+<li><strong>OD-007</strong> — clarify agent reinstall/re-enrollment lifecycle effects on bindings/sources.</li>
+<li><strong>OD-006</strong> — decide fingerprint protection/key custody/rotation operational model.</li>
+<li><strong>OD-009</strong> — finalize outbox leasing/fencing/replay and <code>delivery_unknown</code> reconciliation.</li>
+<li><strong>OD-005</strong> — finalize merge/split approval authority and evidence workflow.</li>
+<li><strong>OD-010</strong> — obtain legal/compliance/privacy decisions for evidence retention/legal hold/deletion.</li>
+<li><strong>OD-011</strong> — finalize AI consent/classification/budget/provider policy decisions.</li>
+<li><strong>OD-012</strong> — confirm retention/workload assumptions with validated capacity planning.</li>
+</ol>
+<h2>Round 2 readiness assessment</h2>
+<ul>
+<li><strong>Logical modeling status:</strong> sufficiently complete to support review of entities, relationships, ERDs, and transaction boundaries as a proposed baseline.</li>
+<li><strong>Physical schema readiness:</strong> <strong>not fully ready</strong>. Targeted blockers (approval of OD-002 binding model, OD-008 idempotency contract/transaction templates, and accounting semantics dependent on OD-003/OD-004/OD-001) must be resolved or explicitly bounded before finalizing core identity/licensing/idempotency physical schema artifacts. OD-013 connector-specific namespace/fallback behavior must be approved or explicitly bounded for supported ingestion connectors. Round 1.1 improved logical consistency (binding recommendation, idempotency contract, event namespace model, typed lineage) but did not create approvals or implementation artifacts.</li>
+</ul>
+<h2>Round 1.1 correction notes</h2>
+<ul>
+<li><strong>Asset lineage referential integrity:</strong> Round 1 corrected the prior polymorphic lineage reference by recommending typed, relationally enforceable lineage associations (<code>asset_lineage_link</code> with typed <code>from_asset_id</code>/<code>to_asset_id</code> FKs and typed nullable operation FKs by <code>link_type</code>), preserving canonical IDs, merge survivor/losing history, split source/result history, tenant boundaries, and auditability. Physical constraint details (e.g. check constraints for operation/link-type exclusivity) remain part of future schema design and do not require a new open decision beyond normal physical design review.</li>
+<li><strong>Naming normalization:</strong> Round 1.1 normalized <code>role_permission</code> (canonical) vs <code>membership_role_assignment</code>, <code>tenant_configuration</code> (canonical) vs <code>tenant_policy_reference</code> naming, and clarified <code>ai_interaction_audit</code> as a specialized record distinct from but correlatable to <code>audit_event</code>; <code>asset_tombstone</code> retained as a distinct optional terminal-historical representation. No owner approval invented.</li>
+</ul>
+<p><strong>Status remains:</strong> Consolidated register with Round 1.1 proposed clarifications/corrections; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. No item is approved by this document.</p>
+
+</article>
+</div>
+
+</body>
+</html>

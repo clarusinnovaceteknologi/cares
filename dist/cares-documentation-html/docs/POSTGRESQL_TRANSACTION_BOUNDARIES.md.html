@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Logical Transaction Boundaries (Round 1)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Logical Transaction Boundaries (Round 1)</h1>
+<p><strong>Status:</strong> Logical transaction-boundary analysis documented; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This document describes proposed atomicity, idempotency, concurrency, and rollback expectations for future PostgreSQL design. It does <strong>not</strong> define executable SQL transactions, locking statements, isolation-level configuration, RLS policies, or exact-once external delivery guarantees. All controls described here are proposed unless explicitly established elsewhere and remain subject to technical/security/product/owner approval.</p>
+<h2>Global constraints and assumptions</h2>
+<ul>
+<li><strong>Verified transaction-bound tenant context:</strong> tenant authority must be established from trusted verified context before tenant-scoped data operations; client-supplied tenant IDs and user-settable PostgreSQL GUC values are not authorization sources. RLS is defense in depth (future physical control).</li>
+<li><strong>Atomicity and durable idempotency:</strong> identity/licensing/lifecycle/history changes that must remain consistent require atomic persistence and durable idempotency/replay behavior as designed (e.g. <code>identity_operation_idempotency_ledger</code>, <code>event_receipt</code> for ingestion). <strong>Proposed contract (OD-008, approval required):</strong> identity/licensing idempotency uses tenant+operation type+idempotency key scope, deterministic request canonicalization/hash, and state outcomes <code>in_progress</code>/<code>committed</code>/<code>failed_terminal</code>/<code>timeout_unknown_commit</code>; same key + same canonical request must yield the original committed outcome (or explicit in-progress/unknown state) without duplicate assets, bindings, aliases, or licensed usage. Default recommendation for database-local identity/licensing operations is single-transaction coupling of ledger claim/state/result with business, audit/history/licensing, and required outbox records; staged multi-transaction tracking requires explicit leases/fencing/recovery (not default).</li>
+<li><strong>No competing source of truth (Round 1.1 recommendation, Proposed/OD-002 open):</strong> <code>asset_data_source</code> is the authoritative stable source-device binding entity and owns immutable <code>source_device_key_id</code>; any separately materialized <code>source_device_key</code> record must be a 1:1 dependent/non-authoritative projection with identical lifecycle and no competing attributes. <code>source_device_fingerprint_alias</code> records are versioned lookups to that same stable binding identity.</li>
+<li><strong>External side effects:</strong> network calls, provider transmissions, email/webhook/system actions outside PostgreSQL, and object-storage side effects that cannot be made transactionally atomic with DB commit must be coordinated via outbox/reconciliation/compensation patterns as designed; PostgreSQL transactions cannot guarantee exact-once external delivery.</li>
+<li><strong>Concurrency control:</strong> deterministic locking/order and post-lock rechecks are required for conflicting identity/licensing operations (proposed). Exact lock modes/rows are physical design concerns (Round 2+).</li>
+</ul>
+<h2>Operation-by-operation analysis</h2>
+<h3>1. New canonical asset registration</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td><code>asset</code> (new canonical UUID), initial authoritative <code>asset_data_source</code> binding owning immutable <code>source_device_key_id</code> (and 1:1 dependent <code>source_device_key</code> projection only if modeled), initial <code>source_device_fingerprint_alias</code> and/or accepted <code>asset_identity_claim</code> provenance, <code>asset_lifecycle_event</code>, <code>asset_license_event</code> and/or usage/reservation transition, <code>tenant_license_usage_state</code> (or equivalent authoritative counters) as approved, <code>identity_operation_idempotency_ledger</code> claim/state/result, required <code>audit_event</code>(s), and any required <code>outbox_message</code> for downstream coordination (scope-dependent).</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Single database transaction for all required in-scope business state, idempotency outcome, audit records, and outbox records that must be consistent with commit/rollback of the registration decision (proposed).</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Tenant-scoped unique canonical asset identity invariants; uniqueness preventing duplicate stable binding/key attachment and conflicting active bindings; tenant-scoped alias uniqueness over approved dimensions (no raw source IDs); quota/capacity consistency invariants; non-reusable canonical IDs.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td><code>identity_operation_idempotency_ledger</code> (Proposed contract): tenant + operation type + idempotency key, canonical request hash, <code>in_progress</code>→<code>committed</code>/terminal/<code>timeout_unknown_commit</code> semantics; same key+same request returns committed outcome, same key+different request conflicts. Default single-transaction coupling recommended for DB-local effects.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>On validation/conflict/quota failure or transaction abort: no partial asset, binding, alias, license counter, ledger-committed success result, or outbox side-effect record persists.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Concurrent registrations for same tenant/identity/quota can over-allocate or duplicate assets/bindings without serialized conflict control and post-lock rechecks.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Agent acknowledgments, notifications, external provisioning, or downstream non-DB actions must occur only after commit via safe coordination (outbox/worker) or be reconciled; not atomic with DB commit.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Quota accounting equation (active/reserved/pending/available), reservation policy, authoritative counter representation, exact lock ordering, connector/identity authority rules (owner/technical approvals).</td>
+</tr>
+</tbody>
+</table>
+<h3>2. Existing asset attachment from another data source</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td>Resolved <code>asset</code> association (no new licensed asset), new or attached authoritative <code>asset_data_source</code> binding (owning immutable <code>source_device_key_id</code>) and dependent key projection only if modeled, required alias/claim provenance updates, <code>asset_lifecycle_event</code>, <code>identity_operation_idempotency_ledger</code> claim/state/result, <code>audit_event</code>, and optional outbox; <strong>licensed usage must not increase</strong> for attaching additional source to already-resolved unique device.</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Single transaction for binding/provenance/history/idempotency/audit/outbox consistency (proposed).</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Unique authoritative resolution to exactly one canonical asset; prevent duplicate active binding for same stable source-device context; one data source may have many device bindings; no cross-tenant attachment.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>Identity/licensing operation idempotency ledger for the attachment operation/request key.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>No duplicate binding/alias/provenance side effects or false license increment on failure.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Concurrent attach vs merge/split/deactivation or conflicting identity resolution can create inconsistent bindings if not serialized/rechecked.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Post-commit notifications/sync to external systems via outbox if needed.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Approval of binding ownership recommendation (OD-002), authoritative match rules by connector namespace, handling of late-arriving conflicting claims.</td>
+</tr>
+</tbody>
+</table>
+<h3>3. Source-device fingerprint alias creation</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td>New <code>source_device_fingerprint_alias</code> linked to existing stable <code>source_device_key</code>/binding context, provenance/audit and optional lifecycle metadata, and idempotency/result record when operation is externally retriable as a managed operation.</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Transaction ensuring alias uniqueness, stable-binding linkage, and audit/idempotency consistency for the creation action (proposed).</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Tenant-scoped uniqueness over approved dimensions (tenant, data-source/binding context, algorithm, key version, protected fingerprint); no raw source ID keys; alias must resolve to same binding only.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>Operation idempotency ledger for managed alias-creation requests; natural uniqueness can also prevent duplicates but replay must return consistent outcome.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>No orphan/duplicate alias or ambiguous resolution state on failure.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Concurrent alias creation/rotation for same key may violate uniqueness or create conflicting active states without coordination.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>None required by default; any cache invalidation/notification external to DB must be reconciled post-commit.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Approved uniqueness dimensions, overlap window rules, who/what may trigger alias creation.</td>
+</tr>
+</tbody>
+</table>
+<h3>4. Fingerprint key/algorithm rotation</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td>New alias/version material for same stable <code>source_device_key</code>/binding, overlap validity state for old/new aliases, rotation control/audit records, and idempotency outcome; retirement of old aliases/keys by controlled transition (may be staged but consistency-critical steps atomic).</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Each controlled rotation step that changes lookup/validity invariants must be atomic (proposed); multi-step rotation workflows require idempotent, resumable state transitions and reconciliation.</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>No duplicate aliases violating dimensions; all active/overlapping aliases for same rotation context resolve to same stable binding/asset; stable binding identity unchanged.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>Rotation operation/request idempotency ledger and/or deterministic step identifiers.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>Failed step leaves no inconsistent alias state that maps to different bindings/assets or breaks resolvability guarantees.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Concurrent rotation, lookup, and registration/attach operations can observe mixed states; requires coordination and post-lock rechecks.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Cryptographic key management/HSM/KMS operations, re-fingerprinting jobs, and downstream cache updates are external and must be reconciled; DB cannot atomically include them.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Key custody/rotation authority, overlap duration, migration tooling, emergency rotation procedures (owner/security approval).</td>
+</tr>
+</tbody>
+</table>
+<h3>5. Identity conflict and pending resolution</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td><code>identity_resolution_case</code> creation/update, linkage of conflicting/ambiguous <code>asset_identity_claim</code>(s)/binding candidates, quarantine/pending state markers as designed, optional <code>asset_license_reservation</code> create/update per approved policy, lifecycle/audit records, idempotency outcome, and optional outbox notification.</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Case state, claim linkages, and any reservation/accounting effect required by policy must be committed consistently (proposed).</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Prevent auto-merge/auto-create of duplicate canonical asset when conflict/ambiguity exists; reservation must not be double-counted; case must remain tenant-scoped.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>Idempotency ledger for resolution workflow operations and/or deterministic case-creation keys for same evidence context.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>No partial pending state that leaks unresolved data into normal analysis or double-reserves capacity.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Concurrent ingestion events may generate duplicate/conflicting cases or race with manual resolution; requires dedupe/locking strategy.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Analyst notifications, ticketing, or external workflow systems via outbox/integration; not atomic.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Pending quarantine behavior, reservation-per-case default, expiry, reject-vs-hold policy, and who can resolve (owner/security/commercial).</td>
+</tr>
+</tbody>
+</table>
+<h3>6. Asset merge</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td><code>asset_merge_operation</code> record, survivor/loser state transitions, reassignment of eligible <code>asset_data_source</code> bindings and associated <code>source_device_fingerprint_alias</code> (preserving single authoritative binding identity, no competing source of truth), <code>asset_identity_claim</code>/case link updates, typed <code>asset_lineage_link</code> records (typed FKs to assets and merge operation, no polymorphic refs), <code>asset_lifecycle_event</code>, <code>asset_license_event</code> and <code>tenant_license_usage_state</code> adjustments per approved accounting (no duplicate licensed usage), tombstone/terminal handling for losing canonical assets, <code>identity_operation_idempotency_ledger</code> claim/state/result, <code>audit_event</code>, and required outbox.</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Entire merge effect set that must be consistent (identity reassignment, lineage, licensing/accounting, audit, idempotency) in one transaction or in a strictly controlled compensatable workflow if technically impossible—but DB-authoritative state transitions should be atomic where feasible (proposed). Prefer single-transaction logical boundary.</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Explicit survivor; losing canonical IDs never reused; bindings/aliases must not end up attached to multiple assets; typed lineage FKs preserve referential integrity and tenant consistency; tenant-inclusive integrity preserved; no cross-tenant merge.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>Merge operation idempotency key/ledger; repeated submit returns committed merge outcome.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>Full rollback on conflict/validation/capacity/integrity failure with no partial reassignment or accounting drift.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>High: concurrent merges/splits/attach/ingest/license updates can corrupt lineage or licensing without deterministic locking and conflict checks.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Search index updates, notifications, external system sync—post-commit/reconciled.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Merge approval authority/evidence, accounting effects, handling of in-flight events and historical attribution display rules.</td>
+</tr>
+</tbody>
+</table>
+<h3>7. Asset split</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td><code>asset_split_operation</code> record, creation of new canonical <code>asset</code> UUID when justified, movement of specified <code>asset_data_source</code> bindings and their aliases/claims (stable binding identity preserved per authoritative model), typed <code>asset_lineage_link</code> records (typed FKs to assets and split operation), lifecycle/license events, capacity/quota verification and any reservation/usage changes required if additional active billable asset is created (policy-dependent), tombstone/state updates for source context as applicable, <code>identity_operation_idempotency_ledger</code> claim/state/result, audit, and outbox.</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Single transaction for split decision, identity movement, lineage, and licensing/capacity effects that must not diverge (proposed).</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>No duplication of binding/alias ownership; original attribution/history preserved; canonical ID non-reuse; quota/capacity checks atomic before commit when needed.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>Split operation idempotency ledger.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>No orphan new asset, no partial binding moves, no incorrect licensed usage increment/decrement.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Concurrent split with merge/attach/registration/quota changes; risk of double allocation or lost bindings.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Downstream re-indexing/notifications external to DB.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>When split creates billable asset vs reservation conversion, approval authority, evidence standards, quota-at-split policy.</td>
+</tr>
+</tbody>
+</table>
+<h3>8. Asset deactivation/reactivation/removal</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td><code>asset</code> lifecycle state transition, <code>asset_lifecycle_event</code>, binding/source state updates as applicable, <code>asset_license_event</code> and <code>tenant_license_usage_state</code>/reservation/tombstone effects per approved policy, idempotency ledger, audit, and outbox.</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>State transition and any associated licensing/accounting/history effects that must remain consistent committed together (proposed).</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Canonical ID remains stable/non-reusable; removal must not delete required history/tombstone lineage; deactivation must not be conflated with source disconnection unless policy states so.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>Lifecycle operation idempotency ledger/request keys.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>No half-applied lifecycle/licensing state.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Concurrent lifecycle operations, merges, or new attachments/resolution outcomes.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Agent disablement, archival jobs, external notifications—coordinated post-commit.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Grace periods, quota release timing, permanent removal authorization, retention/legal hold interaction (owner/legal/privacy/security).</td>
+</tr>
+</tbody>
+</table>
+<h3>9. Asset quota allocation/reservation/release</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td><code>subscription_entitlement</code> reference/validation context (read), <code>tenant_license_usage_state</code> counter transitions, optional <code>asset_license_reservation</code> and/or <code>asset_license_event</code>, linked asset/case/operation context, idempotency ledger, and audit.</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Capacity check and counter/reservation mutation must be atomic to prevent over-allocation or double-counting (proposed).</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Active/reserved/pending/available semantics consistent and non-double-counting; tenant-scoped capacity isolation.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>Identity/licensing operation idempotency ledger for allocate/reserve/release/convert actions.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>No leaked reservation or inflated/deflated counters on failure.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Core contention point: concurrent allocations/releases/conversions/merges/splits require serialized checks.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Billing system synchronization, customer notifications—outside DB transaction, reconciled via outbox/process controls if implemented.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Commercial accounting equation, reservation inclusion in counters, expiry/release rules, billing treatment (owner/commercial).</td>
+</tr>
+</tbody>
+</table>
+<h3>10. Event ingestion acceptance</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td><code>event_receipt</code> (durable dedupe outcome with explicit namespace/provenance), accepted <code>security_event</code> record when applicable, and required <code>outbox_message</code>(s) for downstream processing—persisted atomically for accepted path as designed; audit/metrics metadata as required.</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Receipt + accepted event + outbox creation must be committed together so acknowledged ingestion is durable and processable without duplication/loss of coordination (proposed).</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Unique logical dedupe scope per <code>tenant_id</code> + explicit <code>dedup_namespace_type</code> + <code>dedup_namespace_id</code> + normalized <code>source_event_key</code> (proposed), enforced via receipt ledger. Namespace selection must prevent cross-device collisions: data-source-global ID =&gt; tenant+<code>data_source_id</code>; device-scoped ID =&gt; tenant+stable source-device binding identity (<code>asset_data_source</code>/<code>source_device_key_id</code> context); unreliable/missing ID =&gt; deterministic approved fallback or reject/quarantine (Open Decision). Same key/same payload returns prior result; same key/different payload conflicts as policy defines. Raw source identifiers never used as DB uniqueness keys.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td><code>event_receipt</code> is the ingestion idempotency mechanism (distinct from identity/licensing ledger).</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>No acknowledged-but-unrecorded event; on rejection/conflict/validation failure, no partial accepted-event/outbox state inconsistent with receipt outcome.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Duplicate deliveries/retries and concurrent writers for same key; partitioned event storage cannot replace global receipt uniqueness.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Source acknowledgment over network occurs at API boundary but must reflect durable commit outcome; downstream processing is asynchronous via outbox/worker.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Connector-specific namespace capability/fallback rules for unreliable/missing upstream IDs (OD/open), payload-hash/conflict policy details, retention of receipts vs events, backpressure behavior thresholds (owner/ops/performance).</td>
+</tr>
+</tbody>
+</table>
+<h3>11. Outbox claim and processing</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td><code>outbox_message</code> claim/lease/fence state transition, <code>outbox_attempt</code> (or equivalent metadata) creation/update, processing state/result references, and any tenant-scoped derived business updates produced by processing (alerts/case updates/etc.) as one or more well-defined transactions per consistency boundary.</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Claim acquisition and attempt-state updates must be atomic to prevent unsafe double-claim; business side effects of processing should be committed with completion state according to designed unit-of-work boundaries (proposed).</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Lease/fencing token or equivalent monotonic claim guard to prevent stale workers committing results; message state machine integrity.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>Processing handlers must be idempotent where retries/duplicate delivery possible; attempt/replay metadata supports safe reprocessing decisions.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>On worker failure before completion commit, claim/attempt state reflects retryable outcome without marking business effects complete.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Competing workers, lease expiry races, and zombie worker commits; mitigated by fencing/leases (proposed).</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Any external call performed during processing (webhooks, notifications, provider APIs) is outside DB atomicity and must be represented via outbox/reconciliation semantics.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Lease durations, max attempts, dead-letter policy, fencing implementation details (TD-008).</td>
+</tr>
+</tbody>
+</table>
+<h3>12. Outbox external delivery with unknown outcome</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td><code>outbox_attempt</code>/message state transition to <code>delivery_unknown</code> (or equivalent), diagnostic/reconciliation metadata, correlation identifiers, and audit/operational records needed to prevent unsafe blind replay.</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>Persisting unknown-outcome state and reconciliation markers must be atomic so operators/workers see a consistent ambiguity state.</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Must not silently convert unknown outcome to success/failure without evidence; replay controls tied to idempotency/fencing.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>External endpoint idempotency keys (where supported) and internal reconciliation workflow; no assumption of exactly-once external delivery.</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>If ambiguity state cannot be durably recorded, fail-safe handling required (no false completion).</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Reconciliation job and retry worker may race; fencing/state checks required.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>The external delivery itself is the side effect with unknown commit/ack outcome; reconciliation may require external status queries.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Reconciliation ownership/SLA, retry ceilings, manual intervention criteria, external idempotency capabilities by integration.</td>
+</tr>
+</tbody>
+</table>
+<h3>13. Forensic evidence creation and controlled transition</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Logical analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Records that must change together</td>
+<td><code>forensic_evidence_record</code> metadata, initial <code>evidence_object_version</code> reference metadata (hash/locator/size/integrity attributes as applicable), initial <code>evidence_custody_event</code>, linkage to case/asset/tenant context, required audit records, and any <code>evidence_transition_authorization</code> for controlled transitions (when required).</td>
+</tr>
+<tr>
+<td>Required atomicity boundary</td>
+<td>DB metadata/custody/authorization state that must be consistent with evidence registration or transition decision should commit atomically (proposed). Object bytes stored outside PostgreSQL cannot be in the same DB transaction.</td>
+</tr>
+<tr>
+<td>Relevant uniqueness/integrity constraints</td>
+<td>Immutable version identity/integrity hashes; append-only custody history; tenant/case scoping; separation from operational audit.</td>
+</tr>
+<tr>
+<td>Idempotency mechanism</td>
+<td>Evidence ingestion/registration operation idempotency keys to prevent duplicate logical records for retried uploads/requests (proposed).</td>
+</tr>
+<tr>
+<td>Expected rollback behavior</td>
+<td>If metadata commit fails, no false claim of preserved/custodied evidence; orphan external objects require reconciliation/cleanup process outside transaction.</td>
+</tr>
+<tr>
+<td>Concurrency/race-condition risk</td>
+<td>Concurrent uploads/transitions/legal-hold actions; requires controlled state machine and authorization checks.</td>
+</tr>
+<tr>
+<td>External side effects outside PostgreSQL transaction</td>
+<td>Object storage write/read/delete, WORM storage controls, legal-hold systems, and cross-system replication are external side effects with independent failure modes.</td>
+</tr>
+<tr>
+<td>Decisions that remain unresolved</td>
+<td>Storage/WORM commitments, retention/legal-hold/deletion authority, transition approval policy, integrity verification cadence (owner/legal/compliance/security).</td>
+</tr>
+</tbody>
+</table>
+<h2>Cross-operation notes</h2>
+<ul>
+<li><strong>Idempotency taxonomy:</strong> ingestion uses <code>event_receipt</code> (explicit dedup namespace/provenance, device-collision-safe by design); licensing/identity operations use <code>identity_operation_idempotency_ledger</code> (proposed contract: scope/key/hash, in-progress/committed/failed/unknown states, default single-transaction coupling for DB-local effects); outbox uses attempt/replay/fencing metadata. These mechanisms are related but distinct.</li>
+<li><strong>Compensation vs rollback:</strong> database rollback applies only within transaction boundaries; external effects require compensating actions/reconciliation and must not be represented as rolled-back DB state.</li>
+<li><strong>Performance/SLO assumptions:</strong> no production performance or latency commitment is established by this logical analysis.</li>
+</ul>
+<h2>Round 1.1 consistency notes (proposed, not approved)</h2>
+<ul>
+<li><strong>Binding model:</strong> transactions assume the recommended authoritative <code>asset_data_source</code> ownership of stable binding identity (<code>source_device_key_id</code>) with 1:1 dependent/non-authoritative key projection only if materialized (OD-002 approval required).</li>
+<li><strong>Identity/licensing idempotency contract:</strong> default recommendation is single-transaction coupling for database-local operations; staged tracking requires explicit leases/fencing/recovery. Unknown-commit outcomes require reconciliation and must not be treated as blind success/failure. No exactly-once external delivery is claimed.</li>
+<li><strong>Lineage integrity:</strong> merge/split lineage must use typed, relationally enforceable references (typed asset and operation FKs) rather than generic polymorphic references.</li>
+<li><strong>Event dedup namespace:</strong> explicit namespace prevents cross-device collisions for multi-device connectors when upstream IDs are device-scoped; connector-specific unreliable/missing-ID handling remains open where not yet defined.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Security Architecture</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/SECURITY_ARCHITECTURE.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Security Architecture</h1>
+<p><strong>Status: proposed target controls only.</strong> This document describes <strong>NOT IMPLEMENTED</strong> and <strong>NOT TESTED</strong> security architecture and controls unless actual repository evidence proves otherwise. The current repository has no web/API boundary, identity provider, database, network listener, agent, secret store, logging system, verified-context implementation, RLS policies, forensic evidence implementation, or production deployment. No security control described here is implemented, verified, or certified.</p>
+<h2>Security objectives and trust boundaries</h2>
+<ul>
+<li>Authenticate users, agents, and integrations independently.</li>
+<li>Derive tenant authority from trusted identity/membership records and verified transaction context, never from an untrusted request body, client-supplied tenant identifier, user-settable custom GUC, or model response.</li>
+<li>Enforce tenant scope in service logic and PostgreSQL RLS using protected, verified transaction context.</li>
+<li>Protect secrets, event data, telemetry, backups, evidence, and AI prompts according to classification and retention policy.</li>
+<li>Make privileged access, configuration changes, controlled evidence transitions, and support actions attributable and auditable.</li>
+<li>Make MELIRA optional and prevent it from becoming an authorization or autonomous action authority.</li>
+</ul>
+<pre class="mermaid">flowchart TB
+  USER[&quot;Customer/admin browser&quot;]
+  AGENT[&quot;Customer endpoint agent / integration&quot;]
+  EXT[&quot;External input&quot;]
+  EDGE[&quot;Public edge / TLS boundary&quot;]
+  APP[&quot;CARES API + ingestion services (Python)&quot;]
+  VERIFIER[&quot;Trusted assertion verifier (SECURITY DEFINER boundary)&quot;]
+  WORK[&quot;Worker boundary&quot;]
+  DB[(&quot;PostgreSQL: RLS + protected verified context&quot;)]
+  VAULT[&quot;Secret manager / KMS&quot;]
+  AI[&quot;MELIRA privacy gate&quot;]
+  SAAS[&quot;Selected external AI provider (SaaS only)&quot;]
+  ADMIN[&quot;Scoped JIT support authorization&quot;]
+  AUDIT[&quot;Protected audit / custody sinks&quot;]
+
+  USER --&gt; EDGE
+  AGENT --&gt; EDGE
+  EXT --&gt; EDGE
+  EDGE --&gt; APP
+  APP --&gt;|signed tenant assertion + verified claims| VERIFIER
+  VERIFIER --&gt;|protected transaction-bound context only| DB
+  APP --&gt; DB
+  APP --&gt; WORK
+  WORK --&gt;|own verified context per transaction/job| VERIFIER
+  APP --&gt; AI
+  AI --&gt;|policy-approved only| SAAS
+  APP --&gt; VAULT
+  ADMIN --&gt;|time-bound, scoped, reasoned, audited| APP
+  APP --&gt; AUDIT
+  WORK --&gt; AUDIT
+  subgraph Untrusted[&quot;Untrusted input boundary&quot;]
+    USER
+    AGENT
+    EXT
+    SAAS
+  end
+</pre>
+<h2>Verified transaction context and tenant isolation</h2>
+<p>Tenant isolation must not rely on a tenant identifier supplied directly by an untrusted API request, client payload, or user-settable custom PostgreSQL GUC. <strong><code>SET app.tenant_id</code> or any other custom GUC is not an authorization boundary</strong> and must never be read by RLS policies, authorization helpers, or controlled-transition logic for allow/deny decisions. Custom GUCs may be used only for non-authoritative diagnostics if explicitly approved.</p>
+<h3>Signed tenant assertion verification (proposed)</h3>
+<p>Before tenant-scoped database access, a trusted verifier must validate a signed tenant assertion and establish protected transaction-bound verified context:</p>
+<ul>
+<li><strong>Signature and key state:</strong> verify signature, algorithm, and signing key status; reject unknown, inactive, or revoked keys.</li>
+<li><strong>Issuer and audience:</strong> validate trusted issuer and expected audience/service binding.</li>
+<li><strong>Principal and service identity:</strong> validate authenticated principal/service identity and actor type; context must not be derived from client-claimed identity alone.</li>
+<li><strong>Tenant and scopes:</strong> validate target tenant and allowed scopes/actions required for the operation; requested scope must be within the verified assertion scope.</li>
+<li><strong>Nonce and replay protection:</strong> validate nonce/token identifier and enforce atomic single-use/replay-prevention semantics per approved protocol.</li>
+<li><strong>Expiry and time bounds:</strong> validate issuance/validity/expiry and approved clock-skew handling; reject expired, not-yet-valid, or ambiguous assertions.</li>
+<li><strong>Request/job binding:</strong> bind context to the specific request or job context where required by the approved design.</li>
+</ul>
+<h3>Protected transaction-bound verified context and RLS (proposed)</h3>
+<ul>
+<li>The verifier writes verified claims only to a <strong>protected, security-internal, transaction-bound context</strong> (not to an authorization GUC). Ordinary runtime, worker, ingest, reader, and administrative application roles must not be able to insert, update, delete, or forge that context.</li>
+<li>RLS and authorization helpers must obtain tenant/scope decisions only from <strong>trusted verified context</strong> through narrowly scoped, hardened <code>SECURITY DEFINER</code> helpers that return only required decisions/values (for example validity, verified tenant, and scope allowance), not full sensitive context records to ordinary roles.</li>
+<li>RLS design must follow the latest architecture decision package: restrictive tenant boundary policies, permissive gate/action policies as required, command-specific enforcement for <code>SELECT</code>/<code>INSERT</code>/<code>UPDATE</code>/<code>DELETE</code>, fail-closed behavior on missing/invalid context, and no reliance on <code>BYPASSRLS</code> for ordinary runtime paths.</li>
+<li>Service-layer authorization checks remain required; RLS is defense in depth, not a substitute for authentication, application authorization, or safe SQL design.</li>
+</ul>
+<h3>Connection-pool isolation and cleanup (proposed)</h3>
+<ul>
+<li>Each tenant-scoped transaction must establish its own verified context and must not inherit context from a pooled session or previous transaction.</li>
+<li>Context must be bound to the current transaction/backend/binding epoch (or approved equivalent) so stale rows cannot authorize later transactions, including after backend PID or transaction-identifier reuse.</li>
+<li>Explicit cleanup and/or transaction-end teardown must remove current-transaction authorization state as designed; maintenance cleanup may remove only provably stale/inactive records per approved rules. Missing reset/cleanup certainty requires connection discard and fail-closed behavior.</li>
+<li>Pool/session abandonment, rollback, commit, and unknown-commit outcomes must not leave reusable authorization.</li>
+</ul>
+<h3>Fail-closed behavior (proposed)</h3>
+<p>Missing, invalid, expired, revoked, replayed, malformed, wrong-audience, wrong-issuer, wrong-tenant, wrong-scope, wrong-transaction, wrong-binding, or unverifiable assertions/contexts must deny access. Failures must be audited with sanitized details (no secrets, full tokens, or sensitive claim leakage).</p>
+<h3>Relationship to JIT support authorization (proposed)</h3>
+<p>JIT support access is not blanket tenant membership and not <code>BYPASSRLS</code>. A support action requires an explicit, time-bound, scoped, reasoned, and audited authorization/grant approved through the trusted authorization path. The resulting database context, if any, must still be represented as verified transaction-bound context with the specific tenant and permitted support scope for that transaction/request; RLS and audit controls remain enforced.</p>
+<pre class="mermaid">flowchart LR
+  REQ[&quot;Authenticated request/job&quot;]
+  ASSERT[&quot;Signed tenant assertion&quot;]
+  VERIFY[&quot;Trusted verifier: signature, issuer, audience, principal, tenant, scopes, nonce, expiry&quot;]
+  CTX[&quot;Protected transaction-bound verified context&quot;]
+  POLICY{&quot;Service authz + RLS (trusted context)&quot;}
+  DATA[(&quot;Authorized tenant rows only&quot;)]
+  JIT[&quot;Scoped JIT support authorization (explicit, time-bound, audited)&quot;]
+  DENY[&quot;Deny + sanitized security audit&quot;]
+
+  REQ --&gt; ASSERT --&gt; VERIFY
+  VERIFY --&gt;|valid| CTX --&gt; POLICY
+  VERIFY --&gt;|invalid/missing| DENY
+  JIT --&gt;|approved support scope only| ASSERT
+  POLICY --&gt;|allowed| DATA
+  POLICY --&gt;|denied| DENY
+</pre>
+<h2>PostgreSQL privilege separation and RLS posture (proposed)</h2>
+<p>Logical PostgreSQL role separation (privilege boundaries, not necessarily separate applications):</p>
+<table>
+<thead>
+<tr>
+<th>Logical role</th>
+<th>Primary responsibility</th>
+<th>Least-privilege intent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cares_api_runtime</code></td>
+<td>Tenant-scoped API/application request execution after verified context establishment</td>
+<td>Only required DML/SELECT on approved application objects for API paths; no schema ownership, no security-function ownership, no direct access to security-internal context/authorization tables except through approved narrow helpers/call paths</td>
+</tr>
+<tr>
+<td><code>cares_ingest_runtime</code></td>
+<td>Tenant-scoped ingestion/enrollment/event processing after verified context establishment</td>
+<td>Only required ingest-path privileges; no broad administrative, migration, or security-definition rights</td>
+</tr>
+<tr>
+<td><code>cares_worker_runtime</code></td>
+<td>Background job/outbox/processing execution with its own verified context per transaction/job</td>
+<td>Only required worker-path privileges; no direct evidence/security bypass, no schema/security ownership; outbox claim/replay semantics must follow approved scope-specific design (event-processing vs controlled/external-side-effect delivery)</td>
+</tr>
+<tr>
+<td><code>cares_migration</code></td>
+<td>Controlled schema migration and deployment-time DDL changes</td>
+<td>Migration-time privileges only; not used for ordinary runtime traffic; access controlled, reviewed, and audited</td>
+</tr>
+<tr>
+<td><code>cares_maintenance</code></td>
+<td>Controlled maintenance tasks (for example approved cleanup/vacuum/index/reconciliation operations) under explicit procedures</td>
+<td>Narrow maintenance privileges only; cannot bypass tenant authorization controls except where explicitly approved, separately controlled, and audited</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Explicit prohibitions for ordinary runtime roles (<code>cares_api_runtime</code>, <code>cares_ingest_runtime</code>, <code>cares_worker_runtime</code>):</strong></p>
+<ul>
+<li>Must <strong>not</strong> be <code>SUPERUSER</code>.</li>
+<li>Must <strong>not</strong> have <code>BYPASSRLS</code>.</li>
+<li>Must <strong>not</strong> own protected application tables, security-internal tables, RLS policies, or security-critical functions/procedures/triggers.</li>
+<li>Must <strong>not</strong> create/alter/own/grant roles, policies, extensions, or security-definer objects.</li>
+<li>Must <strong>not</strong> have direct ad hoc access to protected transaction-context, nonce, or evidence-transition authorization tables except through approved, hardened, narrowly scoped interfaces where required.</li>
+</ul>
+<p><strong>Additional restrictions (proposed):</strong></p>
+<ul>
+<li>Direct access to partitioned child tables must be restricted and reviewed; ordinary runtime access should use approved parent-table/query paths and RLS-safe interfaces to prevent bypass or inconsistent enforcement.</li>
+<li>Maintenance operations (partition management, cleanup, reindexing, vacuum/analyze where elevated behavior is involved, reconciliation, retention/purge execution) must run under controlled <code>cares_maintenance</code> or separately approved procedures with least privilege, change control, and auditability; no silent data deletion or bypass of legal holds/evidence controls.</li>
+<li>Consistency with latest RLS design: restrictive tenant boundary policies enforce tenant isolation; permissive gate policies and action/scope policies (as approved) must not weaken tenant boundaries. <code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, and <code>DELETE</code> are independently controlled as required. Apply <code>ENABLE ROW LEVEL SECURITY</code> and, where applicable and ownership/role design permits, <code>FORCE ROW LEVEL SECURITY</code> on tenant/protected tables; exact applicability requires formal PostgreSQL schema/security review. <code>BYPASSRLS</code> is restricted to explicitly approved, separately controlled non-runtime roles/processes only. <code>UPDATE</code>/<code>SELECT</code>/<code>RETURNING</code> interactions and required read visibility for row-addressed workflows must be designed explicitly (see <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a> and <a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a>).</li>
+</ul>
+<h2>Device identity, agent identity, and licensing integrity</h2>
+<h3>Identity distinctions (proposed)</h3>
+<ul>
+<li><strong>Agent identity:</strong> the authenticated runtime identity of a CARES agent instance/process as recognized by the platform (separate from the device it reports and from user identity).</li>
+<li><strong>Enrollment credential:</strong> the credential/material used during enrollment or re-enrollment to establish or prove agent trust; short-lived/single-use where applicable and rotatable/revocable.</li>
+<li><strong>Connector/source identity (<code>data_source</code>/connector instance):</strong> the tenant-scoped integration or collection channel/instance that submits data; it is <strong>not</strong> a billable asset and may report one or many devices.</li>
+<li><strong>Source-device identity / source-device binding:</strong> the source-local device identity as known to a specific connector/source, represented by tenant-scoped bindings (including <code>asset_data_source</code> and versioned fingerprint aliases as designed) and provenance/confidence.</li>
+<li><strong>Canonical CARES asset identity:</strong> the tenant-scoped canonical monitored-asset identity representing <strong>one unique monitored device</strong> (physical or logical). It is the licensing/billing identity, not a connector and not a raw source identifier.</li>
+</ul>
+<h3>Binding, lifecycle, and licensing effects (proposed)</h3>
+<ul>
+<li>Multiple connectors/sources reporting the same device must bind to one canonical CARES asset and must <strong>not</strong> create duplicate licensed assets.</li>
+<li>Agent reinstall, replacement, or re-enrollment affects agent identity/enrollment credentials and may require new or updated source-device bindings/claims; it does <strong>not</strong> automatically create a duplicate licensed asset. Identity resolution must follow approved authoritative/strong/weak evidence rules, with conflict/pending review where required.</li>
+<li>Credential rotation and revocation invalidate or replace affected credentials/agent trust material without automatically deleting canonical asset history or creating duplicate assets; re-enrollment must be authorized and auditable.</li>
+<li>Source identifiers remain untrusted claims until bound to an authenticated tenant and source. Namespace, provenance, and confidence must be preserved. IP addresses and hostnames are observations only; weak matches never merge automatically.</li>
+<li>Manual merge/split must be tenant-scoped, permission-checked, reasoned, auditable, and transactional. Preserve canonical IDs, source/event lineage, before/after claims, and evidence history. Split/merge quota and licensing effects must be handled atomically per approved rules; compensating actions must preserve history.</li>
+<li>Use tenant-inclusive constraints/relationships (including stable <code>asset_data_source</code> bindings, <code>source_device_key_id</code>, and versioned <code>source_device_fingerprint_alias</code> records as designed), scope-appropriate idempotency (ingestion <code>event_receipt</code>, licensing/identity operation ledger, and outbox attempt/replay records), per-tenant serialized quota operations, and reconciliation to limit spoofing, duplicate billing, and race abuse. See <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>, <a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a>, and <a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a>.</li>
+</ul>
+<h2>Agent and integration security (proposed)</h2>
+<p>Use short-lived, single-use enrollment where applicable, tenant-bound unique credentials, mutual TLS or equivalent strong client authentication, rotation/revocation, replay-resistant idempotency, and per-source rate/payload limits. Agent offline queues must be bounded and encrypted where feasible. Commands and updates require signatures, expiry, target binding, and anti-replay protections. Do not accept arbitrary shell commands as a generic integration mechanism.</p>
+<p>For integrations, store credentials as secret references, restrict egress, validate webhooks and signatures, and isolate adapter parsing from trusted control messages. Treat all third-party event content as attacker-controlled data.</p>
+<h2>Data protection, audit, and forensic evidence (proposed)</h2>
+<p>Use TLS in transit, encryption at rest for database and backups (where implemented), least-privilege service identities, controlled key rotation, and documented retention/deletion. Minimize PII in metrics and logs.</p>
+<h3>Distinction of record types</h3>
+<table>
+<thead>
+<tr>
+<th>Record type</th>
+<th>Purpose</th>
+<th>Integrity/protection expectations</th>
+<th>Access/authorization</th>
+<th>Retention/lifecycle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Operational/security audit records</strong></td>
+<td>Accountability for administrative, customer-sensitive, security, AI, configuration, access, and response actions</td>
+<td>Protected from ordinary application modification/tampering; attributable actor/tenant/action/target/reason/outcome/correlation; append-oriented or otherwise integrity-protected logging as approved</td>
+<td>Least-privilege read/access for authorized roles; alerting/review as required</td>
+<td>Retention per approved security/compliance policy; not silently deleted</td>
+</tr>
+<tr>
+<td><strong>Forensic evidence metadata and objects</strong></td>
+<td>Preserved evidence artifacts and their authoritative metadata for investigation/forensics/legal support</td>
+<td>Immutable evidence metadata and original evidence objects/hashes/provenance as designed; controlled transitions only; hash verification; tenant-scoped evidence references; original evidence never silently rewritten or deleted</td>
+<td>Strict tenant-scoped, purpose-limited authorization; controlled procedures only for allowed state transitions</td>
+<td>Retention/legal hold/deletion/purge governed by approved policy; legal hold prevents unauthorized disposal</td>
+</tr>
+<tr>
+<td><strong>Evidence custody events</strong></td>
+<td>Chain-of-custody and controlled-transition history for evidence</td>
+<td><strong>Append-only</strong> custody events with required sequencing/linkage as designed; transaction-bound authorized transitions; no ad hoc update/delete by ordinary runtime/worker/admin application roles</td>
+<td>Restricted to authorized ingestion/controlled procedures and approved readers/auditors</td>
+<td>Retained per approved evidence/audit policy; integrity verification required before trusted use where applicable</td>
+</tr>
+</tbody>
+</table>
+<h3>Evidence controls (proposed, aligned with latest architecture decisions)</h3>
+<ul>
+<li><strong>Immutable evidence metadata:</strong> immutable identity/object/hash/provenance/source/ingest fields must not be directly modified or deleted.</li>
+<li><strong>Controlled evidence transitions:</strong> only approved, hardened <code>SECURITY DEFINER</code> procedures may perform allowed transitions (for example legal hold, retention metadata, and availability-state changes) with precondition checks and required custody events.</li>
+<li><strong>Transaction-bound authorization:</strong> controlled transitions require protected, security-internal, transaction-bound authorization records bound to current transaction/binding, tenant, evidence record, and permitted operation/transition; <strong>custom GUC values are not proof of authorization</strong>. Authorization creation, controlled update, custody-event append, and single-use authorization consumption must be atomic in the same transaction; rollback leaves no reusable authorization.</li>
+<li><strong>Append-only custody events:</strong> custody events are append-only with required per-evidence sequencing/hash linkage as designed; direct update/delete prohibited for ordinary roles.</li>
+<li><strong>Evidence hash verification:</strong> verify object/content hashes and custody linkage before trusted use/delivery where required; integrity failures must be handled through controlled procedures and audited.</li>
+<li><strong>Legal hold:</strong> legal hold and retention controls prevent unauthorized purge/deletion and require approved handling.</li>
+<li><strong>Tenant-scoped evidence references:</strong> evidence metadata, objects, custody events, and references must be tenant-scoped and access-controlled.</li>
+</ul>
+<h3>Integrity limitation and additional controls (proposed)</h3>
+<p>A <strong>database hash chain alone is not independently tamper-proof against privileged database administrators</strong> or other actors with sufficient database/platform control; it provides tamper-evidence within the database trust boundary, not independent assurance. External immutable storage/WORM/object-lock or equivalent independent integrity controls are <strong>potential additional controls</strong> requiring owner/security approval, implementation design, and verification.</p>
+<h2>MELIRA external provider security and privacy boundary (proposed)</h2>
+<p>Before any network request to an AI SaaS provider:</p>
+<ol>
+<li>Re-authenticate/authorize the user, tenant, operation, and each requested tool.</li>
+<li>Fetch only evidence authorized for that tenant and purpose.</li>
+<li>Require an administrator-configured provider/model/approved region and explicit customer agreement to provider terms. Proposed default is no provider and no transmission until configured; AI requests are user-initiated with an external-processing notice, not background export. No selection, disabled configuration, absent consent, or denied policy means no provider call.</li>
+<li>Classify data and apply per-tenant classification, transmission, file-content, minimization, retention, and usage policies. Proposed defaults deny <code>restricted</code> data, secrets, credentials, and file content; <code>confidential</code> data is denied unless separately authorized; <code>public</code>/<code>internal</code> data still requires tenant opt-in and minimization. The exact matrix and consent granularity require owner/privacy/legal approval. Treat free-form logs as untrusted data, not instructions.</li>
+<li>Check the provider's documented residency, retention/deletion, and training/data-use terms against the tenant's policy. If requirements cannot be verified or are incompatible, block transmission. No local inference and no silent provider/region failover.</li>
+<li>Call only an explicitly selected, approved endpoint over validated HTTPS with the following controls (a one-time DNS lookup is <strong>not</strong> sufficient protection):
+<ul>
+<li><strong>TLS hostname verification:</strong> enforce certificate validation and hostname verification for the approved destination.</li>
+<li><strong>DNS and connection-time destination IP validation:</strong> resolve and validate destination addresses and revalidate as required; reject loopback, private, link-local, multicast, unspecified, and cloud metadata addresses and other disallowed targets.</li>
+<li><strong>DNS rebinding resistance:</strong> do not trust earlier resolution results across validation/use boundaries without approved revalidation; prevent rebinding to disallowed internal/metadata targets.</li>
+<li><strong>Redirect handling and revalidation:</strong> do not follow redirects to unapproved destinations; if redirects are handled at all under approved policy, revalidate scheme, host, TLS hostname, resolved IPs, and allow-list/egress policy on every hop and prefer disabling redirects.</li>
+<li><strong>Egress firewall enforcement:</strong> enforce network egress allow-lists/deny-lists and controls so only approved provider destinations/ports are reachable.</li>
+<li><strong>Custom provider endpoint approval:</strong> custom endpoints require a separately approved allow-list/security review path and must satisfy the same validation controls.</li>
+<li><strong>No automatic provider or region failover:</strong> never automatically switch provider, endpoint, or region on error/policy failure.</li>
+</ul>
+</li>
+<li>Fetch the credential through a tenant-scoped secret reference from the secret manager. Never return credentials to the UI or put them in prompts/logs. Audit secret reads and rotation/revocation.</li>
+<li>Enforce hard per-tenant request/token/spend/concurrency budgets using a preflight estimate and actual usage reconciliation. Fail closed if budget status is unavailable or exhausted. Report provider errors explicitly; never switch providers automatically.</li>
+<li>Treat model output as untrusted. Validate each tool, tenant, target, and argument against CARES authorization independently of the model. Default to read-only; require human approval for high-impact changes.</li>
+<li>Record tenant, actor, purpose, provider/model/region, policy/catalog version, data classifications/categories, evidence IDs, estimated/actual usage and cost, outcome, and correlation ID. Do not retain full prompts/responses by default.</li>
+</ol>
+<p>Protect against prompt injection by separating instructions from quoted evidence and by denying event/file content authority to issue instructions. This mitigates but cannot eliminate model behavior risk. Maintain core detection and response functions without the AI service.</p>
+<p>The supported provider list, allowed data classification per provider, consent roles, customer BYOK versus CARES-managed key custody, residency regions, acceptable retention/training terms, and budget ceilings require owner/privacy/legal approval. The control sequence is proposed only; no provider integration exists and local inference is not permitted.</p>
+<h2>Security control status</h2>
+<p>Proposed controls must be implemented and verified through API, DB/RLS, integration, and adversarial tests before any production security claim. The current <code>AccessController</code> is a comparison helper; the current AI classes only calculate a local status and string transform. Neither is an actual security boundary.</p>
+<p><strong>All controls in this document remain proposed and unimplemented unless actual repository evidence proves otherwise.</strong> No source code, schema, migration, or test files were modified by this documentation update.</p>
+
+</article>
+</div>
+<script src="../assets/mermaid.min.js"></script>
+<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,securityLevel:'loose'});}</script>
+</body>
+</html>

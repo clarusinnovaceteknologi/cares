@@ -1,0 +1,174 @@
+{
+  "export_timestamp_utc": "2026-11-21T16:32:02Z",
+  "repository_revision": "888905d8aef8bf6eb2e874cf9804a239f0f6f51a",
+  "source_markdown_files_discovered": 32,
+  "html_files_successfully_generated": 32,
+  "failed_conversions": [],
+  "excluded_files_and_reasons": [],
+  "missing_referenced_assets": [],
+  "broken_internal_links": [],
+  "files_not_converted_faithfully": [],
+  "source_to_output_mapping": [
+    {
+      "source": "README.md",
+      "output": "README.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/ARCHITECTURE.md",
+      "output": "docs/ARCHITECTURE.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md",
+      "output": "docs/ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/ARCHITECTURE_DECISION_PACKAGE.md",
+      "output": "docs/ARCHITECTURE_DECISION_PACKAGE.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md",
+      "output": "docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md",
+      "output": "docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md",
+      "output": "docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md",
+      "output": "docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/ARCHITECTURE_RECONCILIATION_CHANGELOG.md",
+      "output": "docs/ARCHITECTURE_RECONCILIATION_CHANGELOG.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/CARES_PRODUCT_VISION.md",
+      "output": "docs/CARES_PRODUCT_VISION.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/DATA_ARCHITECTURE.md",
+      "output": "docs/DATA_ARCHITECTURE.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/DEVELOPMENT_ROADMAP.md",
+      "output": "docs/DEVELOPMENT_ROADMAP.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_LOGICAL_DATA_MODEL.md",
+      "output": "docs/POSTGRESQL_LOGICAL_DATA_MODEL.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md",
+      "output": "docs/POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_LOGICAL_ERD.md",
+      "output": "docs/POSTGRESQL_LOGICAL_ERD.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md",
+      "output": "docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md",
+      "output": "docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md",
+      "output": "docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_TECHNICAL_DECISIONS.md",
+      "output": "docs/POSTGRESQL_TECHNICAL_DECISIONS.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md",
+      "output": "docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md",
+      "output": "docs/PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/PROJECT_STATUS.md",
+      "output": "docs/PROJECT_STATUS.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/REQUIREMENTS_TRACEABILITY.md",
+      "output": "docs/REQUIREMENTS_TRACEABILITY.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/SECURITY_ARCHITECTURE.md",
+      "output": "docs/SECURITY_ARCHITECTURE.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/TECHNOLOGY_SELECTION.md",
+      "output": "docs/TECHNOLOGY_SELECTION.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/THREAT_MODEL.md",
+      "output": "docs/THREAT_MODEL.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/adr/0001-modular-monolith.md",
+      "output": "docs/adr/0001-modular-monolith.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/adr/0002-postgresql-and-tenant-isolation.md",
+      "output": "docs/adr/0002-postgresql-and-tenant-isolation.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/adr/0003-device-identity-and-asset-licensing.md",
+      "output": "docs/adr/0003-device-identity-and-asset-licensing.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/adr/0004-external-ai-provider-boundary.md",
+      "output": "docs/adr/0004-external-ai-provider-boundary.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/adr/0005-event-processing-and-broker-evolution.md",
+      "output": "docs/adr/0005-event-processing-and-broker-evolution.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/adr/0006-atomic-per-tenant-asset-licensing.md",
+      "output": "docs/adr/0006-atomic-per-tenant-asset-licensing.md.html",
+      "status": "converted"
+    }
+  ],
+  "copied_assets": []
+}

@@ -1,0 +1,71 @@
+# CARES PostgreSQL Logical Model Round 1.1 — Final Audit & Publication Correction Execution Report
+
+## 1. Objective and scope
+- Focused technical and documentary audit of PostgreSQL Logical Model Round 1.1 deliverables and correction of external audit publication README to reflect actual GitHub publication state.
+- Documentation/audit/publication-correction only. **No PostgreSQL DDL, migrations, tables, indexes, constraints, triggers, functions, procedures, RLS policies, database roles/grants, application code changes, or database implementation were created.** **No ADR statuses changed (ADR 0006 remains Proposed).** **No Round 2 physical schema design/implementation started.** No owner/finance/privacy/legal/security approvals invented.
+
+## 2. Audit baseline and documents actually inspected
+- **Repository:** https://github.com/clarusinnovaceteknologi/cares
+- **Publication branch:** `audit/postgresql-round1-1-publication`
+- **Initial publication commit (existing, preserved):** `888905d8aef8bf6eb2e874cf9804a239f0f6f51a`
+- **Local audit package inspected:** `dist/cares-external-audit/README.md`, `dist/cares-external-audit/copilot.txt` (pre-correction packaged report, SHA-256 `1a06f38285fbabc7e1b77d2bce90c38b928bc95a02500112d3b4984d59c0c4e5`), `dist/cares-external-audit/CARES_DOCUMENTATION_HTML.zip` (pre-rebuild package SHA-256 `b8ef7f11b1b7c6f9e8381896f121dc2d7200911c3fc9572f850a71f3c02049c6`, integrity verified, 35 entries, required principal HTML/index/manifest present).
+- **Remote publication context inspected (GitHub repository tools):** branch `audit/postgresql-round1-1-publication` present at `888905d...`; remote `dist/cares-external-audit/README.md` and `copilot.txt` retrieved and reviewed. **Remote ZIP binary contents were not byte-downloaded/compared in this environment (NOT VERIFIED).**
+- **Principal Round 1.1 Markdown sources inspected:** `docs/POSTGRESQL_LOGICAL_DATA_MODEL.md`, `docs/POSTGRESQL_LOGICAL_ERD.md`, `docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md`, `docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md`, `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md`.
+- **Supporting baseline inspected:** `docs/DATA_ARCHITECTURE.md`, `docs/SECURITY_ARCHITECTURE.md`, `docs/POSTGRESQL_TECHNICAL_DECISIONS.md`, `docs/adr/0003-device-identity-and-asset-licensing.md`, `docs/adr/0005-event-processing-and-broker-evolution.md`, `docs/adr/0006-atomic-per-tenant-asset-licensing.md` (ADR 0006 status confirmed Proposed), `dist/cares-documentation-html/index.html`, `dist/cares-documentation-html/EXPORT_MANIFEST.json`, principal local HTML exports, and `copilot.txt`.
+
+## 3. Technical audit summary (areas A–E)
+Detailed evidence, classifications, and cross-document/OD reassessment are recorded in `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md`.
+
+- **A. Source-device binding and identity ownership:** **PASS WITH LIMITATIONS (Proposed).** `asset_data_source` consistently recommended as authoritative stable binding owning immutable `source_device_key_id`; aliases resolve to same stable binding identity; optional `source_device_key` only 1:1 dependent/non-authoritative projection if materialized; model/ERD/transactions agree. OD-002 remains open (formal technical approval required).
+- **B. Identity and licensing idempotency:** **PASS WITH LIMITATIONS (Proposed).** Scope `(tenant_id, operation_type, idempotency_key)`, canonicalization/hash, states (`in_progress`, `committed`, `failed_terminal`, `timeout_unknown_commit`), replay/conflict/concurrency/unknown-commit handling, retention/reconciliation need, and DB-local transaction coupling (A recommended default; B staged only with explicit approval) consistently documented. No exactly-once external delivery claimed. OD-008 remains open.
+- **C. Event receipt deduplication:** **PASS WITH LIMITATIONS (Proposed/Open).** Explicit namespace/provenance model (`dedup_namespace_type/id` + normalized source event key); device-scoped upstream IDs must use stable source-device binding namespace to prevent cross-device collisions; data-source-global IDs may use tenant+`data_source_id`; unreliable/missing IDs require approved deterministic fallback or reject/quarantine. Distinct from identity/licensing idempotency. OD-013 remains open/partial (connector-specific behavior).
+- **D. Asset lineage and relational integrity:** **PASS.** No current polymorphic `from_asset_or_op_ref` attribute/definition in model/ERD/transactions; typed `from_asset_id`/`to_asset_id` and typed nullable `merge_operation_id`/`split_operation_id` by link type documented consistently; ERD/catalogue retain no obsolete polymorphic lineage design.
+- **E. Entity naming and responsibility boundaries:** **PASS WITH LIMITATIONS.** Boundaries between `role_permission`/`membership_role_assignment`, `tenant_configuration` and policy references, `ai_interaction_audit`/`audit_event`, `asset_tombstone`/terminal lifecycle state, `processing_work_item`/core processing entities, and `outbox_message`/`outbox_attempt` are consistently distinguished in intent. **Narrowly scoped essential correction applied:** removed duplicate/misplaced catalogue rows in `docs/POSTGRESQL_LOGICAL_DATA_MODEL.md` to restore authoritative catalogue consistency (9 rows removed; remaining backticked repetitions are intentional section 9.5 comparison rows). Technical design intent unchanged.
+
+## 4. Cross-document consistency, ERD, and Mermaid validation
+- **Cross-document consistency:** principal docs consistent on corrected Round 1.1 semantics for binding, idempotency, event dedup namespace, typed lineage, and entity boundaries; OD IDs/statuses (OD-001–OD-013) and proposed-vs-approved distinctions preserved. Catalogue duplication issue identified and corrected.
+- **ERD structure:** 4 Mermaid `erDiagram` blocks in `docs/POSTGRESQL_LOGICAL_ERD.md`; **40 unique entities** extracted from Mermaid definitions. `from_asset_or_op_ref` not present as an ERD attribute.
+- **Intentionally omitted/simplified catalogue entities:** explicitly documented in ERD/model; includes 10 named entities (`AI_INTERACTION_AUDIT`, `PROCESSING_WORK_ITEM`, `AI_PROVIDER_POLICY_CONSENT_REFERENCE`, `AI_PROVIDER_SECRET_REFERENCE`, `AI_USAGE_BUDGET_ACCOUNTING`, `DETECTION_RULE`, `DETECTION_RULE_VERSION`, `INTEGRATION_CONFIGURATION`, `THREAT_INTELLIGENCE_REFERENCE`, `ASSET_INVENTORY_OBSERVATION`) plus noted simplifications.
+- **Mermaid validation:** **structural validation performed** (block/entity extraction, declaration/search checks). **No Mermaid renderer/parser CLI available (`mmdc`/`npx` not found); visual rendering was NOT performed.** Structural validation must not be reported as visual validation.
+
+## 5. Open Decision reassessment (OD-001–OD-013)
+- **OD-001, OD-003, OD-004:** Proposed/open; block or constrain accepted licensing/accounting schema semantics and physical enforcement details pending ADR/owner/commercial approvals (partial/targeted blockers).
+- **OD-002:** Proposed/open (Alternative A recommended, not approved); **targeted blocker** for physical identity binding schema finalization.
+- **OD-008:** Proposed/open (contract refined, A recommended default for DB-local ops, not approved); **targeted blocker** for physical idempotency constraints/transaction templates.
+- **OD-013:** Proposed/open/partial; **connector-dependent partial blocker** for supported-connector dedup uniqueness/fallback physical rules.
+- **OD-005, OD-006, OD-007, OD-009, OD-010, OD-011, OD-012:** Proposed/open; block only specific physical/governance/operational design details and can be explicitly bounded without unsupported assumptions.
+- **No decision statuses changed. No decisions approved.**
+
+## 6. Publication correction details
+- **Corrected file:** `dist/cares-external-audit/README.md`
+- **Corrections:** removed stale implication that remote GitHub publication could not be completed; added accurate repository/branch/commit/publication URLs and direct file URLs for `audit/postgresql-round1-1-publication` on `https://github.com/clarusinnovaceteknologi/cares` (initial publication commit `888905d8aef8bf6eb2e874cf9804a239f0f6f51a`); preserved historical packaging facts (original package created when workspace did not expose Git repository/source commit SHA; original packaging date/checksums context) and distinguished from subsequent publication; stated correction via new commit preserving history; did not claim original ZIP built from known Git commit and did not claim unperformed independent verification.
+- **External accessibility:** repository/branch/file presence verified via GitHub repository tools in this environment; unauthenticated external accessibility **NOT independently verified** (if repository is private, authorized GitHub access required). No visibility change made.
+- **Technical design documents were not modified for README consistency.**
+
+## 7. Export regeneration and validation results
+- **Exporter:** `/tmp/export_cares_docs.py` (Python, `markdown-it-py` available; Mermaid renderer/parsing CLI unavailable for visual render)
+- **Regeneration result:** eligible sources **32**, generated doc HTML **32**, total HTML files **33** (including `index.html`), failed conversions **0**, copied assets **0**, missing referenced assets **0**, broken internal links **0**, empty HTML **[]**, Mermaid bundled **true**.
+- **Outputs:** `dist/cares-documentation-html/` (index and manifest updated), `dist/CARES_DOCUMENTATION_HTML.zip` rebuilt (36 entries, `zipfile.testzip()` no bad member).
+- **Required contents present in ZIP:** index, `EXPORT_MANIFEST.json`, `EXPORT_MANIFEST.md`, 5 principal Round 1.1 HTML docs, and `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html`.
+- **Final audit report:** `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md` created and corresponding HTML page generated/included in export and ZIP.
+
+## 8. Recorded SHA-256 hashes (updated artifacts)
+- `dist/cares-external-audit/README.md`: `9d1a3321f7ef937ae6a56cf9d55ff9a551a6917fc829eb7796c8d258dcd0e62f`
+- `docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md`: `80ee95d08545274f58d4dcdaa3ceab41a482886189487e28e757f1f3d3265db6`
+- `dist/CARES_DOCUMENTATION_HTML.zip` (rebuilt, also copied to `dist/cares-external-audit/CARES_DOCUMENTATION_HTML.zip`): `d543bc43d2a31eeeb0b76dc34eea1b22b3ec46a8361af93827a62617c39643c0`
+- Prior packaged `copilot.txt` (replaced by this report): `1a06f38285fbabc7e1b77d2bce90c38b928bc95a02500112d3b4984d59c0c4e5`
+- Prior packaged ZIP (replaced in audit package): `b8ef7f11b1b7c6f9e8381896f121dc2d7200911c3fc9572f850a71f3c02049c6`
+
+## 9. Git/publication actions and limitations
+- Local git repository state: branch `audit/postgresql-round1-1-publication` tracks `origin/audit/postgresql-round1-1-publication` (initial commit `888905d...` preserved). Correction changes prepared as a new commit (no history rewrite).
+- Remote push/verification from this environment may require authorized Git credentials; push outcome and final remote verification are reported in the completion summary below/alongside this report. **Publication must not be claimed successful unless remote verification is complete.**
+
+## 10. Final readiness recommendation
+**READY FOR ROUND 2 WITH EXPLICITLY BOUNDED EXCLUSIONS**
+
+- **Does not block entire Round 2 design (bounded):** no whole-round blocker identified in inspected artifacts, subject to exclusions.
+- **Blocks specific physical design decisions:** OD-002 (binding physical schema), OD-008 (idempotency constraints/transaction templates), OD-001/003/004 (licensing/accounting semantics/enforcement and accepted ADR 0006 interpretations), OD-013 (connector-specific dedup uniqueness/fallback for supported connectors), and OD-005/006/007/009/010/011/012 for their respective physical/governance/operational details.
+- **Safely deferrable with bounds:** optional dependent key projection materialization choice (consistent with authoritative model), `processing_work_item`, fine-grained RBAC/catalog expansions, and finalized partition/retention/connector fallback specifics until approved.
+- **Formal approvals required:** OD-001–OD-013 as applicable and ADR 0006 governance acceptance where relevant; no approvals invented.
+
+*Stop after audit and publication correction. Do not start Round 2 without explicit project-owner authorization.*

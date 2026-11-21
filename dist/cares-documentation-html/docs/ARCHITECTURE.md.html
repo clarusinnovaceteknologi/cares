@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES Architecture</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/ARCHITECTURE.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>CARES Architecture</h1>
+<p><strong>Status: proposed architecture; not implemented.</strong> This document records a target architecture, not evidence that CARES services, infrastructure, or controls exist. The current repository contains only small in-memory Python prototypes; see <a href="PROJECT_STATUS.md.html">PROJECT_STATUS.md</a>.</p>
+<h2>Architectural principles</h2>
+<ul>
+<li>Python is the primary language for the backend.</li>
+<li>PostgreSQL is the required primary relational database; there is no database integration in the current code.</li>
+<li>MELIRA uses customer-selected external AI SaaS providers. CARES does not require local GPU resources, must not silently fail over to another provider, and must enforce privacy policy before any provider request.</li>
+<li>One unique monitored device is one licensed asset, independent of device type and number of collection sources.</li>
+<li>Begin as a modular monolith with deployable worker processes. Split services only when measured scale, availability, or ownership needs justify the operational cost.</li>
+<li>Enforce tenant authorization at API/service and database boundaries. A prompt or UI filter is not authorization. Database access must rely on protected, verifier-written, transaction-bound verified tenant context; custom PostgreSQL GUCs (for example <code>SET app.tenant_id</code>) are not authentication or authorization sources and may be used only for non-authoritative diagnostics if approved. See <a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a> and <a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a>.</li>
+<li>Keep core monitoring and detection independent of MELIRA.</li>
+</ul>
+<h2>Proposed system boundary</h2>
+<p>The initial product is a web control plane and data plane backed by PostgreSQL. The Dashboard calls the CARES API. Agents and integrations send authenticated data to ingestion endpoints. Processing is separated from synchronous API requests using a transactional outbox and a separately run worker. Both may initially be packaged from one Python codebase and share the same database, but have distinct responsibilities and runtime limits.</p>
+<p>The architecture deliberately does not require a separate broker, cache, search engine, analytics database, or Kubernetes cluster for an initial deployment. Those are scale-driven options, not prerequisites.</p>
+<p>Asset registration is a tenant-scoped identity-resolution transaction, not a count of incoming agents or integrations. CARES assigns an immutable canonical asset UUID and resolves identity through stable source-device bindings (<code>asset_data_source</code> / <code>source_device_key_id</code>) and versioned fingerprint aliases (<code>source_device_fingerprint_alias</code>) rather than treating a fingerprint as permanent binding identity. CARES records source-specific identity claims with provenance and only automatically attaches a source on a unique authoritative match. Weak or conflicting identifiers create a pending resolution rather than an automatic merge. The transaction must establish verified tenant context, apply deterministic locking/post-lock rechecks, persist required idempotency/licensing/audit/outbox records atomically as designed, and change licensed usage only according to approved state-to-counter policy. See <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a> and <a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a> for reconciled semantics (proposed, NOT IMPLEMENTED/NOT TESTED).</p>
+<p>The proposed initial load profile is an assumption, not measured capacity: 10 tenants, 5,000 active assets, 25 events/second sustained, and a 100 events/second five-minute burst, with a 1 KiB average event and 256 KiB maximum event. PostgreSQL is the initial event store and outbox; no broker or analytical database is required at that profile. Performance targets and infrastructure decision gates are documented in <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a> and must be validated against a fixed benchmark environment before being treated as commitments.</p>
+<h2>High-level system architecture</h2>
+<pre class="mermaid">flowchart LR
+  subgraph Customer[&quot;Customer environment&quot;]
+    UI[&quot;Browser / CARES Dashboard&quot;]
+    AG[&quot;CARES Agent&quot;]
+    EXT[&quot;External security products&quot;]
+  end
+  subgraph CARES[&quot;CARES service boundary&quot;]
+    EDGE[&quot;TLS ingress / reverse proxy&quot;]
+    API[&quot;Python API&lt;br/&gt;authentication, authorization&quot;]
+    MOD[&quot;Modular Core&lt;br/&gt;assets, licensing, events, alerts, cases&quot;]
+    ING[&quot;Ingestion adapters&lt;br/&gt;agent + integration&quot;]
+    OUT[&quot;PostgreSQL transactional outbox&quot;]
+    WORK[&quot;Python processing worker&lt;br/&gt;parse, normalize, enrich, detect&quot;]
+    AI[&quot;MELIRA privacy gate + provider adapter&quot;]
+    DB[(&quot;PostgreSQL&lt;br/&gt;tenant-scoped operational data&quot;)]
+    SEC[&quot;Secrets manager / KMS&quot;]
+    OBS[&quot;Logs, metrics, traces&quot;]
+  end
+  SaaS[&quot;Customer-selected external AI SaaS&quot;]
+
+  UI --&gt;|HTTPS / OIDC session| EDGE
+  EDGE --&gt; API
+  API --&gt; MOD
+  AG --&gt;|TLS + per-agent mTLS| EDGE
+  EXT --&gt;|TLS/API, webhook, or syslog adapter| EDGE
+  EDGE --&gt; ING
+  ING --&gt; MOD
+  MOD --&gt; DB
+  ING --&gt; OUT
+  OUT --&gt; WORK
+  WORK --&gt; DB
+  MOD --&gt; AI
+  AI --&gt;|allow-listed, minimized request only| SaaS
+  SEC -. credentials .-&gt; AI
+  API -. telemetry .-&gt; OBS
+  ING -. telemetry .-&gt; OBS
+  WORK -. telemetry .-&gt; OBS
+  DB -. health/metrics .-&gt; OBS
+</pre>
+<p>The external SaaS link is optional. If AI is disabled, unconfigured, policy-blocked, or unavailable, core ingestion, detection, incident handling, and reporting continue without it. No provider failover is implicit.</p>
+<h2>Component interaction diagram</h2>
+<pre class="mermaid">sequenceDiagram
+  autonumber
+  participant U as Dashboard user
+  participant API as CARES API
+  participant Auth as Identity / authorization
+  participant App as CARES application modules
+  participant DB as PostgreSQL
+  participant Worker as Processing worker
+  participant AI as MELIRA privacy gate
+  participant SaaS as Selected AI SaaS
+
+  U-&gt;&gt;API: HTTPS request + identity token
+  API-&gt;&gt;Auth: Validate identity, role, tenant, scope
+  Auth--&gt;&gt;API: Authorized principal and tenant context
+  API-&gt;&gt;DB: Transaction; establish verified transaction-bound tenant context; scoped query (no custom GUC authorization)
+  DB--&gt;&gt;API: Authorized records
+  API-&gt;&gt;App: Execute requested business operation
+  App-&gt;&gt;DB: Persist business data + required idempotency/audit/outbox records atomically (scope-dependent)
+  API--&gt;&gt;U: Response
+  Worker-&gt;&gt;DB: Claim outbox work with fenced lease/retry semantics as designed
+  Worker-&gt;&gt;App: Normalize / correlate / detect
+  Worker-&gt;&gt;DB: Persist results, audit, and state transitions per approved boundaries
+  U-&gt;&gt;API: Optional MELIRA request
+  API-&gt;&gt;Auth: Re-check tenant and tool permissions
+  API-&gt;&gt;AI: Minimized context + classification + policy
+  AI-&gt;&gt;AI: Deny or sanitize; never treat event text as instruction
+  opt Enabled, policy allows, provider selected
+    AI-&gt;&gt;SaaS: Request to selected provider only
+    SaaS--&gt;&gt;AI: Provider response
+    AI--&gt;&gt;API: Response with source/evidence references
+  end
+  API--&gt;&gt;U: Result, blocked status, or provider error
+</pre>
+<h2>Data ingestion and processing flow</h2>
+<pre class="mermaid">flowchart TD
+  SRC[&quot;Agent / integration&quot;] --&gt; AUTH[&quot;Authenticate source; resolve tenant and source identity&quot;]
+  AUTH --&gt; LIMIT[&quot;Validate schema, size, rate and tenant technical quota&quot;]
+  LIMIT --&gt; ASSET[&quot;Resolve namespaced identity claims and source binding&quot;]
+  ASSET --&gt;|unique authoritative match| DEDUPE[&quot;Attach source to existing tenant asset&quot;]
+  ASSET --&gt;|trusted new identity| QUOTA{&quot;Lock tenant quota; recheck aliases&quot;}
+  ASSET --&gt;|ambiguous, weak-only, or conflict| PENDING[&quot;Pending identity review; no normal analysis&quot;]
+  QUOTA --&gt;|quota available| CREATE[&quot;Create one canonical asset + source + history&quot;]
+  QUOTA --&gt;|quota full| REJECT[&quot;Reject/quarantine registration; record reason&quot;]
+  DEDUPE --&gt; EVENT[&quot;Write idempotency receipt, event and outbox atomically&quot;]
+  CREATE --&gt; EVENT
+  EVENT --&gt; WORK[&quot;Bounded worker&quot;]
+  WORK --&gt; PARSE[&quot;Parse and validate&quot;]
+  PARSE --&gt; NORMAL[&quot;Normalize / enrich&quot;]
+  NORMAL --&gt; CORR[&quot;Correlate and detect&quot;]
+  CORR --&gt; ALERT[&quot;Persist alert / case updates&quot;]
+  ALERT --&gt; REPORT[&quot;Tenant-scoped API and reporting&quot;]
+  REJECT --&gt; AUDIT[&quot;Audit and usage record&quot;]
+  PENDING --&gt; REVIEW[&quot;Authorized merge / split / bind review&quot;]
+  REVIEW --&gt;|resolved; quota checked atomically| EVENT
+  EVENT --&gt; AUDIT
+</pre>
+<p>Identity resolution is deliberately a separate, explicit stage. Source-local identifiers are namespaced; exact, unique authoritative identifiers may be matched deterministically. Stable source-device bindings and versioned fingerprint aliases must be distinguished (fingerprints/aliases are not permanent binding identity), and overlap/rotation/collision/migration must not create duplicate assets, bindings, aliases, or licensed usage. IP addresses and hostnames are observations and weak correlation attributes only. A source with ambiguous identity is held from normal customer analysis pending authorized review per approved policy; it is not automatically billed as another confirmed device or merged into a candidate. Merge/split operations preserve canonical IDs, binding/alias/event lineage, usage/licensing history, and audit records under atomic, idempotent, tenant-isolated transactions (proposed). The precise confidence classification, quarantine defaults, pending/reservation/accounting policy, and removal grace policy remain proposals requiring owner approval. If two collection sources cannot establish that they refer to the same device, the product must not silently claim reliable deduplication.</p>
+<h2>Deployment architecture</h2>
+<pre class="mermaid">flowchart TB
+  INTERNET[&quot;Internet / customer networks&quot;] --&gt; WAF[&quot;Managed edge: TLS, rate limits, request limits&quot;]
+  WAF --&gt; WEB[&quot;Dashboard static assets&quot;]
+  WAF --&gt; API[&quot;Python API replicas&quot;]
+  WAF --&gt; ING[&quot;Ingestion endpoint replicas&quot;]
+  API --&gt; DB[(&quot;Managed PostgreSQL&lt;br/&gt;private network, encrypted backups&quot;)]
+  ING --&gt; DB
+  WORK[&quot;Python workers&lt;br/&gt;bounded concurrency&quot;] --&gt; DB
+  API --&gt; SM[&quot;Secret manager / KMS&quot;]
+  WORK --&gt; SM
+  AI[&quot;MELIRA adapter in API boundary&quot;] --&gt;|outbound HTTPS only| PROVIDER[&quot;Configured external AI SaaS&quot;]
+  API --&gt; MON[&quot;Central logs / metrics / traces&quot;]
+  ING --&gt; MON
+  WORK --&gt; MON
+  DB --&gt; BACKUP[&quot;Encrypted backup + restore verification&quot;]
+  subgraph Trust[&quot;Private application network&quot;]
+    API
+    ING
+    WORK
+    DB
+    SM
+  end
+</pre>
+<p>Initial development and small deployments may use a single-host container composition, with PostgreSQL isolated and backed up. A production SaaS deployment should use managed PostgreSQL, private networking, controlled egress, external secret management, and independently scalable API/worker processes. These are deployment targets, not current services. Kubernetes is deferred until a concrete availability/scale requirement outweighs its operational cost.</p>
+<h2>MELIRA provider integration architecture</h2>
+<pre class="mermaid">flowchart LR
+  USER[&quot;Authorized analyst&quot;] --&gt; API[&quot;CARES API&quot;]
+  API --&gt; AUTH[&quot;Tenant-scoped authorization + tool allow-list&quot;]
+  AUTH --&gt; CONTEXT[&quot;Fetch only allowed evidence&quot;]
+  CONTEXT --&gt; GATE[&quot;Consent + privacy policy gate&quot;]
+  GATE --&gt; CLASS[&quot;Classify, minimize, redact&quot;]
+  CLASS --&gt; CHOICE{&quot;Explicitly configured provider / region&quot;}
+  CHOICE --&gt;|none / disabled| STOP[&quot;Return unavailable; no transmission&quot;]
+  CHOICE --&gt;|selected| TERMS[&quot;Check provider region, retention, training terms&quot;]
+  TERMS --&gt; BUDGET[&quot;Preflight tenant request/token/spend budget&quot;]
+  TERMS --&gt;|unknown or denied| DENY[&quot;No provider request; audit policy decision&quot;]
+  BUDGET --&gt;|exhausted| DENY
+  BUDGET --&gt;|allowed| ENDPOINT[&quot;Validate HTTPS destination + egress policy&quot;]
+  ENDPOINT --&gt; ADAPTER[&quot;Provider-specific adapter&quot;]
+  VAULT[&quot;Secret manager / encrypted secret store&quot;] --&gt; ADAPTER
+  ADAPTER --&gt;|TLS, fixed/validated endpoint| SaaS[&quot;Selected external SaaS&quot;]
+  SaaS --&gt; ADAPTER
+  ADAPTER --&gt; OUTPUT[&quot;Validate response; cite CARES evidence IDs&quot;]
+  OUTPUT --&gt; API
+  DENY --&gt; API
+  STOP --&gt; API
+  DENY -. no prompt content in audit .-&gt; AUDIT[&quot;Protected request audit&quot;]
+  OUTPUT -. outcome and usage metadata .-&gt; AUDIT
+</pre>
+<p>The provider adapter must not own tenant authorization or decide which records are visible. The customer explicitly selects one enabled provider/model/region for each request; an absent selection, disabled provider, policy denial, provider error, or exhausted budget returns a clear unavailable/blocked/error result. There is no implicit provider or model failover, and no local inference/GPU path.</p>
+<p>Before any provider call, CARES authorizes the user and tool independently of the model, fetches only tenant-authorized evidence, classifies it, obtains the required customer consent/policy, minimizes and sanitizes data, checks residency/retention/training terms and the tenant usage budget, and records an audit event. Credentials are referenced from a secret manager, are never returned to the UI or logged, and have explicit rotation/revocation. Provider endpoints are allow-listed HTTPS destinations; custom endpoints are disabled unless platform policy validates their hostname, resolved IPs, redirects, and egress route to prevent SSRF and DNS rebinding. Provider responses and tool requests are untrusted; every tool action is independently authorized, with human approval for high-impact actions.</p>
+<p>The initially supported vendor list, consent granularity, permitted data-classification matrix, residency regions, provider retention/training requirements, credential ownership model, and spend ceilings are unresolved decisions. See <a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a> and ADR 0004.</p>
+<h2>CARES Agent communication architecture</h2>
+<pre class="mermaid">sequenceDiagram
+  autonumber
+  participant Admin as Authorized installer workflow
+  participant API as Enrollment service
+  participant CA as CARES certificate authority / issuer
+  participant Agent as CARES Agent
+  participant Ingest as Ingestion API
+  participant DB as PostgreSQL
+
+  Admin-&gt;&gt;API: Request short-lived, single-use enrollment token
+  API-&gt;&gt;DB: Verify tenant quota and record issuance
+  API--&gt;&gt;Admin: Installer/configuration without reusable tenant secret
+  Agent-&gt;&gt;API: Present token over TLS
+  API-&gt;&gt;DB: Atomically consume token; register agent source and device
+  API-&gt;&gt;CA: Issue unique device certificate (proposed)
+  CA--&gt;&gt;Agent: Certificate + trust material
+  Agent-&gt;&gt;Ingest: TLS/mTLS heartbeat and sequenced event batch
+  Ingest-&gt;&gt;DB: Validate identity, tenant binding, limits; persist + outbox
+  Ingest--&gt;&gt;Agent: Acknowledged sequence range
+  Note over Agent: Buffer bounded events offline; retry with backoff and deduplication key
+  Agent-&gt;&gt;Ingest: Resume from acknowledged sequence after reconnect
+</pre>
+<p>Agent commands, removal, and updates need signed, expiring, replay-resistant envelopes and explicit authorization. This sequence is a target protocol only; no agent, enrollment endpoint, certificate authority, or command channel exists in the repository.</p>
+<h2>Evolution and decision gates</h2>
+<p>Keep module boundaries explicit: identity/access, tenant administration, asset/licensing, ingestion, event processing, detection, case management, integrations, reporting, and AI. A worker is a process boundary, not a separately operated microservice by default.</p>
+<p>Evaluate partitioning, an event broker, dedicated search/analytics stores, and service extraction only after measured workload and service objectives show PostgreSQL and the modular worker design are insufficient. Any change must preserve tenant scope, auditability, asset licensing semantics, and AI optionality.</p>
+
+</article>
+</div>
+<script src="../assets/mermaid.min.js"></script>
+<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,securityLevel:'loose'});}</script>
+</body>
+</html>

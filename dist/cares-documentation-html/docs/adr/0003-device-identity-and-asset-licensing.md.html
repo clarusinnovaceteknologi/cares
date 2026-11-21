@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADR 0003: Reconcile device identity independently from data sources</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/adr/0003-device-identity-and-asset-licensing.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T16:32:02Z</div>
+<article class="markdown-body">
+<h1>ADR 0003: Reconcile device identity independently from data sources</h1>
+<ul>
+<li><strong>Status:</strong> Mandatory one-device-one-asset requirement; detailed approach proposed, owner decisions pending</li>
+<li><strong>Date:</strong> 2026-11-16</li>
+</ul>
+<h2>Problem</h2>
+<p>CARES receives data from agents and integrations that may describe the same physical or logical device. Counting a source as an asset overcharges customers; merging distinct devices on weak evidence loses security attribution. IP addresses and hostnames change, are shared, and can be spoofed. The current prototype only deduplicates exactly repeated caller-provided identity strings in process memory.</p>
+<h2>Confirmed requirements</h2>
+<ul>
+<li>Each unique monitored device is exactly one licensed asset, independent of device type and number of collection sources.</li>
+<li>A device is distinct from its agent/integration data sources.</li>
+<li>IP address is not the sole asset identity.</li>
+<li>Registration, reconciliation, lifecycle and removal history must be traceable.</li>
+</ul>
+<h2>Alternatives considered</h2>
+<ol>
+<li><strong>Count every source independently.</strong> Simple but violates licensing semantics.</li>
+<li><strong>Use hostname or IP as a global key.</strong> Simple but unstable, shared, and unsafe to merge on.</li>
+<li><strong>Use a single vendor ID as global key.</strong> Works only within that vendor's namespace; collisions and account/region scoping remain.</li>
+<li><strong>Create a canonical CARES identity with namespaced claims, deterministic strong-match rules, and human review for ambiguity.</strong> More data-model and operational work, but preserves provenance and avoids false merges.</li>
+<li><strong>Probabilistic auto-merge based on weighted attributes.</strong> May reduce manual work but creates hard-to-audit, potentially irreversible false merges; rejected for automatic production licensing.</li>
+</ol>
+<h2>Proposed decision</h2>
+<p>Represent a device by an immutable, tenant-scoped CARES UUID. Store source-specific identity claims separately, namespaced by source/vendor/account/region/connector instance and linked to provenance, confidence class, observed time, normalization version, and validity. Keep protected original values only where necessary and use a protected equality fingerprint for indexed exact-match lookup.</p>
+<p>Automatically attach a source-device record only when its authenticated <code>(connector_instance_id, source_device_key)</code> binding or unique authoritative, namespaced identity claim resolves to exactly one asset. A connector instance may report many devices; one source-device key maps to one canonical asset, and one canonical asset may receive data through many source-device records. Treat hostname, IP, MAC, serial, approximate similarities, and conflicting claims as candidate evidence, not automatic merge authority. A weak-only or ambiguous source becomes pending identity resolution and is held outside normal customer analysis pending authorized resolution. The proposed default reserves one quota slot per pending identity case without incrementing billable monitored assets; resolving the case to an existing asset releases the reservation, and confirming a new device converts it atomically to one active asset. A bounded metadata-only quarantine avoids retaining/analyzing full event payloads while identity is unresolved.</p>
+<p>Manual merge requires an authorized actor, explicit survivor, reason/evidence, deterministic row locking, alias/source transfer under uniqueness constraints, lifecycle/audit history, and atomic licensing update. Manual split creates a new canonical UUID, records lineage, preserves original event attribution, and checks quota atomically before commit. Neither operation deletes/reuses canonical IDs.</p>
+<p>The deterministic rules and proposed pending/removal lifecycle are specified in <a href="../DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>.</p>
+<h2>Trade-offs</h2>
+<ul>
+<li><strong>Benefits:</strong> enforces one device rather than one source; supports heterogeneous connectors; keeps uncertainty explicit; auditable and reversible through lineage.</li>
+<li><strong>Costs:</strong> requires identity namespace curation, protected identifier storage/fingerprinting, conflict workflows, and user/operator review.</li>
+<li><strong>False positives:</strong> conservative auto-matching can leave one physical device pending or temporarily reserve quota; multiple unresolved sources may temporarily reserve more than one slot until reviewed. This is preferable to silently merging separate devices or treating unresolved data as monitored analysis.</li>
+<li><strong>Privacy:</strong> hardware and provider IDs can be sensitive; minimize and retain only as needed. Fingerprint key lifecycle and customer deletion semantics require design.</li>
+<li><strong>Operations:</strong> manual merge/split, conflict queue age, reconciliation reports, and identity-rule versioning need ownership and monitoring.</li>
+</ul>
+<h2>Implementation requirements</h2>
+<ul>
+<li>Model canonical assets, tenant-scoped source-device bindings, alias claims, identity-resolution cases, lifecycle history, and merge/split lineage in PostgreSQL.</li>
+<li>Enforce tenant-scoped uniqueness on exclusive alias fingerprints and on <code>(connector_instance_id, source_device_key)</code> binding to one active canonical asset. Do not make <code>connector_instance_id</code> unique to an asset; a connector can report many devices.</li>
+<li>Version deterministic identity normalization and matching rules; record the rule and confidence class for every match.</li>
+<li>Never infer identity from IP/hostname alone; preserve and expose provenance to authorized reviewers.</li>
+<li>Design alias fingerprint key rotation before production schema rollout.</li>
+<li>Define quarantine expiry, quota reservation, and release behavior with product/privacy/legal owners.</li>
+</ul>
+<h2>Verification requirements</h2>
+<ul>
+<li>Test one connector reporting multiple devices, one device reported by multiple connectors, and the same local ID in different connector namespaces; only authoritative mapped identifiers may converge on one asset.</li>
+<li>Test two separate devices with identical hostname/IP and conflicting namespace values; they must not auto-merge.</li>
+<li>Test duplicate, recycled, malformed, missing, and conflicting IDs; ambiguity must be explicit and auditable.</li>
+<li>Test unauthorized merge/split, cross-tenant references, duplicate source-device binding, merge rollback, and split-at-quota.</li>
+<li>Verify event history and canonical IDs remain traceable after merge/split.</li>
+</ul>
+<h2>Unresolved owner decisions</h2>
+<ul>
+<li>Which identifiers and source namespaces qualify as authoritative for each supported connector/OS.</li>
+<li>Which roles may perform merge/split, and whether a second-person approval is required.</li>
+<li>Pending identity quarantine duration, one-reservation-per-case behavior, and whether unresolved sources must be rejected when reservation capacity is unavailable.</li>
+<li>Acceptable retention and cryptographic fingerprint/key-rotation model for source identifiers.</li>
+<li>Lifecycle behavior and commercial billing during deactivation grace.</li>
+</ul>
+<h2>Revisit when</h2>
+<p>New supported device families expose identity semantics that invalidate a rule. Any rule change requires compatibility migration, identity-conflict review, test evidence, and an updated ADR; one-device-one-asset semantics remain unchanged.</p>
+
+</article>
+</div>
+
+</body>
+</html>
