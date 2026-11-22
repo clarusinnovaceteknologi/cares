@@ -50,6 +50,13 @@ Expected baseline: audit/postgresql-round1-1-publication @ c433fe897d1922c9e154a
 ## 8. Explicit confirmation
 No technical schema design or implementation was changed. Changes were limited to publication/evidence record corrections and corresponding HTML/index/manifest/ZIP regeneration for consistency. No DDL, migrations, ORM/DB objects, application code, or database provisioning/modification occurred. No Round 3 started.
 
-## 9. Final synchronization verification (post-correction)
-- Corrective commit SHA(s), final local HEAD, final remote HEAD, post-push `git ls-remote --heads origin design/postgresql-round2-physical-schema` result, and explicit local/remote match confirmation are recorded in the final execution report and publication audit concluding section after independent post-push verification.
-- Final status: **PUBLICATION VERIFIED — ROUND 2 DOCUMENTATION COMPLETE** (contingent on successful post-correction push and `git ls-remote` confirmation of the exact final SHA).
+## 9. Final synchronization verification (confirmed)
+- **Original Round 2 artifact commit (separately recorded):** `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8`
+- **Publication-reconciliation/corrective commits (separately recorded):** `0d27e1892e1ee3498d3fbbdad9d18fb388e612f9`, `f7fb334fc2419f5b7c1570969523445aa8ec2d1c`, `1c21c0d5820ee087045b43f3d66b9725ab67731f`, `91d275b59bfb4e60328ae7fd34b81142c770da7a` ("docs: correct publication records and synchronize exports")
+- **Final corrective commit SHA (verified):** `91d275b59bfb4e60328ae7fd34b81142c770da7a`
+- **Final local HEAD (verified at post-push check):** `91d275b59bfb4e60328ae7fd34b81142c770da7a`
+- **Final remote HEAD (post-push `git ls-remote` verified):** `91d275b59bfb4e60328ae7fd34b81142c770da7a`
+- **Post-push `git ls-remote --heads origin design/postgresql-round2-physical-schema` result:** `91d275b59bfb4e60328ae7fd34b81142c770da7a	refs/heads/design/postgresql-round2-physical-schema`
+- **Explicit confirmation — local and remote HEAD match:** **Yes** (independently verified).
+- This final evidence-recording commit publishes these verified details; its exact final SHA is confirmed by post-push `git ls-remote` in the final execution report.
+- Final status: **PUBLICATION VERIFIED — ROUND 2 DOCUMENTATION COMPLETE**

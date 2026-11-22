@@ -152,7 +152,15 @@ The 9 technical Round 2 Markdown deliverables' hashes are unchanged; no technica
   - `1c21c0d5820ee087045b43f3d66b9725ab67731f	refs/heads/design/postgresql-round2-physical-schema`
 - **Explicit confirmation — local and remote HEAD match (pre-correction):** **Yes** (independently verified).
 
-### 10.3 Final corrective closure publication
-- This corrective closure commit synchronizes publication records/exports with the verified final state (correcting remaining inconsistencies in `copilot.txt` and this audit, regenerating HTML/index/manifest/ZIP as required). It is committed and pushed normally to `design/postgresql-round2-physical-schema` and independently verified by post-push `git ls-remote`.
-- **Final corrective commit SHA / final local HEAD / final remote HEAD / post-push `git ls-remote` result / explicit local-remote match:** recorded in `copilot.txt` and in the final execution report after post-push verification (exact SHA confirmed by `git ls-remote`).
+### 10.3 Final corrective closure publication (confirmed)
+- Corrective closure commit: `91d275b59bfb4e60328ae7fd34b81142c770da7a` — "docs: correct publication records and synchronize exports" (committed and pushed normally to `design/postgresql-round2-physical-schema`).
+- **Final corrective commit SHA:** `91d275b59bfb4e60328ae7fd34b81142c770da7a`
+- **Final local HEAD (verified at post-push check):** `91d275b59bfb4e60328ae7fd34b81142c770da7a`
+- **Final remote HEAD (post-push verified):** `91d275b59bfb4e60328ae7fd34b81142c770da7a`
+- **Post-push `git ls-remote --heads origin design/postgresql-round2-physical-schema` result:**
+  - `91d275b59bfb4e60328ae7fd34b81142c770da7a	refs/heads/design/postgresql-round2-physical-schema`
+- **Explicit confirmation — local and remote HEAD match:** **Yes** (independently verified by post-push `git ls-remote`).
 - No force-push, reset, rebase, or history rewriting performed.
+
+### 10.4 Final evidence-recording publication
+- This evidence-recording commit publishes the above verified corrective-commit SHA and ls-remote evidence in `copilot.txt` and this audit, with regenerated HTML/index/manifest/ZIP. Its exact final SHA is confirmed by post-push `git ls-remote` in the final execution report.

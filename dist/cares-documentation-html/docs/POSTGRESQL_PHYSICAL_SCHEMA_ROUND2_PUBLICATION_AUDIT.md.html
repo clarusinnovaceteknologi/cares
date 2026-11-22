@@ -107,7 +107,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T11:24:26Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T11:25:10Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Physical Schema Round 2 — Publication Reconciliation &amp; Final Evidence Audit</h1>
 <p><strong>Audit type:</strong> Administrative publication reconciliation and evidence audit only (no technical schema/design/implementation changes).
@@ -392,11 +392,23 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </li>
 <li><strong>Explicit confirmation — local and remote HEAD match (pre-correction):</strong> <strong>Yes</strong> (independently verified).</li>
 </ul>
-<h3>10.3 Final corrective closure publication</h3>
+<h3>10.3 Final corrective closure publication (confirmed)</h3>
 <ul>
-<li>This corrective closure commit synchronizes publication records/exports with the verified final state (correcting remaining inconsistencies in <code>copilot.txt</code> and this audit, regenerating HTML/index/manifest/ZIP as required). It is committed and pushed normally to <code>design/postgresql-round2-physical-schema</code> and independently verified by post-push <code>git ls-remote</code>.</li>
-<li><strong>Final corrective commit SHA / final local HEAD / final remote HEAD / post-push <code>git ls-remote</code> result / explicit local-remote match:</strong> recorded in <code>copilot.txt</code> and in the final execution report after post-push verification (exact SHA confirmed by <code>git ls-remote</code>).</li>
+<li>Corrective closure commit: <code>91d275b59bfb4e60328ae7fd34b81142c770da7a</code> — &quot;docs: correct publication records and synchronize exports&quot; (committed and pushed normally to <code>design/postgresql-round2-physical-schema</code>).</li>
+<li><strong>Final corrective commit SHA:</strong> <code>91d275b59bfb4e60328ae7fd34b81142c770da7a</code></li>
+<li><strong>Final local HEAD (verified at post-push check):</strong> <code>91d275b59bfb4e60328ae7fd34b81142c770da7a</code></li>
+<li><strong>Final remote HEAD (post-push verified):</strong> <code>91d275b59bfb4e60328ae7fd34b81142c770da7a</code></li>
+<li><strong>Post-push <code>git ls-remote --heads origin design/postgresql-round2-physical-schema</code> result:</strong>
+<ul>
+<li><code>91d275b59bfb4e60328ae7fd34b81142c770da7a	refs/heads/design/postgresql-round2-physical-schema</code></li>
+</ul>
+</li>
+<li><strong>Explicit confirmation — local and remote HEAD match:</strong> <strong>Yes</strong> (independently verified by post-push <code>git ls-remote</code>).</li>
 <li>No force-push, reset, rebase, or history rewriting performed.</li>
+</ul>
+<h3>10.4 Final evidence-recording publication</h3>
+<ul>
+<li>This evidence-recording commit publishes the above verified corrective-commit SHA and ls-remote evidence in <code>copilot.txt</code> and this audit, with regenerated HTML/index/manifest/ZIP. Its exact final SHA is confirmed by post-push <code>git ls-remote</code> in the final execution report.</li>
 </ul>
 
 </article>
