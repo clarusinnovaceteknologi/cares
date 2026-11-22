@@ -2,7 +2,7 @@
 
 ## PostgreSQL Round 3.1 — Owner Decision & Authorization Gate (documentation/governance only)
 
-**Execution timestamp (UTC):** 2026-04-22T13:25:00Z (session execution window)  
+**Execution/publication evidence date (UTC):** 2026-11-22 (exact execution start time unavailable). Verified Git commit timestamps: governance/export commit `251efe598e393afc5a8bd967856185ffaf299439` `2026-11-22T13:31:58Z`; final verification/report commit `4621fef193f1d548fdc0344c97b1947a876a4d8f` `2026-11-22T13:32:34Z` (final read-only verification).
 **Task:** Execute CARES — PostgreSQL Round 3.1: Owner Decision & Authorization Gate.  
 **Scope:** Governance/documentation only. No PostgreSQL DDL, migrations, ORM models, application code, database provisioning/modification, roles/policies/triggers/functions, or runtime implementation performed. No Round 4 work. No owner decision or implementation authorization was made, fabricated, or recorded.
 
@@ -65,11 +65,12 @@ Created in `docs/` on `governance/postgresql-round3-owner-decision-gate` (worktr
 
 ### 7) Publication (target branch only)
 - **Initial local commit (pre-amend):** `ce1194dfa7b044ba1a56a466766101a6e022d923`
-- **Published governance/export commit:** `251efe598e393afc5a8bd967856185ffaf299439`
+- **Published governance/export commit:** `251efe598e393afc5a8bd967856185ffaf299439` (committer date `2026-11-22T13:31:58Z`)
 - **Push target:** `origin/governance/postgresql-round3-owner-decision-gate` (normal push only; no force-push)
-- **Remote HEAD (`git ls-remote`) after push:** `251efe598e393afc5a8bd967856185ffaf299439` `refs/heads/governance/postgresql-round3-owner-decision-gate`
+- **Remote HEAD (`git ls-remote`) after push of governance/export commit:** `251efe598e393afc5a8bd967856185ffaf299439` `refs/heads/governance/postgresql-round3-owner-decision-gate`
 - **Local/remote match (published governance/export commit):** Yes
-- **Final verification/report commit:** recorded as the final remote HEAD after this evidence update is pushed and verified (see final response evidence).
+- **Final verification/report commit (separate, later commit):** `4621fef193f1d548fdc0344c97b1947a876a4d8f` (committer date `2026-11-22T13:32:34Z`)
+- **Verified local and remote HEAD at time of final read-only verification:** `4621fef193f1d548fdc0344c97b1947a876a4d8f` (`git ls-remote --heads origin governance/postgresql-round3-owner-decision-gate` returned the same SHA; local/remote match: Yes). This SHA is distinct from the governance/export commit `251efe598e393afc5a8bd967856185ffaf299439`.
 
 ### 8) Final confirmations and blockers
 - Confirmed: all eight Round 3.1 documents created; OD-001–OD-013 and PD-001–PD-012 checked and preserved; I-00–I-14 baseline classifications preserved; ADR 0006 remains Proposed.
