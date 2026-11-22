@@ -1,8 +1,8 @@
 {
-  "export_timestamp_utc": "2026-11-21T16:32:02Z",
-  "repository_revision": "888905d8aef8bf6eb2e874cf9804a239f0f6f51a",
-  "source_markdown_files_discovered": 32,
-  "html_files_successfully_generated": 32,
+  "export_timestamp_utc": "2026-11-21T18:04:38Z",
+  "repository_revision": "c433fe897d1922c9e154a19b5646c99c3ec6d73d",
+  "source_markdown_files_discovered": 41,
+  "html_files_successfully_generated": 41,
   "failed_conversions": [],
   "excluded_files_and_reasons": [],
   "missing_referenced_assets": [],
@@ -70,6 +70,16 @@
       "status": "converted"
     },
     {
+      "source": "docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md",
+      "output": "docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_INDEX_STRATEGY.md",
+      "output": "docs/POSTGRESQL_INDEX_STRATEGY.md.html",
+      "status": "converted"
+    },
+    {
       "source": "docs/POSTGRESQL_LOGICAL_DATA_MODEL.md",
       "output": "docs/POSTGRESQL_LOGICAL_DATA_MODEL.md.html",
       "status": "converted"
@@ -92,6 +102,41 @@
     {
       "source": "docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md",
       "output": "docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_ERD.md",
+      "output": "docs/POSTGRESQL_PHYSICAL_ERD.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md",
+      "output": "docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md",
+      "output": "docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md",
+      "output": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md",
+      "output": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md",
+      "output": "docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md",
+      "output": "docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html",
       "status": "converted"
     },
     {
@@ -170,5 +215,8 @@
       "status": "converted"
     }
   ],
-  "copied_assets": []
+  "copied_assets": [
+    "copilot.txt",
+    "dist/CARES_DOCUMENTATION_HTML.zip"
+  ]
 }

@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Data Lifecycle and Retention Design (Round 2)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T18:04:38Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Data Lifecycle and Retention Design (Round 2)</h1>
+<p><strong>Status:</strong> Proposed design documentation only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This document evaluates partitioning, retention, archival, deletion, backup/recovery, and maintenance considerations for the proposed physical schema. No production capacity/performance claims are made. Confirmed requirements are separated from assumptions/proposed strategies.</p>
+<h2>1. Confirmed requirements vs assumptions</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Classification</th>
+<th>Basis / notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PostgreSQL is primary system of record; modular monolith</td>
+<td>Confirmed architectural constraint</td>
+<td>Project architecture/ADRs.</td>
+</tr>
+<tr>
+<td>Tenant isolation, auditable history, and evidence integrity required</td>
+<td>Confirmed requirement intent</td>
+<td>Security/data architecture and Round 1 design.</td>
+</tr>
+<tr>
+<td>Original forensic evidence must not be silently rewritten or deleted; legal hold prevents unauthorized disposal</td>
+<td>Confirmed design intent</td>
+<td>Security architecture/evidence model.</td>
+</tr>
+<tr>
+<td>Canonical asset IDs never reused; terminal/tombstoned history preserved</td>
+<td>Confirmed design intent</td>
+<td>Identity/licensing invariants, Round 1.1.</td>
+</tr>
+<tr>
+<td>No exactly-once external delivery; unknown outcomes retained/reconciled</td>
+<td>Confirmed design intent</td>
+<td>Outbox/transaction semantics.</td>
+</tr>
+<tr>
+<td>Specific retention durations, legal-hold workflows, purge SLAs, storage tiers, and RPO/RTO targets</td>
+<td><strong>Assumption / open</strong></td>
+<td>Require owner/legal/operational/security approval and workload validation (OD-010, OD-012).</td>
+</tr>
+<tr>
+<td>Growth rates, partition thresholds, and maintenance windows</td>
+<td><strong>Assumption / open</strong></td>
+<td>Not measured; workload validation required.</td>
+</tr>
+</tbody>
+</table>
+<h2>2. Partitioning evaluation</h2>
+<table>
+<thead>
+<tr>
+<th>Candidate table/group</th>
+<th>Characteristics</th>
+<th>Partitioning recommendation (proposed)</th>
+<th>Rationale</th>
+<th>Trade-offs / prerequisites</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ingest.event_receipt</code></td>
+<td>High-volume, append-heavy, time-based access, dedup uniqueness critical</td>
+<td><strong>Candidate for RANGE partitioning by <code>received_at</code> (or event time) in future</strong>; defer initial physical partitioning until volume/query patterns validated</td>
+<td>Improves manageability, retention purge/archival by partition, and index locality for large histories</td>
+<td>Requires careful uniqueness/index strategy across partitions (PostgreSQL partitioned unique constraints must include partition key), claim/query patterns, and migration planning.</td>
+</tr>
+<tr>
+<td><code>ingest.security_event</code></td>
+<td>High-volume, time-based queries, correlated to receipts</td>
+<td><strong>Candidate for RANGE partitioning by <code>event_time</code>/<code>ingested_at</code></strong>; defer</td>
+<td>Supports time-window SOC/investigation queries and retention management</td>
+<td>Same global/partitioned uniqueness and FK considerations; join patterns with receipts must be validated.</td>
+</tr>
+<tr>
+<td><code>audit_evidence.audit_event</code></td>
+<td>Append-oriented, compliance/investigation retention, time-based access</td>
+<td><strong>Candidate for RANGE partitioning by <code>occurred_at</code></strong>; defer</td>
+<td>Large audit histories benefit from partition maintenance/retention operations</td>
+<td>Must preserve immutability/integrity and efficient tenant/time/entity lookups; legal hold/retention rules may prevent simple drops.</td>
+</tr>
+<tr>
+<td><code>audit_evidence.forensic_evidence_record</code> / custody / versions / authorizations</td>
+<td>Lower volume but strict legal-hold/integrity controls</td>
+<td><strong>Generally not partitioned initially</strong> (Proposed)</td>
+<td>Complexity outweighs benefit; access is case/evidence-centric</td>
+<td>Consider only with proven scale; partitioning must not complicate legal hold.</td>
+</tr>
+<tr>
+<td><code>processing.outbox_message</code> / <code>outbox_attempt</code></td>
+<td>Queue/state churn, retry/cleanup, time-based terminal cleanup</td>
+<td><strong>Optional partitioning or table hygiene strategy later</strong>; defer</td>
+<td>Terminal-state cleanup and bloat control are primary concerns</td>
+<td>Claim/lease queries and uniqueness (dedupe keys, attempt numbers) must remain efficient; partitioning can complicate queue scans.</td>
+</tr>
+<tr>
+<td><code>soc.asset_inventory_observation</code></td>
+<td>Potentially high-volume time-series snapshots</td>
+<td><strong>Candidate for time-based partitioning</strong>; defer</td>
+<td>Observation history can grow quickly</td>
+<td>Uniqueness/dedupe semantics and query patterns must be defined.</td>
+</tr>
+<tr>
+<td>Core identity/licensing tables (<code>core.asset</code>, binding, ledger, usage state)</td>
+<td>Correctness-critical, moderate volume, key-based access</td>
+<td><strong>Not partitioned initially</strong> (Proposed)</td>
+<td>Strong transactional integrity and contention-sensitive updates favor simpler structures</td>
+<td>Revisit only with evidence; tenant-based partitioning would require major key/FK design validation.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Partitioning guardrails (proposed):</strong> do not partition without measured need; ensure partition keys are included in required unique constraints/indexes; restrict direct child-table access; test query plans, maintenance operations, and RLS behavior on partitioned tables before adoption.</p>
+<h2>3. Retention, archival, and deletion classes</h2>
+<table>
+<thead>
+<tr>
+<th>Data class</th>
+<th>Proposed retention posture</th>
+<th>Legal hold / deletion constraints</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Canonical identity/licensing records (<code>core.asset</code>, <code>asset_data_source</code>, lineage, ledger, license events, tombstones)</td>
+<td>Long-lived/historical retention by default (Proposed)</td>
+<td>No reuse of canonical IDs; deletion restricted; reconcile before purge</td>
+<td>Licensing/audit correctness and traceability depend on history.</td>
+</tr>
+<tr>
+<td>Ingestion receipts and normalized security events</td>
+<td>Time-bounded retention with archival strategy (Proposed/open)</td>
+<td>Subject to investigation/legal/compliance holds</td>
+<td>Partition/archival helpful at scale; dedup correctness windows must be considered.</td>
+</tr>
+<tr>
+<td>Audit events and AI interaction audit</td>
+<td>Long retention (compliance-driven, duration open)</td>
+<td>Immutable intent; legal hold/policy governs purge</td>
+<td>Integrity protections required.</td>
+</tr>
+<tr>
+<td>Forensic evidence metadata/object versions/custody/authorizations</td>
+<td>Retain per legal/investigation policy; objects and metadata aligned</td>
+<td><strong>Legal hold blocks unauthorized disposal</strong>; original evidence never silently rewritten/deleted</td>
+<td>Controlled transitions only; storage lifecycle coordinated with DB metadata.</td>
+</tr>
+<tr>
+<td>Outbox messages/attempts and processing work items</td>
+<td>Retain terminal records for bounded operational/reconciliation window, then archive/purge per policy (Proposed)</td>
+<td>Keep unknown/unresolved outcomes until reconciled</td>
+<td>Cleanup must not remove evidence needed for delivery ambiguity resolution.</td>
+</tr>
+<tr>
+<td>Support grants/approvals and controlled authorizations</td>
+<td>Long retention for audit</td>
+<td>Immutable decision history preferred</td>
+<td>Compliance-sensitive.</td>
+</tr>
+<tr>
+<td>Tenant configuration and AI consent/policy references</td>
+<td>Versioned historical retention (Proposed)</td>
+<td>Effective-date/audit traceability required</td>
+<td>Supports governance reconstruction.</td>
+</tr>
+<tr>
+<td>SOC operational records (alerts/cases/findings/observations)</td>
+<td>Policy-based retention tiers (Proposed/open)</td>
+<td>Case-linked or legal-hold records restricted from purge</td>
+<td>Volume and investigative value vary.</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Soft delete, lifecycle state, and tombstones</h2>
+<ul>
+<li>Prefer <strong>explicit lifecycle/status transitions</strong> and append-only history records over destructive deletes for correctness- and audit-critical entities.</li>
+<li><code>core.asset_tombstone</code> provides a distinct terminal representation without reusing <code>asset_id</code>; lifecycle events/license events/lineage preserve continuity.</li>
+<li>Evidence records use controlled status transitions and custody/version history; &quot;delete&quot; operations, if ever permitted, require authorization, legal-hold checks, auditable execution, and consistency with external object storage (no silent deletion).</li>
+<li>Soft-delete flags, where used, must be consistently enforced in queries, unique constraints (partial uniques as needed), RLS/application logic, and retention jobs to avoid resurrection or leakage risks.</li>
+</ul>
+<h2>5. Tenant offboarding and historical preservation</h2>
+<ul>
+<li>Offboarding is a controlled, auditable process: disable access, revoke grants/sessions/configurations as applicable, settle/record licensing and data-handling obligations, and apply approved retention/legal-hold/archive actions.</li>
+<li>Cross-tenant isolation remains enforced throughout offboarding/export/archive operations.</li>
+<li>Historical audit/evidence/licensing records required for compliance, dispute, or legal purposes must be preserved per policy; irreversible purge requires explicit authorization and verification that no legal hold applies.</li>
+</ul>
+<h2>6. Backup, restore, and disaster recovery (proposed)</h2>
+<ul>
+<li><strong>Backups/PITR:</strong> regular physical/logical backup strategy and point-in-time recovery capability are required for a system-of-record database (specific RPO/RTO targets <strong>open/assumption</strong>). WAL archiving and restore procedures must be tested in non-production environments.</li>
+<li><strong>Integrity:</strong> backup/restore validation should include schema objects, critical constraints/indexes, and representative tenant-isolation and audit/evidence integrity checks (tests not performed).</li>
+<li><strong>Replication/failover:</strong> read replicas or HA topology may be introduced later based on measured needs; failover behavior must preserve transaction durability semantics and not weaken RLS/role controls.</li>
+<li><strong>Logical exports:</strong> tenant data export/offboarding tooling, if implemented, must be authorized, scoped, auditable, and consistent with privacy/legal requirements.</li>
+</ul>
+<h2>7. PostgreSQL maintenance and operations</h2>
+<ul>
+<li><strong>Autovacuum/VACUUM/ANALYZE:</strong> tune for high-churn tables (receipts, events, outbox, audit, observations) to control bloat and planner statistics; monitor dead tuples, table/index bloat, and long-running transactions.</li>
+<li><strong>Index maintenance:</strong> monitor unused/redundant indexes and bloat; create/drop indexes via controlled migrations with measured benefit.</li>
+<li><strong>Constraint/check overhead:</strong> correctness constraints add write overhead but are required; validate hot-path impact before implementation.</li>
+<li><strong>Partition maintenance (if adopted):</strong> scheduled creation/detachment/archival of partitions under controlled jobs and privileges; ensure no bypass of retention/legal-hold rules.</li>
+<li><strong>Monitoring/alerting (proposed):</strong> replication lag, backup success, WAL/archive health, lock contention, deadlocks, autovacuum lag, connection saturation, and long <code>in_progress</code>/<code>timeout_unknown_commit</code>/<code>unknown</code> outbox states.</li>
+</ul>
+<h2>8. Limitations and open dependencies</h2>
+<ul>
+<li>Retention periods, archival media, legal-hold process details, encryption/key management specifics, and exact RPO/RTO objectives are not defined here and require formal approval (OD-010 and related governance decisions).</li>
+<li>Partitioning and index efficacy are workload-dependent; all recommendations require validation with representative data volumes and query patterns (OD-012).</li>
+<li>No maintenance jobs, backup scripts, partition DDL, or lifecycle automation are implemented in this round.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

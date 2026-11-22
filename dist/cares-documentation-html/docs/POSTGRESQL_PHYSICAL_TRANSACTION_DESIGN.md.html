@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Physical Transaction Design (Round 2)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T18:04:38Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Physical Transaction Design (Round 2)</h1>
+<p><strong>Status:</strong> Proposed design documentation only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This document maps Round 1 logical transaction boundaries to physical PostgreSQL behavior (tables, constraints, indexes, locking/concurrency intent, retries, and recovery). It does not define executable SQL/procedures/triggers or claim correctness under unvalidated workloads.</p>
+<p><strong>Sources:</strong> <a href="POSTGRESQL_TRANSACTION_BOUNDARIES.md.html">POSTGRESQL_TRANSACTION_BOUNDARIES.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a>, <a href="POSTGRESQL_INDEX_STRATEGY.md.html">POSTGRESQL_INDEX_STRATEGY.md</a>, <a href="POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a>, <a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a>.</p>
+<h2>1. Global physical transaction rules</h2>
+<ul>
+<li><strong>Tenant context:</strong> every tenant-scoped transaction requires verified, transaction-bound tenant context; fail closed if missing/invalid (no client-supplied tenant authority, no user-settable GUC authorization).</li>
+<li><strong>Isolation/concurrency (proposed baseline):</strong> use PostgreSQL <code>READ COMMITTED</code> as default with explicit row locking (<code>SELECT ... FOR UPDATE</code>/<code>FOR NO KEY UPDATE</code> as appropriate) on contention points (usage state rows, ledger rows, outbox claims, binding/identity targets). <code>SERIALIZABLE</code> or additional conflict handling may be required for specific high-contention/correctness-critical cases after validation (assumption). Deadlocks handled by bounded retry with jitter and idempotent re-entry.</li>
+<li><strong>Atomicity:</strong> each operation below defines the minimum set of state changes that must commit together in one DB transaction unless explicitly staged by approved design (OD-008 staged coupling is <strong>not</strong> approved).</li>
+<li><strong>Idempotency/no exactly-once external delivery:</strong> identity/licensing operations use <code>core.identity_operation_idempotency_ledger</code> unique scope and deterministic canonical hash/state machine (OD-008 Proposed). Event acceptance uses <code>ingest.event_receipt</code> namespace uniqueness (OD-013). Outbox/external side effects are at-least-once with duplicate-safe handling and explicit unknown-outcome recovery; <strong>no exactly-once external delivery is claimed</strong>.</li>
+<li><strong>Constraints/indexes as correctness guards:</strong> uniqueness/FK/CHECK constraints and supporting indexes are relied upon to detect conflicts atomically; application logic must handle constraint violations as deterministic outcomes (replay, duplicate, conflict, retryable failure).</li>
+</ul>
+<h2>2. Operation mapping</h2>
+<h3>Operation 1 — New canonical asset registration</h3>
+<ul>
+<li><strong>Logical intent:</strong> register a new canonical monitored asset for a tenant and bind it to an authoritative source-device identity without duplicate licensed usage.</li>
+<li><strong>Primary tables:</strong> <code>core.identity_operation_idempotency_ledger</code>, <code>core.asset</code>, <code>core.asset_data_source</code>, optional <code>core.source_device_key</code>, <code>core.source_device_fingerprint_alias</code>, <code>core.asset_identity_claim</code>, <code>core.asset_lifecycle_event</code>, <code>core.tenant_license_usage_state</code>, <code>core.subscription_entitlement</code> (read/validate), <code>core.asset_license_event</code>, optional <code>core.asset_license_reservation</code>, <code>audit_evidence.audit_event</code>.</li>
+<li><strong>Key constraints/indexes:</strong> <code>uq_identity_idempotency_scope</code>; <code>uq_asset_tenant_asset</code>; <code>uq_asset_data_source_source_device_key</code> (tenant, source_device_key_id); tenant-consistent FKs; usage-state checks/non-negative invariants (as approved).</li>
+<li><strong>Transaction boundary:</strong> single DB transaction (proposed default, OD-008): insert/lock ledger row <code>in_progress</code> for scope key with canonical hash check → resolve/validate entitlement and lock <code>tenant_license_usage_state</code> row for update → verify no conflicting existing authoritative binding for same stable identity context → create asset + authoritative binding (+ optional dependent key row) + initial alias/claim/lifecycle/license records as required → update committed/reserved counters per approved semantics → mark ledger <code>committed</code> with outcome reference → write audit records.</li>
+<li><strong>Concurrency/locking:</strong> row lock on ledger scope (via unique insert/conflict handling) and on <code>tenant_license_usage_state</code> for the tenant/scope; uniqueness constraints serialize competing bindings/registrations.</li>
+<li><strong>Failure/retry/recovery:</strong> on duplicate key with same hash/state committed, return replayed outcome; same key different hash =&gt; terminal conflict (no state mutation); retryable DB failures before commit roll back; <code>timeout_unknown_commit</code> requires reconciliation before final outcome. Reservation expiry/compensation follows OD-003 if adopted.</li>
+</ul>
+<h3>Operation 2 — Existing asset attachment from another data source</h3>
+<ul>
+<li><strong>Logical intent:</strong> attach an additional data source/binding evidence to an existing canonical asset (same unique monitored device) without creating duplicate licensed usage.</li>
+<li><strong>Primary tables:</strong> <code>core.identity_operation_idempotency_ledger</code>, <code>core.asset</code> (lock/read), <code>core.asset_data_source</code>, <code>core.source_device_fingerprint_alias</code>, <code>core.asset_identity_claim</code>, <code>core.asset_lifecycle_event</code>, <code>audit_evidence.audit_event</code>.</li>
+<li><strong>Key constraints/indexes:</strong> ledger uniqueness; binding uniqueness preventing conflicting authoritative mappings; tenant-consistent FKs.</li>
+<li><strong>Transaction boundary:</strong> ledger insert/resolve → lock/validate target canonical asset and tenant → ensure resolved identity maps to same canonical asset and no competing binding → insert new <code>asset_data_source</code>/alias/claim/lifecycle records as applicable (no increment of committed licensed asset count for same device) → commit ledger/audit.</li>
+<li><strong>Concurrency/locking:</strong> lock target asset/binding rows as needed; uniqueness guards prevent duplicate/conflicting attachments.</li>
+<li><strong>Failure/retry/recovery:</strong> same as Operation 1; idempotent replay returns existing attachment outcome when committed.</li>
+</ul>
+<h3>Operation 3 — Source-device fingerprint alias creation</h3>
+<ul>
+<li><strong>Logical intent:</strong> add a versioned fingerprint alias resolving to an existing stable authoritative binding identity.</li>
+<li><strong>Primary tables:</strong> <code>core.source_device_fingerprint_alias</code>, <code>core.asset_data_source</code> (authoritative binding), <code>core.asset_identity_claim</code>/<code>core.asset_lifecycle_event</code> (as applicable), <code>audit_evidence.audit_event</code>, optionally ledger if modeled as idempotent identity operation.</li>
+<li><strong>Key constraints/indexes:</strong> lookup/uniqueness index on fingerprint identity scope (partial/active semantics Proposed, OD-006); FK to binding; tenant consistency.</li>
+<li><strong>Transaction boundary:</strong> verify trusted context and binding ownership → validate no ambiguous active alias conflict under approved rules → insert alias version with effective window/status → append provenance/lifecycle/audit records.</li>
+<li><strong>Concurrency/locking:</strong> serialize conflicting alias inserts via uniqueness/locking on relevant scope; rotation overlap handled per approved policy.</li>
+<li><strong>Failure/retry/recovery:</strong> constraint violation indicates duplicate/conflict; retry safe if operation key/idempotency used.</li>
+</ul>
+<h3>Operation 4 — Fingerprint key/algorithm rotation</h3>
+<ul>
+<li><strong>Logical intent:</strong> rotate fingerprint material/algorithm while preserving the same immutable <code>source_device_key_id</code> and authoritative binding.</li>
+<li><strong>Primary tables:</strong> <code>core.source_device_fingerprint_alias</code>, <code>core.asset_data_source</code>, <code>core.asset_lifecycle_event</code>, <code>audit_evidence.audit_event</code>, related claims/cases.</li>
+<li><strong>Key constraints/indexes:</strong> alias version/effective uniqueness and history indexes; binding immutability for <code>source_device_key_id</code>.</li>
+<li><strong>Transaction boundary:</strong> lock authoritative binding row → create/supersede alias versions with controlled overlap/effective timestamps → record lifecycle/audit events in same transaction. <strong>No change</strong> to <code>asset_data_source.source_device_key_id</code>.</li>
+<li><strong>Concurrency/locking:</strong> binding-row lock to prevent concurrent conflicting rotation state.</li>
+<li><strong>Failure/retry/recovery:</strong> rollback on validation/conflict; bounded overlap policy must be explicit (OD-006/007).</li>
+</ul>
+<h3>Operation 5 — Identity conflict and pending resolution</h3>
+<ul>
+<li><strong>Logical intent:</strong> persist conflicting/ambiguous identity observations without creating incorrect canonical bindings or duplicate licensed usage.</li>
+<li><strong>Primary tables:</strong> <code>core.identity_resolution_case</code>, <code>core.asset_identity_claim</code>, <code>core.asset_data_source</code>/<code>core.asset</code> (read), <code>core.asset_lifecycle_event</code>, <code>audit_evidence.audit_event</code>, optionally ledger in <code>failed_terminal</code>/pending outcome form as designed.</li>
+<li><strong>Key constraints/indexes:</strong> FKs, case/claim status checks, tenant consistency.</li>
+<li><strong>Transaction boundary:</strong> create/update resolution case and claim records, mark conflict state, emit audit/lifecycle records; <strong>must not</strong> allocate license or mutate canonical binding except through authorized resolution operation.</li>
+<li><strong>Concurrency/locking:</strong> case-level locking if concurrent updates expected.</li>
+<li><strong>Failure/retry/recovery:</strong> safe to append claims/case updates idempotently if dedup references used; manual/controlled resolution follows separate authorized transaction.</li>
+</ul>
+<h3>Operation 6 — Asset merge</h3>
+<ul>
+<li><strong>Logical intent:</strong> merge duplicate canonical assets under authorization, preserving lineage/history and correctly adjusting licensing usage without ID reuse.</li>
+<li><strong>Primary tables:</strong> <code>core.asset_merge_operation</code>, <code>core.asset</code>, <code>core.asset_lineage_link</code>, <code>core.asset_tombstone</code>, <code>core.asset_lifecycle_event</code>, <code>core.asset_data_source</code>/aliases/claims as reassigned, <code>core.tenant_license_usage_state</code>, <code>core.asset_license_event</code>, <code>core.identity_operation_idempotency_ledger</code> (if operation idempotent), <code>audit_evidence.audit_event</code>, evidence/authorization references as required.</li>
+<li><strong>Key constraints/indexes:</strong> typed lineage mutual exclusivity check; unique tombstone per asset; ledger uniqueness if used; FKs; tenant consistency.</li>
+<li><strong>Transaction boundary (proposed):</strong> authorize and lock participating assets/usage state rows → record merge operation → create typed <code>asset_lineage_link</code> rows (<code>link_type='merge'</code>, <code>merge_operation_id</code>) → reassign or rebind dependent records per approved rules → transition losing asset to terminal/tombstoned state (non-reusable) → apply licensing counter adjustments atomically per OD-003/004/005 → append lifecycle/license/audit records → commit ledger/outcome if used.</li>
+<li><strong>Concurrency/locking:</strong> pessimistic locks on affected assets and tenant usage state; prevent concurrent conflicting merges/splits on same assets.</li>
+<li><strong>Failure/retry/recovery:</strong> full rollback on failure; idempotent replay required if externally retried (operation key). Complex reassignment invariants need validation.</li>
+</ul>
+<h3>Operation 7 — Asset split</h3>
+<ul>
+<li><strong>Logical intent:</strong> split one canonical asset into resulting assets under authorization with typed lineage and licensing/capacity enforcement.</li>
+<li><strong>Primary tables:</strong> <code>core.asset_split_operation</code>, <code>core.asset</code> (source and resulting), <code>core.asset_lineage_link</code>, <code>core.asset_tombstone</code> (if source becomes terminal), <code>core.asset_lifecycle_event</code>, binding/alias/claim reassignment tables, <code>core.tenant_license_usage_state</code>, <code>core.asset_license_event</code>, ledger, <code>audit_evidence.audit_event</code>.</li>
+<li><strong>Key constraints/indexes:</strong> typed lineage checks (<code>link_type='split'</code>, <code>split_operation_id</code>); uniqueness/FKs; capacity/entitlement checks.</li>
+<li><strong>Transaction boundary (proposed):</strong> authorize and lock source asset + usage/entitlement context → validate resulting asset count/capacity and evidence requirements → create split operation and resulting assets/bindings/links → transition source asset per approved model (terminal/replaced or retained per policy, explicitly decided) → apply licensing deltas atomically → append records and commit.</li>
+<li><strong>Concurrency/locking:</strong> locks on source and affected usage state; prevent double-split/conflicting operations.</li>
+<li><strong>Failure/retry/recovery:</strong> rollback on insufficient capacity or invariant violation; idempotent operation handling required.</li>
+</ul>
+<h3>Operation 8 — Asset deactivation/reactivation/removal</h3>
+<ul>
+<li><strong>Logical intent:</strong> change asset operational/licensing lifecycle state with correct historical records and non-reuse guarantees.</li>
+<li><strong>Primary tables:</strong> <code>core.asset</code>, <code>core.asset_lifecycle_event</code>, <code>core.asset_license_event</code>, <code>core.tenant_license_usage_state</code>, <code>core.asset_tombstone</code> (for terminal removal states), <code>core.asset_data_source</code> status (as applicable), ledger, <code>audit_evidence.audit_event</code>.</li>
+<li><strong>Key constraints/indexes:</strong> status checks, tombstone uniqueness, tenant-consistent FKs.</li>
+<li><strong>Transaction boundary:</strong> lock asset and usage state as needed → validate permitted transition → update asset/lifecycle/licensing state and counters per approved semantics → create tombstone for terminal removal/representation if applicable → append events/audit and ledger outcome.</li>
+<li><strong>Concurrency/locking:</strong> row locks prevent conflicting transitions.</li>
+<li><strong>Failure/retry/recovery:</strong> deterministic rejection for invalid transitions; idempotent replay for same operation key.</li>
+</ul>
+<h3>Operation 9 — Asset quota allocation/reservation/release</h3>
+<ul>
+<li><strong>Logical intent:</strong> atomically allocate, reserve, consume, or release licensed capacity for tenant/device operations.</li>
+<li><strong>Primary tables:</strong> <code>core.tenant_license_usage_state</code>, <code>core.subscription_entitlement</code>, <code>core.asset_license_reservation</code> (if used), <code>core.asset_license_event</code>, <code>core.identity_operation_idempotency_ledger</code>, <code>core.asset</code>/operation references, <code>audit_evidence.audit_event</code>.</li>
+<li><strong>Key constraints/indexes:</strong> <code>uq_tenant_license_usage_scope</code>; reservation status/time indexes; ledger uniqueness; CHECKs for non-negative counters (final formulas OD-003/004).</li>
+<li><strong>Transaction boundary:</strong> ledger resolve → lock usage state (and reservation row if applicable) → validate entitlement/capacity under approved accounting model → apply committed/reserved deltas and reservation state transition → write license event/audit → commit.</li>
+<li><strong>Concurrency/locking:</strong> mandatory <code>SELECT ... FOR UPDATE</code> on tenant usage state scope to serialize capacity checks/updates.</li>
+<li><strong>Failure/retry/recovery:</strong> insufficient capacity is terminal business outcome (no partial commit); timeout/unknown commit reconciled via ledger and reservation state.</li>
+</ul>
+<h3>Operation 10 — Event ingestion acceptance</h3>
+<ul>
+<li><strong>Logical intent:</strong> durably accept or deduplicate/reject an ingested event using explicit namespace rules and produce normalized/queryable records when accepted.</li>
+<li><strong>Primary tables:</strong> <code>ingest.event_receipt</code>, <code>ingest.security_event</code>, <code>ingest.event_schema_reference</code>, <code>integration_ai.data_source</code>, <code>core.asset_data_source</code>/<code>core.asset</code> (attribution when resolved), optional <code>processing.processing_work_item</code>/<code>processing.outbox_message</code>, <code>audit_evidence.audit_event</code>.</li>
+<li><strong>Key constraints/indexes:</strong> namespace-aware unique indexes on <code>ingest.event_receipt</code> (device-scoped upstream ID, data-source-global/fallback as applicable, OD-013); receipt-status and dedup-basis checks; FKs.</li>
+<li><strong>Transaction boundary:</strong> validate schema/source/tenant context → determine dedup namespace and identity basis (upstream ID or explicit fallback fingerprint) → insert receipt; on uniqueness conflict detect duplicate and return/link duplicate outcome → for accepted non-duplicate events insert normalized <code>security_event</code> and any atomic downstream intent records (e.g. outbox/work item) in same DB transaction as acceptance where required → audit/correlate.</li>
+<li><strong>Concurrency/locking:</strong> uniqueness constraints provide atomic dedup; avoid long transactions during high ingest rates.</li>
+<li><strong>Failure/retry/recovery:</strong> retries safe due to dedup uniqueness; missing/unreliable upstream IDs follow explicit fallback policy (OD-013). <strong>No identity ledger reuse</strong> for event dedup.</li>
+</ul>
+<h3>Operation 11 — Outbox claim and processing</h3>
+<ul>
+<li><strong>Logical intent:</strong> claim eligible outbox work safely across workers and record processing attempts without duplicate unsafe side-effect assumptions.</li>
+<li><strong>Primary tables:</strong> <code>processing.outbox_message</code>, <code>processing.outbox_attempt</code>, optional <code>processing.processing_work_item</code>, <code>audit_evidence.audit_event</code>.</li>
+<li><strong>Key constraints/indexes:</strong> claimable index on message status/availability; unique <code>(outbox_message_id, attempt_number)</code>; lease/heartbeat fields (OD-009 Proposed).</li>
+<li><strong>Transaction boundary (claim):</strong> select eligible message with locking/skip-locked pattern (proposed) → verify lease/availability/state → create <code>outbox_attempt</code> (claimed/in_progress, lease token/expiry, attempt number) → update message status/last_attempt metadata → commit. <strong>Processing/external execution occurs outside DB transaction</strong>.</li>
+<li><strong>Concurrency/locking:</strong> <code>FOR UPDATE SKIP LOCKED</code>-style claiming is a common physical pattern (design intent) to reduce contention; exact mechanism must be validated.</li>
+<li><strong>Failure/retry/recovery:</strong> worker crash/lease expiry enables reclaim per policy; attempts recorded append-only; idempotent handlers required.</li>
+</ul>
+<h3>Operation 12 — Outbox external delivery with unknown outcome</h3>
+<ul>
+<li><strong>Logical intent:</strong> record delivery outcomes including ambiguous/unknown external side effects and drive safe reconciliation/retry decisions.</li>
+<li><strong>Primary tables:</strong> <code>processing.outbox_attempt</code>, <code>processing.outbox_message</code>, <code>audit_evidence.audit_event</code>, related domain tables only when a confirmed safe compensating/confirming state transition is justified.</li>
+<li><strong>Key constraints/indexes:</strong> attempt status/lease indexes; message state checks.</li>
+<li><strong>Transaction boundary:</strong> persist attempt outcome (<code>succeeded</code>, <code>failed_retryable</code>, <code>failed_terminal</code>, <code>unknown</code>) and corresponding message transition/next availability in a DB transaction after external interaction result (or timeout/ambiguity) is observed. Unknown outcomes must remain visible for reconciliation.</li>
+<li><strong>Concurrency/locking:</strong> lock attempt/message rows during state transition.</li>
+<li><strong>Failure/retry/recovery:</strong> retries permitted only when handler and external contract are idempotent or safely deduplicated; <strong>unknown delivery is not treated as success</strong>; no exactly-once external delivery claimed (OD-009).</li>
+</ul>
+<h3>Operation 13 — Forensic evidence creation and controlled transition</h3>
+<ul>
+<li><strong>Logical intent:</strong> create evidence metadata/versions and perform controlled, authorized state transitions while preserving integrity, custody, and tenant isolation.</li>
+<li><strong>Primary tables:</strong> <code>audit_evidence.forensic_evidence_record</code>, <code>audit_evidence.evidence_object_version</code>, <code>audit_evidence.evidence_custody_event</code>, <code>audit_evidence.evidence_transition_authorization</code>, <code>audit_evidence.audit_event</code>, related asset/case references.</li>
+<li><strong>Key constraints/indexes:</strong> unique <code>(forensic_evidence_record_id, version_number)</code>; FKs; status/transition checks; legal-hold enforcement in application/procedure logic plus recorded flags.</li>
+<li><strong>Transaction boundary (creation):</strong> insert evidence record and initial immutable version/custody metadata atomically with audit correlation; external object storage upload/verification sequencing must be handled to avoid untracked artifacts (procedure design required). <strong>Controlled transition:</strong> verify authorization, legal hold, and allowed transition → record authorization decision/transition event → update evidence status only as permitted → append custody/audit records in same transaction.</li>
+<li><strong>Concurrency/locking:</strong> lock evidence record for transition checks; append-only custody/version rows.</li>
+<li><strong>Failure/retry/recovery:</strong> no silent deletion/overwrite; failed transitions leave prior state intact; external storage/object existence and hash verification may require compensating reconciliation procedures (risk documented).</li>
+</ul>
+<h2>3. Cross-operation consistency notes</h2>
+<ul>
+<li><strong>Idempotency scope separation:</strong> <code>core.identity_operation_idempotency_ledger</code> is for identity/licensing operations only; <code>ingest.event_receipt</code> is for event ingestion dedup only; outbox attempt/message state provides delivery coordination/retry history (not external exactly-once guarantee).</li>
+<li><strong>Typed lineage only:</strong> merge/split effects must be represented via typed <code>asset_lineage_link</code> references and operation records.</li>
+<li><strong>Licensing atomicity:</strong> committed/reserved usage mutations, when applicable, occur in the same DB transaction as the corresponding validated operation outcome (default coupling) per OD-008; accounting semantics remain Proposed pending OD-001/003/004.</li>
+<li><strong>RLS/privileges:</strong> all operations execute under least-privilege runtime roles with verified transaction-bound tenant context; maintenance/admin exceptions are controlled and audited.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Physical Schema Round 2 Changelog</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T18:04:38Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Physical Schema Round 2 Changelog</h1>
+<p><strong>Status:</strong> Documentation/design changelog only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This changelog records Round 2 physical schema design artifacts created from the published Round 1.1 logical baseline on branch <code>design/postgresql-round2-physical-schema</code>.</p>
+<h2>1. Baseline and scope</h2>
+<ul>
+<li><strong>Source baseline:</strong> <code>audit/postgresql-round1-1-publication</code> at commit <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code> (Round 1.1 audited/corrected publication state).</li>
+<li><strong>Scope:</strong> PostgreSQL physical schema design documentation only. No executable DDL, migrations, database objects, roles/grants, RLS policies, ORM models, application code, or deployment artifacts were created. No ADR statuses changed (<strong>ADR 0006 remains Proposed</strong>).</li>
+</ul>
+<h2>2. Documents created</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a></td>
+<td>Physical schema organization, conventions, key/identity strategy, constraints/integrity, complete logical-to-physical entity mapping, per-table/column specifications, JSONB justification, assumptions/limitations.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_PHYSICAL_ERD.md.html">POSTGRESQL_PHYSICAL_ERD.md</a></td>
+<td>Physical Mermaid ERDs by domain with schema/table naming, tenant/global distinctions, and traceability notes.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_INDEX_STRATEGY.md.html">POSTGRESQL_INDEX_STRATEGY.md</a></td>
+<td>Proposed index inventory covering identity/binding, event dedup, idempotency, audit/evidence, time-based, outbox, and dashboard patterns with rationale and trade-offs.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a></td>
+<td>Tenant/global classification, verified transaction-bound context propagation, conceptual RLS/role model, and additional enforcement beyond RLS.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a></td>
+<td>Mapping of all 13 logical transaction operations to physical tables, constraints/indexes, locking/concurrency intent, retries, and recovery semantics.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html">POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</a></td>
+<td>Partitioning evaluation, retention/legal-hold/deletion classes, backup/PITR/maintenance considerations, and explicit assumptions/open dependencies.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a></td>
+<td>Carried-forward OD-001–OD-013 statuses and new physical-design decisions (PD-001–PD-012), all unresolved items kept Proposed/Deferred (no approvals).</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md</a></td>
+<td>This changelog.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a></td>
+<td>Traceability, consistency/Mermaid validation summary, unresolved risks, limitations, and readiness recommendation.</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Key design translations and preserved semantics</h2>
+<ul>
+<li><strong>Complete traceability:</strong> all Round 1.1 logical catalogue entities are mapped to proposed physical tables or explicitly bounded representations (optional dependent <code>core.source_device_key</code> projection; optional/non-core <code>processing.processing_work_item</code>), with no logical entity omitted.</li>
+<li><strong>Preserved Round 1.1 corrections:</strong> authoritative <code>core.asset_data_source</code> binding owning immutable <code>source_device_key_id</code> (OD-002 Proposed), idempotency ledger scope/hash/state semantics (OD-008 Proposed), explicit <code>ingest.event_receipt</code> dedup namespace/provenance (OD-013 Proposed/partial), typed <code>core.asset_lineage_link</code> merge/split references only, distinct entity responsibilities/naming.</li>
+<li><strong>Invariants preserved:</strong> verified transaction-bound tenant context only (no client-supplied tenant authority, no user-settable GUC authorization), RLS defense-in-depth, one-device-one-licensed-asset, external AI SaaS only with explicit selection/no silent failover, at-least-once/outbox unknown-outcome handling with <strong>no exactly-once external delivery</strong> claims.</li>
+</ul>
+<h2>4. Export/publication artifacts</h2>
+<ul>
+<li>Regenerated HTML export and rebuilt <a href="../dist/CARES_DOCUMENTATION_HTML.zip">dist/CARES_DOCUMENTATION_HTML.zip</a> to include Round 2 documents (see <a href="../copilot.txt">copilot.txt</a> and final review for validation results and hashes).</li>
+<li><a href="../copilot.txt">copilot.txt</a> updated with actual Round 2 execution report.</li>
+</ul>
+<h2>5. Limitations</h2>
+<ul>
+<li>Mermaid diagrams structurally authored but <strong>visual rendering not verified</strong> in this environment.</li>
+<li>All designs are proposed and require implementation review, security/architecture/legal/commercial approvals where noted, and workload/operability validation before implementation.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

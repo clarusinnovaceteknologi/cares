@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Physical ERD (Round 2)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_ERD.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T18:04:38Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Physical ERD (Round 2)</h1>
+<p><strong>Status:</strong> Proposed physical ERD documentation only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. Mermaid diagrams are simplified physical-relationship views derived from the Round 1.1 logical baseline and Round 2 physical design. They do not replace the authoritative table/column/constraint specifications in <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a> or index/RLS/transaction/lifecycle documents.</p>
+<p><strong>Validation note:</strong> Mermaid source is provided as text and can be structurally reviewed; <strong>visual rendering was not executed in this environment</strong> (no renderer CLI verified). Structural Mermaid validation is reported as performed by source inspection only; visual rendering remains <strong>NOT VERIFIED</strong>.</p>
+<h2>1. Diagram conventions</h2>
+<ul>
+<li>Physical identifiers are shown as <code>schema__table</code> labels in Mermaid entities for readability; actual proposed schema-qualified names are <code>schema.table</code>.</li>
+<li><code>PK</code>, <code>FK</code>, and <code>UK</code> markers indicate key roles; not every column/constraint is shown.</li>
+<li>Tenant-owned tables carry <code>tenant_id</code> unless explicitly global/catalog-scoped.</li>
+<li>Tenant-consistent composite FK enforcement is a <strong>design requirement</strong> documented in the physical schema/RLS docs; single-column FK arrows in diagrams are simplified representations.</li>
+<li>Global/shared catalog tables are marked in notes.</li>
+</ul>
+<h2>2. ERD 1 — Core tenant, access, and configuration</h2>
+<pre class="mermaid">erDiagram
+    core__tenant {
+        uuid tenant_id PK
+        text tenant_status
+    }
+    core__external_identity_subject {
+        uuid external_identity_subject_id PK
+        text issuer
+        text subject
+    }
+    core__tenant_membership {
+        uuid tenant_membership_id PK
+        uuid tenant_id FK
+        uuid external_identity_subject_id FK
+    }
+    core__role {
+        uuid role_id PK
+        uuid tenant_id FK
+    }
+    core__role_permission {
+        uuid role_permission_id PK
+        uuid role_id FK
+        text permission_code
+    }
+    core__membership_role_assignment {
+        uuid membership_role_assignment_id PK
+        uuid tenant_id FK
+        uuid tenant_membership_id FK
+        uuid role_id FK
+    }
+    core__support_access_grant {
+        uuid support_access_grant_id PK
+        uuid target_tenant_id FK
+        uuid grantee_subject_id FK
+    }
+    core__support_access_approval {
+        uuid support_access_approval_id PK
+        uuid support_access_grant_id FK
+        uuid target_tenant_id FK
+    }
+    core__tenant_configuration {
+        uuid tenant_configuration_id PK
+        uuid tenant_id FK
+        text config_domain
+    }
+
+    core__tenant ||--o{ core__tenant_membership : has
+    core__external_identity_subject ||--o{ core__tenant_membership : holds
+    core__tenant ||--o{ core__role : may_define
+    core__role ||--o{ core__role_permission : grants
+    core__tenant_membership ||--o{ core__membership_role_assignment : assigned
+    core__role ||--o{ core__membership_role_assignment : used_by
+    core__tenant ||--o{ core__support_access_grant : target
+    core__external_identity_subject ||--o{ core__support_access_grant : grantee
+    core__support_access_grant ||--o{ core__support_access_approval : approved_by
+    core__tenant ||--o{ core__tenant_configuration : configures
+</pre>
+<p><strong>Notes:</strong> <code>core.external_identity_subject</code> and system/global <code>core.role</code> records may be platform-scoped; tenant-defined roles and all memberships/grants/configurations are tenant-scoped or tenant-contextual as specified.</p>
+<h2>3. ERD 2 — Asset identity, lineage, and licensing</h2>
+<pre class="mermaid">erDiagram
+    core__tenant {
+        uuid tenant_id PK
+    }
+    core__asset {
+        uuid asset_id PK
+        uuid tenant_id FK
+        text asset_status
+    }
+    integration_ai__data_source {
+        uuid data_source_id PK
+        uuid tenant_id FK
+    }
+    core__asset_data_source {
+        uuid asset_data_source_id PK
+        uuid tenant_id FK
+        uuid asset_id FK
+        uuid data_source_id FK
+        uuid source_device_key_id UK
+    }
+    core__source_device_key {
+        uuid source_device_key_id PK
+        uuid tenant_id FK
+        uuid asset_data_source_id FK
+    }
+    core__source_device_fingerprint_alias {
+        uuid source_device_fingerprint_alias_id PK
+        uuid tenant_id FK
+        uuid asset_data_source_id FK
+        uuid source_device_key_id FK
+    }
+    core__asset_identity_claim {
+        uuid asset_identity_claim_id PK
+        uuid tenant_id FK
+        uuid asset_id FK
+        uuid data_source_id FK
+    }
+    core__identity_resolution_case {
+        uuid identity_resolution_case_id PK
+        uuid tenant_id FK
+        uuid primary_asset_id FK
+    }
+    core__asset_lifecycle_event {
+        uuid asset_lifecycle_event_id PK
+        uuid tenant_id FK
+        uuid asset_id FK
+    }
+    core__asset_merge_operation {
+        uuid asset_merge_operation_id PK
+        uuid tenant_id FK
+        uuid surviving_asset_id FK
+        uuid losing_asset_id FK
+    }
+    core__asset_split_operation {
+        uuid asset_split_operation_id PK
+        uuid tenant_id FK
+        uuid source_asset_id FK
+    }
+    core__asset_lineage_link {
+        uuid asset_lineage_link_id PK
+        uuid tenant_id FK
+        uuid from_asset_id FK
+        uuid to_asset_id FK
+        uuid merge_operation_id FK
+        uuid split_operation_id FK
+        text link_type
+    }
+    core__subscription_entitlement {
+        uuid subscription_entitlement_id PK
+        uuid tenant_id FK
+    }
+    core__tenant_license_usage_state {
+        uuid tenant_license_usage_state_id PK
+        uuid tenant_id FK
+        uuid subscription_entitlement_id FK
+    }
+    core__asset_license_event {
+        uuid asset_license_event_id PK
+        uuid tenant_id FK
+        uuid asset_id FK
+    }
+    core__identity_operation_idempotency_ledger {
+        uuid identity_operation_idempotency_ledger_id PK
+        uuid tenant_id FK
+        text operation_type
+        text idempotency_key
+        text request_state
+    }
+    core__asset_license_reservation {
+        uuid asset_license_reservation_id PK
+        uuid tenant_id FK
+        uuid asset_id FK
+        uuid ledger_id FK
+    }
+    core__asset_tombstone {
+        uuid asset_tombstone_id PK
+        uuid tenant_id FK
+        uuid asset_id FK
+    }
+
+    core__tenant ||--o{ core__asset : owns
+    core__tenant ||--o{ integration_ai__data_source : configures
+    core__asset ||--o{ core__asset_data_source : bound_by
+    integration_ai__data_source ||--o{ core__asset_data_source : reports
+    core__asset_data_source ||--o| core__source_device_key : dependent_projection
+    core__asset_data_source ||--o{ core__source_device_fingerprint_alias : resolves_via
+    core__asset ||--o{ core__asset_identity_claim : claimed
+    core__identity_resolution_case ||--o{ core__asset_identity_claim : groups
+    core__asset ||--o{ core__asset_lifecycle_event : history
+    core__asset ||--o{ core__asset_merge_operation : survives_or_loses
+    core__asset ||--o{ core__asset_split_operation : source
+    core__asset ||--o{ core__asset_lineage_link : from_to
+    core__asset_merge_operation ||--o{ core__asset_lineage_link : merge_ref
+    core__asset_split_operation ||--o{ core__asset_lineage_link : split_ref
+    core__tenant ||--o{ core__subscription_entitlement : entitled
+    core__subscription_entitlement ||--o{ core__tenant_license_usage_state : governs
+    core__asset ||--o{ core__asset_license_event : licensed
+    core__tenant ||--o{ core__identity_operation_idempotency_ledger : scopes
+    core__identity_operation_idempotency_ledger ||--o{ core__asset_license_reservation : correlates
+    core__asset ||--o| core__asset_tombstone : terminal
+</pre>
+<p><strong>Notes:</strong> <code>core.asset_data_source</code> is the proposed authoritative stable binding owning immutable <code>source_device_key_id</code> (OD-002 open). <code>core.source_device_key</code> is an optional 1:1 dependent projection only. <code>asset_lineage_link</code> enforces typed merge/split references (no polymorphic ref). Ledger and event receipt are distinct idempotency/dedup mechanisms.</p>
+<h2>4. ERD 3 — Ingest, processing, audit, and evidence</h2>
+<pre class="mermaid">erDiagram
+    core__tenant {
+        uuid tenant_id PK
+    }
+    core__asset {
+        uuid asset_id PK
+        uuid tenant_id FK
+    }
+    integration_ai__data_source {
+        uuid data_source_id PK
+        uuid tenant_id FK
+    }
+    core__asset_data_source {
+        uuid asset_data_source_id PK
+        uuid source_device_key_id UK
+    }
+    ingest__event_schema_reference {
+        uuid event_schema_reference_id PK
+    }
+    ingest__event_receipt {
+        uuid event_receipt_id PK
+        uuid tenant_id FK
+        uuid data_source_id FK
+        uuid source_device_key_id FK
+        text event_namespace
+        text upstream_event_identifier
+    }
+    ingest__security_event {
+        uuid security_event_id PK
+        uuid tenant_id FK
+        uuid event_receipt_id FK
+        uuid asset_id FK
+    }
+    processing__outbox_message {
+        uuid outbox_message_id PK
+        uuid tenant_id FK
+        text message_status
+    }
+    processing__outbox_attempt {
+        uuid outbox_attempt_id PK
+        uuid outbox_message_id FK
+        text attempt_status
+    }
+    processing__processing_work_item {
+        uuid processing_work_item_id PK
+        uuid tenant_id FK
+        uuid event_receipt_id FK
+        uuid outbox_message_id FK
+    }
+    audit_evidence__audit_event {
+        uuid audit_event_id PK
+        uuid tenant_id FK
+    }
+    audit_evidence__ai_interaction_audit {
+        uuid ai_interaction_audit_id PK
+        uuid tenant_id FK
+        uuid audit_event_id FK
+    }
+    audit_evidence__forensic_evidence_record {
+        uuid forensic_evidence_record_id PK
+        uuid tenant_id FK
+        uuid asset_id FK
+    }
+    audit_evidence__evidence_object_version {
+        uuid evidence_object_version_id PK
+        uuid forensic_evidence_record_id FK
+        int version_number
+    }
+    audit_evidence__evidence_custody_event {
+        uuid evidence_custody_event_id PK
+        uuid forensic_evidence_record_id FK
+    }
+    audit_evidence__evidence_transition_authorization {
+        uuid evidence_transition_authorization_id PK
+        uuid forensic_evidence_record_id FK
+    }
+
+    ingest__event_schema_reference ||--o{ ingest__event_receipt : validates
+    integration_ai__data_source ||--o{ ingest__event_receipt : receives_from
+    core__asset_data_source ||--o{ ingest__event_receipt : binding_context
+    core__asset ||--o{ ingest__event_receipt : attributed
+    ingest__event_receipt ||--o| ingest__security_event : normalized
+    processing__outbox_message ||--o{ processing__outbox_attempt : attempted
+    ingest__event_receipt ||--o{ processing__processing_work_item : optional_work
+    processing__outbox_message ||--o{ processing__processing_work_item : optional_work
+    audit_evidence__audit_event ||--o{ audit_evidence__ai_interaction_audit : correlates
+    core__asset ||--o{ audit_evidence__forensic_evidence_record : subject
+    audit_evidence__forensic_evidence_record ||--o{ audit_evidence__evidence_object_version : versions
+    audit_evidence__forensic_evidence_record ||--o{ audit_evidence__evidence_custody_event : custody
+    audit_evidence__forensic_evidence_record ||--o{ audit_evidence__evidence_transition_authorization : controls
+</pre>
+<p><strong>Notes:</strong> <code>event_receipt</code> dedup uniqueness is namespace-specific (explicit device-scoped/data-source-global/fallback basis per OD-013). Outbox delivery is at-least-once with unknown-outcome handling; no exactly-once external delivery. <code>processing_work_item</code> is optional/non-core and must not replace receipt/outbox truth.</p>
+<h2>5. ERD 4 — Integration/AI and SOC</h2>
+<pre class="mermaid">erDiagram
+    core__tenant {
+        uuid tenant_id PK
+    }
+    core__asset {
+        uuid asset_id PK
+        uuid tenant_id FK
+    }
+    integration_ai__integration_configuration {
+        uuid integration_configuration_id PK
+        uuid tenant_id FK
+    }
+    integration_ai__data_source {
+        uuid data_source_id PK
+        uuid tenant_id FK
+        uuid integration_configuration_id FK
+    }
+    integration_ai__tenant_ai_provider_configuration {
+        uuid tenant_ai_provider_configuration_id PK
+        uuid tenant_id FK
+    }
+    integration_ai__ai_provider_secret_reference {
+        uuid ai_provider_secret_reference_id PK
+        uuid tenant_id FK
+        uuid provider_configuration_id FK
+    }
+    integration_ai__ai_provider_policy_consent_reference {
+        uuid ai_provider_policy_consent_reference_id PK
+        uuid tenant_id FK
+        uuid provider_configuration_id FK
+    }
+    integration_ai__ai_usage_budget_accounting {
+        uuid ai_usage_budget_accounting_id PK
+        uuid tenant_id FK
+        uuid provider_configuration_id FK
+    }
+    audit_evidence__ai_interaction_audit {
+        uuid ai_interaction_audit_id PK
+        uuid tenant_id FK
+        uuid provider_configuration_id FK
+    }
+    ingest__security_event {
+        uuid security_event_id PK
+        uuid tenant_id FK
+    }
+    soc__detection_rule {
+        uuid detection_rule_id PK
+        uuid tenant_id FK
+    }
+    soc__detection_rule_version {
+        uuid detection_rule_version_id PK
+        uuid detection_rule_id FK
+    }
+    soc__incident_case {
+        uuid incident_case_id PK
+        uuid tenant_id FK
+    }
+    soc__alert {
+        uuid alert_id PK
+        uuid tenant_id FK
+        uuid asset_id FK
+        uuid security_event_id FK
+        uuid incident_case_id FK
+        uuid detection_rule_version_id FK
+    }
+    soc__asset_inventory_observation {
+        uuid asset_inventory_observation_id PK
+        uuid tenant_id FK
+        uuid asset_id FK
+        uuid data_source_id FK
+    }
+    soc__vulnerability_finding {
+        uuid vulnerability_finding_id PK
+        uuid tenant_id FK
+        uuid asset_id FK
+        uuid asset_inventory_observation_id FK
+    }
+    soc__threat_intelligence_reference {
+        uuid threat_intelligence_reference_id PK
+        text source_name
+        text external_reference
+    }
+
+    core__tenant ||--o{ integration_ai__integration_configuration : configures
+    integration_ai__integration_configuration ||--o{ integration_ai__data_source : parameterizes
+    core__tenant ||--o{ integration_ai__tenant_ai_provider_configuration : selects_provider
+    integration_ai__tenant_ai_provider_configuration ||--o{ integration_ai__ai_provider_secret_reference : secret_ref
+    integration_ai__tenant_ai_provider_configuration ||--o{ integration_ai__ai_provider_policy_consent_reference : governed_by
+    integration_ai__tenant_ai_provider_configuration ||--o{ integration_ai__ai_usage_budget_accounting : accounted
+    integration_ai__tenant_ai_provider_configuration ||--o{ audit_evidence__ai_interaction_audit : audited
+    soc__detection_rule ||--o{ soc__detection_rule_version : versioned
+    soc__detection_rule_version ||--o{ soc__alert : triggers
+    ingest__security_event ||--o{ soc__alert : source
+    core__asset ||--o{ soc__alert : affects
+    soc__incident_case ||--o{ soc__alert : groups
+    core__asset ||--o{ soc__asset_inventory_observation : observed
+    integration_ai__data_source ||--o{ soc__asset_inventory_observation : reported_by
+    core__asset ||--o{ soc__vulnerability_finding : affects
+    soc__asset_inventory_observation ||--o{ soc__vulnerability_finding : evidenced_by
+</pre>
+<p><strong>Notes:</strong> <code>soc.threat_intelligence_reference</code> is proposed global/shared; tenant use must not leak tenant data across boundaries. AI provider configuration is explicit per tenant (no silent failover/automatic transfer); secrets are external references only. Detection rules may be tenant-owned or explicitly managed global-scope by policy (Proposed).</p>
+<h2>6. Traceability and omissions</h2>
+<ul>
+<li>All logical entities mapped in the physical schema design are represented in at least one ERD or explicitly covered by domain notes above (including <code>asset_license_event</code>, <code>evidence_object_version</code>, <code>evidence_custody_event</code>, <code>evidence_transition_authorization</code>, <code>membership_role_assignment</code>, <code>role_permission</code>, <code>support_access_approval</code>, <code>source_device_fingerprint_alias</code>, <code>asset_identity_claim</code>, <code>identity_resolution_case</code>, <code>asset_tombstone</code>, <code>ai_usage_budget_accounting</code>, <code>processing_work_item</code>).</li>
+<li>Relationship cardinalities and optionality shown are simplified; authoritative nullability/FK/uniqueness rules are defined in <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a>.</li>
+</ul>
+
+</article>
+</div>
+<script src="../assets/mermaid.min.js"></script>
+<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,securityLevel:'loose'});}</script>
+</body>
+</html>

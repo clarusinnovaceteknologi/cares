@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL RLS and Tenant Isolation Design (Round 2)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T18:04:38Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL RLS and Tenant Isolation Design (Round 2)</h1>
+<p><strong>Status:</strong> Proposed design documentation only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This document defines the physical isolation model, role posture, tenant-context lifecycle, and conceptual RLS policy design for CARES PostgreSQL. No database roles, grants, RLS policies, security-definer functions, GUC settings, or enforcement objects are created. <strong>RLS is defense in depth and not sufficient alone</strong>; application/service authorization remains required.</p>
+<p><strong>Non-negotiable rules (preserved):</strong> tenant authority comes only from trusted, verified, transaction-bound context; <strong>never</strong> from client-supplied tenant IDs and <strong>never</strong> from user-settable PostgreSQL GUCs for authorization decisions. Cross-tenant reads/writes/joins/references/indirect leakage must be prevented.</p>
+<h2>1. Tenant-scoped and global tables</h2>
+<h3>1.1 Tenant-owned tables (RLS-protected, tenant-context required)</h3>
+<table>
+<thead>
+<tr>
+<th>Schema</th>
+<th>Table</th>
+<th><code>tenant_id</code></th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>core</td>
+<td><code>tenant_membership</code></td>
+<td>NOT NULL</td>
+<td>Tenant-scoped membership records.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>membership_role_assignment</code></td>
+<td>NOT NULL</td>
+<td>Tenant/membership scoped assignments.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>support_access_grant</code></td>
+<td><code>target_tenant_id</code> NOT NULL</td>
+<td>Tenant-contextual target scope.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>support_access_approval</code></td>
+<td><code>target_tenant_id</code> NOT NULL</td>
+<td>Grant/tenant contextual.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>tenant_configuration</code></td>
+<td>NOT NULL</td>
+<td>Canonical tenant config.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>asset</code></td>
+<td>NOT NULL</td>
+<td>Canonical tenant asset.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>asset_data_source</code></td>
+<td>NOT NULL</td>
+<td>Authoritative stable binding.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>source_device_key</code></td>
+<td>NOT NULL</td>
+<td>Optional dependent projection (if materialized).</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>source_device_fingerprint_alias</code></td>
+<td>NOT NULL</td>
+<td>Alias/lookup records.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>asset_identity_claim</code></td>
+<td>NOT NULL</td>
+<td>Provenance claims.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>identity_resolution_case</code></td>
+<td>NOT NULL</td>
+<td>Resolution workflow.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>asset_lifecycle_event</code></td>
+<td>NOT NULL</td>
+<td>History.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>asset_merge_operation</code></td>
+<td>NOT NULL</td>
+<td>Operation record.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>asset_split_operation</code></td>
+<td>NOT NULL</td>
+<td>Operation record.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>asset_lineage_link</code></td>
+<td>NOT NULL</td>
+<td>Typed lineage.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>subscription_entitlement</code></td>
+<td>NOT NULL</td>
+<td>Entitlement terms.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>tenant_license_usage_state</code></td>
+<td>NOT NULL</td>
+<td>Usage/capacity state.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>asset_license_event</code></td>
+<td>NOT NULL</td>
+<td>Licensing history.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>identity_operation_idempotency_ledger</code></td>
+<td>NOT NULL</td>
+<td>Identity/licensing idempotency.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>asset_license_reservation</code></td>
+<td>NOT NULL</td>
+<td>Reservation records.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>asset_tombstone</code></td>
+<td>NOT NULL</td>
+<td>Terminal historical record.</td>
+</tr>
+<tr>
+<td>ingest</td>
+<td><code>event_receipt</code></td>
+<td>NOT NULL</td>
+<td>Ingestion/dedup.</td>
+</tr>
+<tr>
+<td>ingest</td>
+<td><code>security_event</code></td>
+<td>NOT NULL</td>
+<td>Normalized event.</td>
+</tr>
+<tr>
+<td>processing</td>
+<td><code>outbox_message</code></td>
+<td>NULLable by model but expected tenant-scoped; policy required</td>
+<td>Tenant-contextual async work; global control-plane messages, if ever introduced, must be explicitly separated and justified.</td>
+</tr>
+<tr>
+<td>processing</td>
+<td><code>outbox_attempt</code></td>
+<td>NULLable via message context</td>
+<td>Inherits/aligns with message tenant scope.</td>
+</tr>
+<tr>
+<td>processing</td>
+<td><code>processing_work_item</code></td>
+<td>NULLable when applicable</td>
+<td>Optional/non-core; tenant-scoped when used.</td>
+</tr>
+<tr>
+<td>audit_evidence</td>
+<td><code>audit_event</code></td>
+<td>NULLable for explicitly platform-level actions (tightly controlled)</td>
+<td>Prefer tenant-scoped; platform-level audit requires separate controlled access path.</td>
+</tr>
+<tr>
+<td>audit_evidence</td>
+<td><code>ai_interaction_audit</code></td>
+<td>NOT NULL</td>
+<td>Tenant AI governance audit.</td>
+</tr>
+<tr>
+<td>audit_evidence</td>
+<td><code>forensic_evidence_record</code></td>
+<td>NOT NULL</td>
+<td>Tenant evidence metadata.</td>
+</tr>
+<tr>
+<td>audit_evidence</td>
+<td><code>evidence_object_version</code></td>
+<td>NOT NULL</td>
+<td>Tenant consistency.</td>
+</tr>
+<tr>
+<td>audit_evidence</td>
+<td><code>evidence_custody_event</code></td>
+<td>NOT NULL</td>
+<td>Tenant consistency.</td>
+</tr>
+<tr>
+<td>audit_evidence</td>
+<td><code>evidence_transition_authorization</code></td>
+<td>NOT NULL</td>
+<td>Tenant consistency.</td>
+</tr>
+<tr>
+<td>integration_ai</td>
+<td><code>data_source</code></td>
+<td>NOT NULL</td>
+<td>Tenant connector instance.</td>
+</tr>
+<tr>
+<td>integration_ai</td>
+<td><code>integration_configuration</code></td>
+<td>NOT NULL</td>
+<td>Tenant integration config.</td>
+</tr>
+<tr>
+<td>integration_ai</td>
+<td><code>tenant_ai_provider_configuration</code></td>
+<td>NOT NULL</td>
+<td>Explicit tenant provider selection.</td>
+</tr>
+<tr>
+<td>integration_ai</td>
+<td><code>ai_provider_secret_reference</code></td>
+<td>NOT NULL</td>
+<td>Tenant secret references only.</td>
+</tr>
+<tr>
+<td>integration_ai</td>
+<td><code>ai_provider_policy_consent_reference</code></td>
+<td>NOT NULL</td>
+<td>Consent/policy refs.</td>
+</tr>
+<tr>
+<td>integration_ai</td>
+<td><code>ai_usage_budget_accounting</code></td>
+<td>NOT NULL</td>
+<td>Usage/budget accounting.</td>
+</tr>
+<tr>
+<td>soc</td>
+<td><code>alert</code></td>
+<td>NOT NULL</td>
+<td>Tenant SOC record.</td>
+</tr>
+<tr>
+<td>soc</td>
+<td><code>incident_case</code></td>
+<td>NOT NULL</td>
+<td>Tenant SOC record.</td>
+</tr>
+<tr>
+<td>soc</td>
+<td><code>vulnerability_finding</code></td>
+<td>NOT NULL</td>
+<td>Tenant SOC record.</td>
+</tr>
+<tr>
+<td>soc</td>
+<td><code>asset_inventory_observation</code></td>
+<td>NOT NULL</td>
+<td>Tenant observation.</td>
+</tr>
+<tr>
+<td>soc</td>
+<td><code>detection_rule</code></td>
+<td>NULLable (tenant-owned default; global-managed only if explicitly controlled)</td>
+<td>Scope must be explicit; global-managed rules require separate governance and must not expose tenant data.</td>
+</tr>
+<tr>
+<td>soc</td>
+<td><code>detection_rule_version</code></td>
+<td>follows parent rule scope</td>
+<td>Access controlled via rule scope.</td>
+</tr>
+</tbody>
+</table>
+<h3>1.2 Platform-global or catalog-scoped tables (no tenant row ownership / special access control)</h3>
+<table>
+<thead>
+<tr>
+<th>Schema</th>
+<th>Table</th>
+<th>Scope</th>
+<th>Access posture (proposed)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>core</td>
+<td><code>tenant</code></td>
+<td>Global tenant registry/root</td>
+<td>Controlled administrative/runtime access; not exposed via tenant-context RLS in the same way as tenant-owned rows (except self-tenant reads through verified context where appropriate).</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>external_identity_subject</code></td>
+<td>Global identity principal</td>
+<td>Controlled access; linked to tenants via memberships and verified authorization.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>role</code></td>
+<td>Global/system and optionally tenant-defined</td>
+<td>System roles global-read controlled; tenant-defined roles (if <code>tenant_id</code> set) treated as tenant-scoped.</td>
+</tr>
+<tr>
+<td>core</td>
+<td><code>role_permission</code></td>
+<td>Follows role scope</td>
+<td>Access governed by role scope/administration paths.</td>
+</tr>
+<tr>
+<td>ingest</td>
+<td><code>event_schema_reference</code></td>
+<td>Global/shared catalog (proposed)</td>
+<td>Read access for validation/normalization; write restricted to controlled roles.</td>
+</tr>
+<tr>
+<td>soc</td>
+<td><code>threat_intelligence_reference</code></td>
+<td>Global/shared catalog</td>
+<td>Read access controlled; no tenant data embedded.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Design note:</strong> global/catalog tables must never become a path for cross-tenant data leakage; joins from tenant-owned tables to global catalogs are permitted only on non-tenant reference data and must not bypass tenant predicates on tenant-owned sides.</p>
+<h2>2. Tenant context propagation (conceptual)</h2>
+<h3>2.1 Trusted, verified, transaction-bound context</h3>
+<ol>
+<li><strong>Authentication/authorization upstream:</strong> request/job identity and tenant entitlement are established by trusted application services using verified identity and authorization inputs (not raw client claims).</li>
+<li><strong>Verification:</strong> before tenant-scoped database work, a trusted verifier validates the tenant/scope assertion and binds it to an auditable, transaction-scoped context (e.g. a protected verified-context record/token validated by hardened helper logic). The exact mechanism is implementation-specific but must be non-forgeable by unprivileged runtime roles.</li>
+<li><strong>Transaction scope:</strong> each tenant-scoped database transaction establishes its own verified context and clears it at transaction end. Context <strong>must not</strong> leak across pooled connections, transactions, or sessions.</li>
+<li><strong>Database enforcement:</strong> RLS and any authorization helpers read tenant/scope decisions only from trusted verified context (hardened, narrowly scoped security helpers/internal structures as approved). <strong>PostgreSQL custom GUCs settable by user/session (e.g. <code>SET app.tenant_id</code>/<code>current_setting</code>) are explicitly disallowed as authorization authority</strong>; they may be used only for non-authoritative diagnostics if separately approved and never consulted by RLS/authorization decisions.</li>
+<li><strong>Fail closed:</strong> missing, invalid, expired, mismatched, or unverified context results in denial/no rows/no writes for tenant-protected operations.</li>
+</ol>
+<h3>2.2 Connection pooling and session state</h3>
+<ul>
+<li>Pooled connections are untrusted carriers of prior session state; application/runtime must guarantee context reset and transaction-local establishment on every checkout/use.</li>
+<li>Use transaction-scoped context patterns only (conceptually: establish at begin, clear on commit/rollback/failure). Avoid session-persistent tenant context for authorization.</li>
+<li>Background workers, ingest processors, outbox claimers, and admin jobs must each establish verified context appropriate to their scope (tenant-specific job context, or explicitly controlled non-tenant administrative context) per execution unit.</li>
+</ul>
+<h3>2.3 Background jobs and administrative operations</h3>
+<ul>
+<li><strong>Tenant-scoped jobs/workers:</strong> run under least-privilege runtime roles with verified tenant context per job/transaction; RLS applies.</li>
+<li><strong>Controlled administrative/support operations:</strong> time-bound, scoped, reasoned, and audited (e.g. <code>support_access_grant</code>/approval flow); may use explicitly approved elevated/control-plane procedures but <strong>not</strong> routine <code>BYPASSRLS</code> runtime paths and not blanket tenant access. Any exceptional bypass must be separately authorized, minimal, logged, and reviewed.</li>
+<li><strong>Migration/maintenance roles:</strong> separate from runtime roles; no ordinary request traffic; maintenance must not silently bypass legal hold/evidence/retention controls.</li>
+</ul>
+<h2>3. Conceptual RLS model</h2>
+<h3>3.1 Policy posture (proposed)</h3>
+<ul>
+<li>Enable and enforce RLS on all tenant-owned/protected tables as applicable (<code>ENABLE ROW LEVEL SECURITY</code>; <code>FORCE ROW LEVEL SECURITY</code> considered where ownership/role design permits and does not break controlled administrative paths) — exact applicability requires implementation review.</li>
+<li><strong>Restrictive tenant-boundary predicate (conceptual):</strong> tenant-owned rows visible/mutable only when <code>row.tenant_id</code> (or equivalent target tenant key) matches the verified tenant from trusted transaction-bound context and required scope/action checks pass.</li>
+<li><strong>Permissive/action policies (conceptual, if used):</strong> may refine allowed operations (select/insert/update/delete) by role/scope but must never weaken tenant boundary; restrictive and permissive policies combine according to PostgreSQL semantics and must be designed/tested explicitly.</li>
+<li><strong>Command-specific enforcement:</strong> <code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code> policies/privileges defined per table/use case; <code>INSERT</code>/<code>UPDATE</code> must enforce <code>WITH CHECK</code>-equivalent tenant consistency so rows cannot be written into another tenant. <code>UPDATE ... RETURNING</code>/row-addressed workflows require explicit visibility/read qualification design.</li>
+<li><strong>Default deny/fail-closed:</strong> no verified context =&gt; no access.</li>
+</ul>
+<h3>3.2 Role and privilege model (proposed)</h3>
+<table>
+<thead>
+<tr>
+<th>Role (conceptual)</th>
+<th>Purpose</th>
+<th>Privileges (high level)</th>
+<th>Prohibitions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>schema/migration owner roles (NOLOGIN/controlled)</td>
+<td>DDL, ownership, migration execution</td>
+<td>Controlled schema/object ownership and migration privileges</td>
+<td>Not used for ordinary runtime traffic.</td>
+</tr>
+<tr>
+<td><code>cares_api_runtime</code></td>
+<td>Tenant-scoped API/application operations</td>
+<td>Least-privilege DML/SELECT on approved objects/paths; execute approved narrow helpers</td>
+<td>No <code>BYPASSRLS</code>, no schema/security ownership, no direct security-internal table writes except approved paths.</td>
+</tr>
+<tr>
+<td><code>cares_ingest_runtime</code></td>
+<td>Ingestion/acceptance processing</td>
+<td>Least-privilege ingest-path operations</td>
+<td>Same prohibitions; no broad admin.</td>
+</tr>
+<tr>
+<td><code>cares_worker_runtime</code></td>
+<td>Outbox/async/background processing</td>
+<td>Least-privilege worker-path operations</td>
+<td>No evidence/security bypass, no ownership.</td>
+</tr>
+<tr>
+<td><code>cares_readonly_support</code> (if needed)</td>
+<td>Time-bound scoped read support under audited grant</td>
+<td>Narrow read-only approved paths</td>
+<td>No write, no bypass, no blanket access.</td>
+</tr>
+<tr>
+<td><code>cares_maintenance</code></td>
+<td>Controlled maintenance/partition/reconciliation tasks</td>
+<td>Narrow maintenance privileges under procedures</td>
+<td>No routine authorization bypass; audited/change-controlled.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Runtime roles must not own protected tables, RLS policies, or security-critical functions. Security-definer helpers, if any, must be hardened (fixed <code>search_path</code>, minimal grants, narrow return values) and reviewed.</li>
+<li>Direct access to partition children/internal security structures should be restricted; ordinary access through approved parent/table paths.</li>
+</ul>
+<h2>4. Additional enforcement needs beyond RLS</h2>
+<p>RLS alone does not guarantee all invariants. The physical design additionally relies on:</p>
+<ul>
+<li><strong>Tenant-consistent composite FKs/unique constraints:</strong> ensure child rows reference parent rows in the same tenant (especially for surrogate PK relationships) and prevent cross-tenant relationship injection.</li>
+<li><strong>Unique/idempotency/dedup constraints:</strong> enforce ledger scope <code>(tenant_id, operation_type, idempotency_key)</code>, event receipt namespace uniqueness, binding/fingerprint uniqueness, and tombstone/lineage integrity under concurrency.</li>
+<li><strong>CHECK constraints and typed references:</strong> enforce state vocabularies, non-negative counters, mutual exclusivity for typed lineage operation references, and temporal/basic structural rules.</li>
+<li><strong>Transactional application logic with safe SQL:</strong> parameterized queries, verified authorization checks before writes, deterministic conflict handling, and no reliance on client-supplied tenant identifiers.</li>
+<li><strong>Controlled transition procedures:</strong> merge/split, evidence transitions, support access activation, and licensing adjustments executed through audited, transactional, authorized paths.</li>
+<li><strong>Audit logging and monitoring:</strong> detection of policy violations, suspicious cross-scope access attempts, reconciliation anomalies, and unknown-outcome processing.</li>
+</ul>
+<h2>5. Assumptions, risks, and validation</h2>
+<ul>
+<li><strong>Assumptions:</strong> supported PostgreSQL version/features, secure pooling/reset behavior, controlled security schema ownership, and availability of hardened verified-context helper implementation are required but not yet validated.</li>
+<li><strong>Risks:</strong> misconfigured pooling can leak session state; incorrect policy/role design can permit leakage or denial; missing composite tenant FKs can allow cross-tenant references even when RLS filters reads; global/shared tables and administrative paths require strict governance.</li>
+<li><strong>Isolation testing requirements (design intent):</strong> cross-tenant negative tests for SELECT/INSERT/UPDATE/DELETE/JOIN/RETURNING, pooled-connection context-reset tests, role/privilege tests (including no <code>BYPASSRLS</code> for runtime roles), partition access tests if partitioned, support-access scope tests, and fail-closed tests for missing/invalid context. All are <strong>NOT IMPLEMENTED/NOT TESTED</strong> in this round.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

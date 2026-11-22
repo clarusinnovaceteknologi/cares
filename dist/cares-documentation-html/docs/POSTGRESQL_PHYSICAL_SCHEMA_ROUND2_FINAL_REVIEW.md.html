@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Physical Schema Round 2 — Final Review</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T18:04:38Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Physical Schema Round 2 — Final Review</h1>
+<p><strong>Status:</strong> Proposed design review only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This review evaluates the Round 2 PostgreSQL physical schema design documentation against the published Round 1.1 audited logical baseline. It does not authorize implementation, database object creation, ADR/status changes, or roadmap changes. <strong>ADR 0006 remains Proposed.</strong></p>
+<p><strong>Branch:</strong> <code>design/postgresql-round2-physical-schema</code> (created from <code>origin/audit/postgresql-round1-1-publication</code>, baseline commit <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code>). <strong>Remote publication status at time of writing this document:</strong> not yet pushed/verified (see <a href="../copilot.txt">copilot.txt</a> for final execution and publication verification results).</p>
+<h2>1. Executive summary</h2>
+<p>Round 2 translates the Round 1.1 logical baseline into a comprehensive proposed physical schema design covering schema organization, complete logical-to-physical mapping, per-table/column specifications, key/constraint strategy, index strategy, RLS/tenant-isolation design, transaction-to-physical mapping for all 13 critical operations, data lifecycle/retention considerations, open decisions, changelog, and this final review.</p>
+<p><strong>Overall assessment:</strong> the Round 2 documentation is <strong>substantially complete and traceable</strong> for implementation-planning purposes, with preserved Round 1.1 invariants (authoritative binding ownership, idempotency contract shape, explicit event dedup namespace semantics, typed lineage, no exactly-once external delivery) and preserved architectural/security constraints. However, multiple required approvals and validations remain open (notably OD-001–OD-009/OD-011/OD-013 and ADR 0006 acceptance, plus operational/workload validation and several physical-design finalizations). No executable DDL/migrations/DB objects were produced.</p>
+<p><strong>Recommended readiness classification:</strong> <strong>READY FOR ROUND 3 IMPLEMENTATION PLANNING WITH EXPLICITLY BOUNDED EXCLUSIONS</strong> (see §10).</p>
+<h2>2. Documents actually inspected (baseline and Round 2)</h2>
+<h3>2.1 Baseline documents (inspected in this round)</h3>
+<ul>
+<li><a href="POSTGRESQL_LOGICAL_DATA_MODEL.md.html">docs/POSTGRESQL_LOGICAL_DATA_MODEL.md</a></li>
+<li><a href="POSTGRESQL_LOGICAL_ERD.md.html">docs/POSTGRESQL_LOGICAL_ERD.md</a></li>
+<li><a href="POSTGRESQL_TRANSACTION_BOUNDARIES.md.html">docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md</a></li>
+<li><a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a></li>
+<li><a href="POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html">docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md</a></li>
+<li><a href="DATA_ARCHITECTURE.md.html">docs/DATA_ARCHITECTURE.md</a></li>
+<li><a href="SECURITY_ARCHITECTURE.md.html">docs/SECURITY_ARCHITECTURE.md</a></li>
+<li><a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">docs/POSTGRESQL_TECHNICAL_DECISIONS.md</a></li>
+<li><a href="adr/0003-device-identity-and-asset-licensing.md.html">docs/adr/0003-device-identity-and-asset-licensing.md</a></li>
+<li><a href="adr/0005-event-processing-and-broker-evolution.md.html">docs/adr/0005-event-processing-and-broker-evolution.md</a></li>
+<li><a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a></li>
+<li><a href="PROJECT_STATUS.md.html">docs/PROJECT_STATUS.md</a></li>
+<li>Export/packaging conventions and audit artifacts (<code>dist/cares-documentation-html/</code>, <code>dist/CARES_DOCUMENTATION_HTML.zip</code>, <code>dist/cares-external-audit/</code>, <code>copilot.txt</code>)</li>
+</ul>
+<h3>2.2 Round 2 documents produced and reviewed</h3>
+<ul>
+<li><a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a></li>
+<li><a href="POSTGRESQL_PHYSICAL_ERD.md.html">docs/POSTGRESQL_PHYSICAL_ERD.md</a></li>
+<li><a href="POSTGRESQL_INDEX_STRATEGY.md.html">docs/POSTGRESQL_INDEX_STRATEGY.md</a></li>
+<li><a href="POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a></li>
+<li><a href="POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a></li>
+<li><a href="POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html">docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</a></li>
+<li><a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a></li>
+<li><a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md</a></li>
+<li><a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a> (this document)</li>
+</ul>
+<h2>3. Logical-to-physical traceability</h2>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Complete logical entity mapping present</td>
+<td><strong>PASS</strong></td>
+<td><a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a> §3.3 and §6 define proposed physical representations for all 50 expected logical entities inventoried from the Round 1.1 baseline; targeted validation found no missing entity names from the expected set.</td>
+</tr>
+<tr>
+<td>ERD-simplified/omitted logical entities represented physically</td>
+<td><strong>PASS</strong></td>
+<td>Mapped entities include <code>external_identity_subject</code>, <code>role_permission</code>, <code>membership_role_assignment</code>, <code>support_access_approval</code>, <code>source_device_fingerprint_alias</code>, <code>asset_identity_claim</code>, <code>identity_resolution_case</code>, <code>asset_tombstone</code>, <code>processing_work_item</code>, <code>evidence_object_version</code>, <code>evidence_custody_event</code>, <code>evidence_transition_authorization</code>, <code>ai_usage_budget_accounting</code>, and related records; physical ERD includes traceability notes.</td>
+</tr>
+<tr>
+<td>Explicit bounded representation exceptions documented</td>
+<td><strong>PASS WITH LIMITATIONS</strong></td>
+<td><code>core.source_device_key</code> documented as optional dependent/non-authoritative 1:1 projection or binding-owned attributes only (OD-002 bounded); <code>processing.processing_work_item</code> documented optional/non-core and must not replace receipt/outbox truth. Final materialization choices remain proposed.</td>
+</tr>
+<tr>
+<td>All 13 logical transaction operations mapped</td>
+<td><strong>PASS</strong></td>
+<td><a href="POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a> defines Operations 1–13 with tables, constraints/indexes, transaction intent, locking/concurrency, and failure/retry/recovery notes.</td>
+</tr>
+<tr>
+<td>Traceability of critical invariants</td>
+<td><strong>PASS WITH LIMITATIONS</strong></td>
+<td>Authoritative binding ownership, idempotency ledger scope/hash/state, event receipt namespace/fallback basis, typed lineage FKs/mutual exclusivity, and outbox unknown-outcome/no-exactly-once semantics are explicitly represented; final enforcement predicates/formulas depend on open decisions and implementation validation.</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Cross-document consistency findings</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Result</th>
+<th>Findings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schema organization, ownership, naming, and conventions</td>
+<td><strong>PASS</strong></td>
+<td>Consistent schema namespaces, table naming, shared-column conventions, and role/ownership posture across schema, index, RLS, transaction, and lifecycle documents.</td>
+</tr>
+<tr>
+<td>Key/identity strategy and integrity model</td>
+<td><strong>PASS WITH LIMITATIONS</strong></td>
+<td>UUID surrogate PKs, tenant-aware uniqueness, authoritative binding identity, immutable canonical asset identity, and alternate business/idempotency keys are consistently specified. Composite tenant-FK enforcement is stated as required design intent but exact compositions require implementation finalization (PD-003, residual risk noted).</td>
+</tr>
+<tr>
+<td>Tenant isolation and RLS model</td>
+<td><strong>PASS</strong></td>
+<td>All relevant documents preserve verified transaction-bound tenant context, prohibit client-supplied tenant authority and user-settable PostgreSQL GUC authorization, and treat RLS as defense in depth with least-privilege roles and additional constraints.</td>
+</tr>
+<tr>
+<td>Index coverage for required patterns</td>
+<td><strong>PASS WITH LIMITATIONS</strong></td>
+<td><a href="POSTGRESQL_INDEX_STRATEGY.md.html">POSTGRESQL_INDEX_STRATEGY.md</a> covers identity/binding resolution, event dedup namespaces, idempotency ledger, audit/evidence retrieval, time-based/dashboard queries, and outbox claiming/recovery. Several predicates/partial indexes and JSONB/expression choices remain proposed and workload-dependent.</td>
+</tr>
+<tr>
+<td>Transaction mapping consistency</td>
+<td><strong>PASS WITH LIMITATIONS</strong></td>
+<td>Operations align with referenced tables/constraints/indexes and Round 1.1 semantics (ledger/event-receipt separation, typed lineage, no exactly-once). Concurrency mechanisms (e.g. <code>SKIP LOCKED</code>, isolation level choices) and accounting formulas are proposed/conditional.</td>
+</tr>
+<tr>
+<td>Lifecycle/retention consistency</td>
+<td><strong>PASS WITH LIMITATIONS</strong></td>
+<td>Partitioning, retention, legal hold, tombstones, backup/PITR, and maintenance guidance align with data sensitivity and append-only/immutable intents; specific durations, triggers, and operational targets remain open/assumed (OD-010/OD-012).</td>
+</tr>
+<tr>
+<td>Open decisions and status handling</td>
+<td><strong>PASS</strong></td>
+<td>OD-001–OD-013 carried forward with preserved statuses/intent; PD-001–PD-012 added as Proposed/Deferred; no unresolved item marked Approved; ADR 0006 remains Proposed.</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Mermaid validation results</h2>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Structural validation</th>
+<th>Visual rendering</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="POSTGRESQL_PHYSICAL_ERD.md.html">POSTGRESQL_PHYSICAL_ERD.md</a></td>
+<td>Performed (source inspection)</td>
+<td><strong>NOT VERIFIED</strong></td>
+<td><strong>PASS WITH LIMITATIONS</strong></td>
+<td>4 Mermaid fenced blocks detected (domain ERDs 1–4). No Mermaid renderer CLI (<code>mmdc</code>/<code>npx</code>) verified in environment; structural review only, no rendered-image/layout validation.</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Open decision reassessment (Round 2 impact)</h2>
+<table>
+<thead>
+<tr>
+<th>Decision(s)</th>
+<th>Readiness impact</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OD-001, OD-003, OD-004 (licensing accounting/counter/reservation semantics; ADR 0006 Proposed)</td>
+<td>Block final licensing accounting/enforcement correctness approval; do not block documenting physical structures and implementation-planning boundaries</td>
+<td><strong>Blocks specific physical/behavioral finalization; bounded in Round 2</strong></td>
+</tr>
+<tr>
+<td>OD-002 (binding authority approval)</td>
+<td>Affects final sign-off of authoritative binding uniqueness/authority (design follows recommended model)</td>
+<td><strong>Blocks specific finalization</strong></td>
+</tr>
+<tr>
+<td>OD-005, OD-006, OD-007, OD-008, OD-009, OD-013</td>
+<td>Affect merge/split policy details, fingerprint protection/rotation/overlap, re-enrollment handling, formal idempotency contract approval, outbox claim/fencing/unknown-delivery mechanics, and connector dedup fallback/predicates</td>
+<td><strong>Block specific physical/operational finalization; bounded where possible</strong></td>
+</tr>
+<tr>
+<td>OD-010, OD-011, OD-012</td>
+<td>Affect retention/legal-hold durations/processes, AI governance enforcement details, and workload/partition/index validation</td>
+<td><strong>Deferred / validation or governance-dependent</strong></td>
+</tr>
+<tr>
+<td>PD-001–PD-012</td>
+<td>Physical implementation choices requiring review/measurement (UUID ordering, enum/check strategy, composite FK pattern, RLS FORCE/object details, claim mechanics, dedup predicates, JSONB indexing, partition triggers, hash representation, scope modeling)</td>
+<td><strong>Proposed/Deferred; non-blocking to planning if bounded</strong></td>
+</tr>
+</tbody>
+</table>
+<p>No open decision status was changed to Approved.</p>
+<h2>7. Unresolved issues, risks, and limitations</h2>
+<ol>
+<li><strong>Composite tenant-FK completeness:</strong> physical design requires tenant-consistent relationships, but exact composite FK/unique-key composition for all critical paths must be finalized and validated to eliminate cross-tenant reference risk beyond RLS. (<strong>Risk: security/integrity</strong>)</li>
+<li><strong>Licensing accounting semantics unresolved:</strong> committed/reserved/capacity formulas and timeout/reconciliation behaviors depend on OD-001/003/004 and ADR 0006 acceptance. (<strong>Blocks specific finalization</strong>)</li>
+<li><strong>Binding/idempotency/dedup approvals pending:</strong> OD-002/OD-008/OD-013 require formal approval and connector-specific finalization for predicates/fallbacks. (<strong>Blocks specific finalization</strong>)</li>
+<li><strong>Outbox and unknown-outcome operations:</strong> lease/fencing/claim mechanics and reconciliation procedures (OD-009) require implementation validation; no exactly-once external delivery is possible/claimed. (<strong>Operational risk</strong>)</li>
+<li><strong>Fingerprint protection and evidence lifecycle governance:</strong> key custody, hash/protection representation, overlap semantics, retention/legal-hold durations, and controlled disposal procedures remain open (OD-006/OD-010/PD-011). (<strong>Security/compliance dependency</strong>)</li>
+<li><strong>Workload-dependent choices not validated:</strong> indexing efficacy, partitioning thresholds, UUID choice impact, autovacuum tuning, query plans, and contention behavior are untested assumptions (OD-012). (<strong>NOT VERIFIED</strong>)</li>
+<li><strong>Mermaid visual rendering:</strong> not performed; only structural source inspection completed. (<strong>NOT VERIFIED</strong>)</li>
+<li><strong>No implementation artifacts:</strong> absence of DDL/migrations/roles/policies/tests means no runtime correctness, isolation, or performance can be claimed.</li>
+</ol>
+<h2>8. Evidence summary</h2>
+<ul>
+<li><strong>Document existence:</strong> all nine required Round 2 documents present under <code>docs/</code> (verified by file checks).</li>
+<li><strong>Entity coverage:</strong> 50 expected logical entity names found in <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a> mapping/specification context (no missing names in targeted check).</li>
+<li><strong>Key semantics present:</strong> authoritative binding ownership text, idempotency scope fields/index references (<code>tenant_id</code>, <code>operation_type</code>, <code>idempotency_key</code>), explicit <code>event_namespace</code>/dedup basis fields, and typed lineage fields (<code>merge_operation_id</code>, <code>split_operation_id</code>) with non-polymorphic design stated.</li>
+<li><strong>Transaction coverage:</strong> Operations 1–13 headings present in <a href="POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a>.</li>
+<li><strong>Mermaid structure:</strong> 4 fenced Mermaid blocks in <a href="POSTGRESQL_PHYSICAL_ERD.md.html">POSTGRESQL_PHYSICAL_ERD.md</a>.</li>
+<li><strong>Invariant preservation:</strong> RLS/isolation document states tenant authority only from trusted, verified, transaction-bound context, never from client-supplied tenant IDs and never from user-settable PostgreSQL GUCs for authorization decisions.</li>
+<li>Export/package validation results, file hashes, and git publication verification are recorded in <a href="../copilot.txt">copilot.txt</a> upon completion of execution steps.</li>
+</ul>
+<h2>9. Scope and compliance statement</h2>
+<ul>
+<li>This round produced <strong>documentation/design artifacts only</strong>. No PostgreSQL DDL, migrations, Alembic scripts, tables, indexes, constraints, triggers, functions, procedures, views, materialized views, sequences, roles, grants, RLS policies, extensions, ORM models, application code, or database deployment steps were created.</li>
+<li>Existing ADR statuses were not changed; <strong>ADR 0006 remains Proposed</strong>. Established roadmap and prior approved decisions were not reopened. Proposed/open decisions were not marked Approved.</li>
+<li>No claims of implementation, testing, rendering, performance, production readiness, or validation are made beyond checks explicitly performed and recorded.</li>
+</ul>
+<h2>10. Final readiness assessment</h2>
+<p><strong>Recommendation:</strong> <strong>READY FOR ROUND 3 IMPLEMENTATION PLANNING WITH EXPLICITLY BOUNDED EXCLUSIONS</strong></p>
+<p><strong>Rationale:</strong></p>
+<ul>
+<li>The Round 2 physical design provides comprehensive, traceable, implementation-oriented documentation across all required domains (schema/entities, keys/constraints/integrity, indexing, RLS/isolation, transaction mapping, lifecycle/retention, open decisions) while preserving Round 1.1 semantics and project invariants.</li>
+<li>Implementation planning can proceed to define migration sequencing, detailed DDL/policy implementation approach, test/validation plans, and approval gates, provided the exclusions below are explicitly bounded and tracked.</li>
+</ul>
+<p><strong>Explicitly bounded exclusions / conditions for Round 3 planning:</strong></p>
+<ul>
+<li><strong>Requires formal approval before implementation sign-off:</strong> OD-001/003/004 (licensing accounting/counters/reservations, ADR 0006 context), OD-002 (binding authority), OD-005 (merge/split policy/effects), OD-006 (fingerprint protection/rotation/overlap), OD-007 (re-enrollment/reset), OD-008 (idempotency contract/coupling approval), OD-009 (outbox mechanics/unknown-delivery handling), OD-013 (connector dedup namespaces/fallback predicates), and relevant privacy/legal/security approvals for OD-010/OD-011.</li>
+<li><strong>Must be finalized/validated during implementation planning or pre-implementation:</strong> composite tenant-FK patterns (PD-003), verified-context DB mechanism implementation details (PD-005, within invariant constraints), RLS FORCE/ownership specifics (PD-006), claim/lease mechanics (PD-007), dedup uniqueness predicates (PD-008), UUID/type/hash representation choices (PD-001/PD-002/PD-011), and scope modeling details (PD-012).</li>
+<li><strong>Requires workload/operability validation:</strong> index effectiveness, partitioning triggers/keys, JSONB indexing needs, autovacuum/maintenance tuning, capacity/RPO-RTO targets, and query/concurrency behavior (OD-012, PD-009/PD-010).</li>
+<li><strong>Not verified in this round:</strong> Mermaid visual rendering, runtime isolation/performance/correctness, and any unexecuted tests.</li>
+</ul>
+<p><strong>Blocked issues (specific, not whole-round blockers):</strong> none identified that prevent implementation planning as a documentation/planning activity; however, the approvals and validations above <strong>block final implementation correctness/approval</strong> for affected areas until resolved.</p>
+<p><strong>Stop condition:</strong> Round 2 documentation/design work is complete for this execution. <strong>Do not start Round 3 implementation</strong> and do not create SQL/migrations/application implementation without explicit project-owner authorization.</p>
+
+</article>
+</div>
+
+</body>
+</html>

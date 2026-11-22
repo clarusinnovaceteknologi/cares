@@ -1,11 +1,11 @@
 # CARES Documentation Export Manifest
 
-- **Export timestamp (UTC):** 2026-11-21T16:32:02Z
-- **Repository revision/commit hash:** 888905d8aef8bf6eb2e874cf9804a239f0f6f51a
-- **Total discovered Markdown files:** 32
-- **Total successfully converted HTML files:** 32
+- **Export timestamp (UTC):** 2026-11-21T18:04:38Z
+- **Repository revision/commit hash:** c433fe897d1922c9e154a19b5646c99c3ec6d73d
+- **Total discovered Markdown files:** 41
+- **Total successfully converted HTML files:** 41
 - **Failed conversions:** 0
-- **Copied assets:** 0
+- **Copied assets:** 2
 - **Missing referenced assets:** 0
 - **Broken/unresolved internal links:** 0
 - **Files with faithfulness notes:** 0
@@ -25,11 +25,20 @@
 | docs/CARES_PRODUCT_VISION.md | docs/CARES_PRODUCT_VISION.md.html | converted |
 | docs/DATA_ARCHITECTURE.md | docs/DATA_ARCHITECTURE.md.html | converted |
 | docs/DEVELOPMENT_ROADMAP.md | docs/DEVELOPMENT_ROADMAP.md.html | converted |
+| docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md | docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html | converted |
+| docs/POSTGRESQL_INDEX_STRATEGY.md | docs/POSTGRESQL_INDEX_STRATEGY.md.html | converted |
 | docs/POSTGRESQL_LOGICAL_DATA_MODEL.md | docs/POSTGRESQL_LOGICAL_DATA_MODEL.md.html | converted |
 | docs/POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md | docs/POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md.html | converted |
 | docs/POSTGRESQL_LOGICAL_ERD.md | docs/POSTGRESQL_LOGICAL_ERD.md.html | converted |
 | docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md | docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md.html | converted |
 | docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md | docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html | converted |
+| docs/POSTGRESQL_PHYSICAL_ERD.md | docs/POSTGRESQL_PHYSICAL_ERD.md.html | converted |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md | docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html | converted |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md | docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html | converted |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md.html | converted |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html | converted |
+| docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md | docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html | converted |
+| docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md | docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html | converted |
 | docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md | docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html | converted |
 | docs/POSTGRESQL_TECHNICAL_DECISIONS.md | docs/POSTGRESQL_TECHNICAL_DECISIONS.md.html | converted |
 | docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md | docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md.html | converted |
@@ -62,5 +71,6 @@ _None_
 _None_
 
 ## Copied assets
-_None_
+- `copilot.txt`
+- `dist/CARES_DOCUMENTATION_HTML.zip`
 

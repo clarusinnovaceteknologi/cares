@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Physical Schema Open Decisions (Round 2)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T18:04:38Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Physical Schema Open Decisions (Round 2)</h1>
+<p><strong>Status:</strong> Proposed decision register update for physical schema design; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This document carries forward Round 1/1.1 open decisions and records additional physical-design decisions. <strong>No unresolved decision is marked Approved.</strong> Existing ADR statuses remain unchanged (<strong>ADR 0006 remains Proposed</strong>). No approval, implementation, or production-readiness claim is made.</p>
+<p><strong>Sources:</strong> <a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html">POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md</a>, Round 2 physical design documents.</p>
+<h2>1. Status definitions</h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Approved</strong></td>
+<td>Formally approved by required authority and documented as approved. Not used for unresolved items in this round.</td>
+</tr>
+<tr>
+<td><strong>Proposed</strong></td>
+<td>Recommended/design-documented baseline or option, pending required review/approval/validation.</td>
+</tr>
+<tr>
+<td><strong>Deferred</strong></td>
+<td>Intentionally postponed (typically to implementation planning/validation) with known dependencies and no silent assumption.</td>
+</tr>
+<tr>
+<td><strong>Blocked</strong></td>
+<td>Cannot be finalized because required external input, approval, prerequisite decision, or validation is missing.</td>
+</tr>
+</tbody>
+</table>
+<h2>2. Carried-forward Round 1.1 decisions (OD-001–OD-013)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Decision</th>
+<th>Status (preserved)</th>
+<th>Physical design impact</th>
+<th>Notes / blocking scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OD-001</td>
+<td>ADR 0006 acceptance and unresolved concurrency/quota/timeout ambiguity</td>
+<td><strong>Proposed / pending ADR acceptance</strong> (ADR 0006 remains <strong>Proposed</strong>)</td>
+<td>Licensing counters, reservation/timeout, reconciliation semantics in physical tables/transactions cannot be finalized</td>
+<td>Blocks final approval of licensing accounting semantics; Round 2 documents bounded proposed structures only.</td>
+</tr>
+<tr>
+<td>OD-002</td>
+<td><code>asset_data_source</code> as authoritative stable binding owning immutable <code>source_device_key_id</code>; optional dependent <code>source_device_key</code> projection</td>
+<td><strong>Proposed (open approval)</strong></td>
+<td><code>core.asset_data_source</code> modeled as authoritative; uniqueness/indexes/transaction checks assume this baseline; dependent projection optional</td>
+<td>Blocks final uniqueness/authority sign-off for binding identity; physical design preserves recommended model.</td>
+</tr>
+<tr>
+<td>OD-003</td>
+<td>Pending reservation behavior, timeout/release, and committed/reserved counter semantics</td>
+<td><strong>Proposed (open approval)</strong></td>
+<td><code>core.asset_license_reservation</code>, <code>core.tenant_license_usage_state</code>, transaction flows</td>
+<td>Blocks final accounting/enforcement details.</td>
+</tr>
+<tr>
+<td>OD-004</td>
+<td>Tenant-level authoritative counter scope and recomputation/reconciliation semantics</td>
+<td><strong>Proposed (open approval)</strong></td>
+<td>Usage-state structure, constraints, reconciliation procedures</td>
+<td>Blocks final counter formulas and reconciliation implementation rules.</td>
+</tr>
+<tr>
+<td>OD-005</td>
+<td>Merge/split authorization, evidence, and licensing effects</td>
+<td><strong>Proposed (open approval)</strong></td>
+<td><code>asset_merge_operation</code>, <code>asset_split_operation</code>, typed <code>asset_lineage_link</code>, tombstones, lifecycle/license transactions</td>
+<td>Blocks final operational policy and some transactional edge-case enforcement details.</td>
+</tr>
+<tr>
+<td>OD-006</td>
+<td>Fingerprint hashing/protection, key custody, rotation overlap, and reassignment safeguards</td>
+<td><strong>Proposed (open approval)</strong></td>
+<td>Fingerprint storage representation, alias uniqueness predicates, rotation procedures</td>
+<td>Blocks final security/overlap constraints and storage protections.</td>
+</tr>
+<tr>
+<td>OD-007</td>
+<td>Reinstall/re-enrollment and controlled identity-reset handling</td>
+<td><strong>Proposed (open approval)</strong></td>
+<td>Resolution/claim/binding workflows and alias rotation/rebinding rules</td>
+<td>Blocks specific workflow-state finalization.</td>
+</tr>
+<tr>
+<td>OD-008</td>
+<td>Formal idempotency contract (scope, hash, states, replay/conflict, timeout/unknown-commit, retention) and coupling mode</td>
+<td><strong>Proposed (open approval)</strong></td>
+<td><code>core.identity_operation_idempotency_ledger</code> schema/indexes/state machine and transaction coupling (default A proposed)</td>
+<td>Blocks formal contract approval; physical design implements documented proposed contract shape.</td>
+</tr>
+<tr>
+<td>OD-009</td>
+<td>Outbox leasing/fencing, dispatch ownership, retry/claim semantics, and unknown-delivery handling</td>
+<td><strong>Proposed (open approval)</strong></td>
+<td><code>processing.outbox_message</code>/<code>outbox_attempt</code> fields, claim indexes, state transitions, recovery</td>
+<td>Blocks final worker/claim mechanics and operational SLO-like guarantees (not claimed).</td>
+</tr>
+<tr>
+<td>OD-010</td>
+<td>Retention/legal-hold/deletion classes for audit, evidence, events, and telemetry</td>
+<td><strong>Deferred / pending governance approval</strong></td>
+<td>Retention matrix, partition/drop eligibility, purge/archival and offboarding procedures</td>
+<td>Blocks final lifecycle automation and retention durations.</td>
+</tr>
+<tr>
+<td>OD-011</td>
+<td>AI consent, data-classification/redaction, budget/quota, and provider-policy persistence details</td>
+<td><strong>Deferred / pending policy and privacy approval</strong></td>
+<td>AI config/consent/budget/accounting/audit field completeness and enforcement hooks</td>
+<td>Blocks final governance enforcement specifics.</td>
+</tr>
+<tr>
+<td>OD-012</td>
+<td>Retention, partitioning, and workload/index validation</td>
+<td><strong>Deferred / validation required</strong></td>
+<td>Partition adoption, index refinement, autovacuum/maintenance tuning, capacity assumptions</td>
+<td>Blocks performance/operability sign-off; no claims made.</td>
+</tr>
+<tr>
+<td>OD-013</td>
+<td>Connector-specific event identity namespace and fallback behavior for missing/unreliable upstream IDs</td>
+<td><strong>Proposed (open/partial)</strong></td>
+<td><code>ingest.event_receipt</code> namespace/fingerprint columns and uniqueness predicates</td>
+<td>Blocks final per-connector dedup predicates and fallback fingerprint specification.</td>
+</tr>
+</tbody>
+</table>
+<h2>3. New physical-design decisions (Round 2)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Decision</th>
+<th>Options considered</th>
+<th>Recommended / proposed direction</th>
+<th>Status</th>
+<th>Impact</th>
+<th>Approval/validation authority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PD-001</td>
+<td>UUID generation/version and ordering strategy for PKs and high-insert tables</td>
+<td>UUIDv4 (random), UUIDv7/time-ordered (if supported/tooling aligned), application-generated vs DB-generated</td>
+<td><strong>Proposed:</strong> application-generated UUID with time-ordered variant preferred for insert-heavy/index-locality-sensitive tables if platform/tooling support is confirmed; otherwise UUIDv4 acceptable with measured index impact</td>
+<td><strong>Proposed</strong></td>
+<td>Index locality, bloat, write amplification, ID exposure characteristics</td>
+<td>Engineering + DBA/review; workload validation (OD-012)</td>
+</tr>
+<tr>
+<td>PD-002</td>
+<td>State/type representation: PostgreSQL enum vs constrained <code>text</code> + CHECK vs lookup tables</td>
+<td>Native enum, text+CHECK, lookup/reference tables</td>
+<td><strong>Proposed:</strong> constrained <code>text</code> + CHECK for evolving states in initial physical design; lookup tables for governed catalogs where referential management adds value</td>
+<td><strong>Proposed</strong></td>
+<td>Migration flexibility, integrity clarity, governance overhead</td>
+<td>Engineering/architecture review</td>
+</tr>
+<tr>
+<td>PD-003</td>
+<td>Tenant-consistent referential enforcement pattern for surrogate-key relationships</td>
+<td>Single-column FK only, composite unique <code>(tenant_id,id)</code> + composite FK, trigger-based validation, mixed</td>
+<td><strong>Proposed:</strong> composite unique keys and composite FKs for critical tenant-owned parent/child relationships where feasible; document exceptions and compensating controls</td>
+<td><strong>Proposed</strong></td>
+<td>Cross-tenant reference prevention, schema complexity, FK width/index cost</td>
+<td>Security/DB design review; implementation validation</td>
+</tr>
+<tr>
+<td>PD-004</td>
+<td>Physical materialization of <code>core.source_device_key</code> dependent projection</td>
+<td>Materialized 1:1 table, no separate table (binding-owned columns only)</td>
+<td><strong>Proposed:</strong> prefer binding-owned authoritative columns without separate projection unless constraints/readability require table; if materialized, enforce strict 1:1 and non-authoritative parity</td>
+<td><strong>Proposed</strong> (bounded)</td>
+<td>Schema simplicity vs explicit projection object; divergence risk if misimplemented</td>
+<td>Architecture/security review aligned with OD-002</td>
+</tr>
+<tr>
+<td>PD-005</td>
+<td>Verified tenant-context database mechanism (within invariants)</td>
+<td>Hardened security-definer helper validating protected transaction-bound context record/token; other non-GUC, non-client-authoritative mechanisms</td>
+<td><strong>Proposed:</strong> trusted transaction-bound verified-context mechanism validated by hardened helpers/internal structures; <strong>never</strong> client-supplied tenant IDs or user-settable GUC authorization</td>
+<td><strong>Proposed</strong></td>
+<td>RLS correctness, pooling safety, implementation complexity</td>
+<td>Security/DBA/architecture approval and penetration/negative testing</td>
+</tr>
+<tr>
+<td>PD-006</td>
+<td>RLS FORCE behavior and table ownership hardening details</td>
+<td>Enable RLS only, enable + FORCE where applicable, role/ownership matrix specifics</td>
+<td><strong>Proposed:</strong> enable RLS on tenant-protected tables and apply FORCE where compatible with controlled ownership/bypass design; exact applicability finalized in implementation review</td>
+<td><strong>Deferred</strong></td>
+<td>Bypass risk, administrative operability</td>
+<td>Security/DBA review</td>
+</tr>
+<tr>
+<td>PD-007</td>
+<td>Outbox claim mechanism and lease/fencing implementation details</td>
+<td><code>FOR UPDATE SKIP LOCKED</code> claim, advisory locks, lease-token CAS updates, hybrid</td>
+<td><strong>Proposed:</strong> DB-row claim with lease token/expiry/heartbeat and atomic state transitions; <code>SKIP LOCKED</code> pattern likely suitable but must be validated</td>
+<td><strong>Proposed</strong></td>
+<td>Throughput, contention, duplicate processing safety (at-least-once)</td>
+<td>Engineering validation (OD-009/OD-012)</td>
+</tr>
+<tr>
+<td>PD-008</td>
+<td>Event receipt dedup uniqueness predicate finalization per connector/namespace</td>
+<td>Single global unique, multiple partial uniques by namespace/id basis, generated canonical key column</td>
+<td><strong>Proposed:</strong> multiple explicit partial/conditional unique indexes matching approved namespace semantics and fallback rules</td>
+<td><strong>Proposed</strong></td>
+<td>Correctness of dedup, index count/write cost</td>
+<td>Engineering/architecture approval with OD-013</td>
+</tr>
+<tr>
+<td>PD-009</td>
+<td>JSONB indexing policy for operational/SOC/inventory attributes</td>
+<td>No JSONB indexes, selective expression indexes, targeted GIN indexes</td>
+<td><strong>Proposed:</strong> no default GIN indexes; add selective expression/GIN indexes only for proven query paths with sensitivity review</td>
+<td><strong>Proposed</strong></td>
+<td>Query flexibility vs write/storage/maintenance cost and data exposure</td>
+<td>Engineering/DBA validation</td>
+</tr>
+<tr>
+<td>PD-010</td>
+<td>Partitioning adoption triggers and initial partition keys</td>
+<td>No partitioning now, immediate partitioning, threshold-based deferred adoption</td>
+<td><strong>Proposed:</strong> defer partitioning; adopt only after measured volume/query/maintenance thresholds are met, with partition-key-inclusive uniqueness design</td>
+<td><strong>Deferred</strong></td>
+<td>Operability, migration complexity, query/index behavior</td>
+<td>DBA/operations with OD-010/OD-012</td>
+</tr>
+<tr>
+<td>PD-011</td>
+<td>Cryptographic/hash representation for evidence and fingerprint-protection artifacts</td>
+<td><code>text</code> encoding, <code>bytea</code>, algorithm metadata columns</td>
+<td><strong>Proposed:</strong> store algorithm identifier plus hash/derived value in consistent encoded form; exact type chosen for interoperability/indexing needs</td>
+<td><strong>Proposed</strong></td>
+<td>Verification tooling, storage/index behavior</td>
+<td>Security/engineering review (OD-006/OD-010)</td>
+</tr>
+<tr>
+<td>PD-012</td>
+<td>Physical handling of global-vs-tenant detection rules and platform-level audit rows</td>
+<td>Strict tenant-only tables, nullable-scope tables with guarded access, separate global tables</td>
+<td><strong>Proposed:</strong> prefer explicit scope modeling (tenant-owned default) and separate global catalog tables where truly global; any nullable-scope/admin rows require restricted access paths and careful RLS/policy design</td>
+<td><strong>Proposed</strong></td>
+<td>Isolation clarity, administrative flexibility</td>
+<td>Security/architecture review</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Dependencies and blocking summary</h2>
+<ul>
+<li><strong>Formal approval blockers (external/project-owner/security/legal/commercial as applicable):</strong> OD-001, OD-002, OD-003, OD-004, OD-005, OD-006, OD-007, OD-008, OD-009, OD-011 (policy/privacy aspects), and ADR 0006 acceptance remain outside this round's authority.</li>
+<li><strong>Validation/operational deferrals:</strong> OD-010, OD-012, PD-001/003/006/007/008/009/010/011 require implementation-time validation, testing, or environment-specific measurement.</li>
+<li><strong>Round 2 boundedness:</strong> physical structures are proposed to support documented semantics but must not be interpreted as approved final behavior where dependencies remain open.</li>
+</ul>
+<h2>5. Notes</h2>
+<ul>
+<li>Decision statuses use only <strong>Approved, Proposed, Deferred, Blocked</strong>. No unresolved item has been promoted to Approved.</li>
+<li>Future implementation planning must preserve established roadmap and ADR history and obtain required approvals before treating proposed decisions as final.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Index Strategy (Round 2)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_INDEX_STRATEGY.md</code><br><strong>Generated (UTC):</strong> 2026-11-21T18:04:38Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Index Strategy (Round 2)</h1>
+<p><strong>Status:</strong> Proposed index design only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. Indexes are design recommendations derived from logical relationships, transaction boundaries, isolation requirements, and expected access patterns. No performance/capacity claims are made; final selection requires query-plan analysis, workload validation, and migration review.</p>
+<p><strong>Baseline:</strong> Round 1.1 logical model/audit (<code>c433fe8...</code>) and Round 2 physical schema design.</p>
+<h2>1. Principles and assumptions</h2>
+<ul>
+<li><strong>Tenant-first access:</strong> most tenant-scoped lookups and constraints include <code>tenant_id</code> as the leading key component to support tenant filtering, RLS-aligned access, and future manageability (partition-alignment assumptions to be validated).</li>
+<li><strong>Integrity before optimization:</strong> unique indexes enforce canonical business/idempotency/dedup invariants; secondary indexes are added only for justified query patterns and must consider write amplification, storage, and maintenance (VACUUM/autovacuum, bloat).</li>
+<li><strong>Index type choice (proposed, PostgreSQL default B-tree unless noted):</strong> B-tree for equality/range/order/prefix lookups and uniqueness; partial B-tree for state-scoped hot subsets (e.g. active/claimable rows) where predicates are stable; GIN for selective <code>jsonb</code> containment/path queries only when proven necessary; BRIN for large append-only/time-ordered tables if correlation and workload justify (deferred/conditional); GiST considered only for specialized types/ranges if introduced later.</li>
+<li><strong>No speculative broad JSON indexing:</strong> JSONB columns are limited; any GIN/expression index must be tied to a specific, justified query path and sensitivity/minimization review.</li>
+</ul>
+<h2>2. Index inventory</h2>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Index name (proposed)</th>
+<th>Columns (order) / expression</th>
+<th>Unique</th>
+<th>Partial predicate</th>
+<th>Query pattern / purpose</th>
+<th>Rationale and trade-offs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core.tenant</code></td>
+<td><code>pk_tenant</code></td>
+<td><code>(tenant_id)</code></td>
+<td>Yes (PK)</td>
+<td>none</td>
+<td>Tenant lookup by ID</td>
+<td>Root identity lookup.</td>
+</tr>
+<tr>
+<td><code>core.tenant</code></td>
+<td><code>uq_tenant_slug</code></td>
+<td><code>(tenant_slug)</code></td>
+<td>Yes</td>
+<td><code>WHERE tenant_slug IS NOT NULL</code></td>
+<td>Lookup by external slug</td>
+<td>Prevents duplicate slugs; partial avoids NULL collisions.</td>
+</tr>
+<tr>
+<td><code>core.external_identity_subject</code></td>
+<td><code>pk_external_identity_subject</code></td>
+<td><code>(external_identity_subject_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Principal lookup</td>
+<td>PK access.</td>
+</tr>
+<tr>
+<td><code>core.external_identity_subject</code></td>
+<td><code>uq_external_identity_subject_issuer_subject</code></td>
+<td><code>(issuer, subject)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>IdP subject resolution</td>
+<td>Required for deterministic external identity mapping.</td>
+</tr>
+<tr>
+<td><code>core.tenant_membership</code></td>
+<td><code>pk_tenant_membership</code></td>
+<td><code>(tenant_membership_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Membership lookup</td>
+<td>PK access.</td>
+</tr>
+<tr>
+<td><code>core.tenant_membership</code></td>
+<td><code>ix_tenant_membership_tenant_subject</code></td>
+<td><code>(tenant_id, external_identity_subject_id)</code></td>
+<td>Yes (proposed)</td>
+<td>optional active-only predicate by policy</td>
+<td>Resolve subject membership within tenant</td>
+<td>Tenant-scoped authorization lookup; uniqueness prevents duplicate memberships (exact temporal/status semantics may refine predicate).</td>
+</tr>
+<tr>
+<td><code>core.tenant_membership</code></td>
+<td><code>ix_tenant_membership_subject</code></td>
+<td><code>(external_identity_subject_id, tenant_id)</code></td>
+<td>No</td>
+<td>none</td>
+<td>List memberships for principal</td>
+<td>Cross-tenant listing only via controlled/admin paths; still useful for principal-centric resolution.</td>
+</tr>
+<tr>
+<td><code>core.role</code></td>
+<td><code>pk_role</code></td>
+<td><code>(role_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Role lookup</td>
+<td>PK.</td>
+</tr>
+<tr>
+<td><code>core.role</code></td>
+<td><code>uq_role_scope_code</code></td>
+<td><code>(COALESCE(tenant_id, '00000000-0000-0000-0000-000000000000'::uuid), role_code)</code> or equivalent partial uniques</td>
+<td>Yes (proposed)</td>
+<td>split global/tenant uniques as preferred</td>
+<td>Resolve role by code/scope</td>
+<td>Exact implementation (NULL handling) to be chosen; ensures deterministic role identity.</td>
+</tr>
+<tr>
+<td><code>core.role_permission</code></td>
+<td><code>pk_role_permission</code></td>
+<td><code>(role_permission_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Row lookup</td>
+<td>PK.</td>
+</tr>
+<tr>
+<td><code>core.role_permission</code></td>
+<td><code>uq_role_permission_mapping</code></td>
+<td><code>(role_id, permission_code, COALESCE(resource_scope,''))</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Permission evaluation</td>
+<td>Canonical mapping uniqueness.</td>
+</tr>
+<tr>
+<td><code>core.role_permission</code></td>
+<td><code>ix_role_permission_role</code></td>
+<td><code>(role_id)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Load permissions for role</td>
+<td>Authorization checks.</td>
+</tr>
+<tr>
+<td><code>core.membership_role_assignment</code></td>
+<td><code>pk_membership_role_assignment</code></td>
+<td><code>(membership_role_assignment_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.membership_role_assignment</code></td>
+<td><code>uq_membership_role_assignment</code></td>
+<td><code>(tenant_membership_id, role_id)</code></td>
+<td>Yes (proposed)</td>
+<td>optional active/effective predicate</td>
+<td>Prevent duplicate assignment</td>
+<td>May be refined for temporal assignments.</td>
+</tr>
+<tr>
+<td><code>core.membership_role_assignment</code></td>
+<td><code>ix_membership_role_assignment_tenant_membership</code></td>
+<td><code>(tenant_id, tenant_membership_id, assignment_status)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Resolve effective roles for membership</td>
+<td>Tenant-scoped auth path.</td>
+</tr>
+<tr>
+<td><code>core.support_access_grant</code></td>
+<td><code>pk_support_access_grant</code></td>
+<td><code>(support_access_grant_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.support_access_grant</code></td>
+<td><code>ix_support_access_grant_target_status_expiry</code></td>
+<td><code>(target_tenant_id, grant_status, expires_at)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Find active/valid grants for tenant</td>
+<td>JIT access validation.</td>
+</tr>
+<tr>
+<td><code>core.support_access_grant</code></td>
+<td><code>ix_support_access_grant_grantee</code></td>
+<td><code>(grantee_subject_id, grant_status, expires_at)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Grants for principal</td>
+<td>Support workflow.</td>
+</tr>
+<tr>
+<td><code>core.support_access_approval</code></td>
+<td><code>pk_support_access_approval</code></td>
+<td><code>(support_access_approval_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.support_access_approval</code></td>
+<td><code>ix_support_access_approval_grant</code></td>
+<td><code>(support_access_grant_id, decision)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Approval state lookup</td>
+<td>Workflow.</td>
+</tr>
+<tr>
+<td><code>core.tenant_configuration</code></td>
+<td><code>pk_tenant_configuration</code></td>
+<td><code>(tenant_configuration_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.tenant_configuration</code></td>
+<td><code>uq_tenant_configuration_version</code></td>
+<td><code>(tenant_id, config_domain, config_version)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Versioned config identity</td>
+<td>Prevents version collisions.</td>
+</tr>
+<tr>
+<td><code>core.tenant_configuration</code></td>
+<td><code>ix_tenant_configuration_effective</code></td>
+<td><code>(tenant_id, config_domain, config_status, effective_from DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Resolve effective config</td>
+<td>Common read path.</td>
+</tr>
+<tr>
+<td><code>core.asset</code></td>
+<td><code>pk_asset</code></td>
+<td><code>(asset_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Canonical asset lookup</td>
+<td>PK.</td>
+</tr>
+<tr>
+<td><code>core.asset</code></td>
+<td><code>uq_asset_tenant_asset</code></td>
+<td><code>(tenant_id, asset_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Tenant-consistent FK target</td>
+<td>Enables composite tenant-safe references.</td>
+</tr>
+<tr>
+<td><code>core.asset</code></td>
+<td><code>ix_asset_tenant_status_last_seen</code></td>
+<td><code>(tenant_id, asset_status, last_seen_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Inventory/dashboard/status queries</td>
+<td>Supports tenant asset views and operations.</td>
+</tr>
+<tr>
+<td><code>integration_ai.data_source</code></td>
+<td><code>pk_data_source</code></td>
+<td><code>(data_source_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>integration_ai.data_source</code></td>
+<td><code>uq_data_source_tenant</code></td>
+<td><code>(tenant_id, data_source_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Tenant-consistent FK target</td>
+<td>Composite FK support.</td>
+</tr>
+<tr>
+<td><code>integration_ai.data_source</code></td>
+<td><code>ix_data_source_tenant_external</code></td>
+<td><code>(tenant_id, external_source_identifier)</code></td>
+<td>Yes (proposed)</td>
+<td><code>WHERE external_source_identifier IS NOT NULL</code></td>
+<td>Source resolution</td>
+<td>Connector/source lookup.</td>
+</tr>
+<tr>
+<td><code>core.asset_data_source</code></td>
+<td><code>pk_asset_data_source</code></td>
+<td><code>(asset_data_source_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.asset_data_source</code></td>
+<td><code>uq_asset_data_source_tenant_binding</code></td>
+<td><code>(tenant_id, asset_data_source_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Tenant-consistent FK target</td>
+<td>Composite FK support.</td>
+</tr>
+<tr>
+<td><code>core.asset_data_source</code></td>
+<td><code>uq_asset_data_source_source_device_key</code></td>
+<td><code>(tenant_id, source_device_key_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td><strong>Authoritative stable binding key uniqueness (Proposed, OD-002)</strong></td>
+<td>Prevents competing binding identities; supports deterministic resolution.</td>
+</tr>
+<tr>
+<td><code>core.asset_data_source</code></td>
+<td><code>ix_asset_data_source_tenant_asset</code></td>
+<td><code>(tenant_id, asset_id, binding_status)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Bindings for canonical asset</td>
+<td>Licensing/identity/history queries.</td>
+</tr>
+<tr>
+<td><code>core.asset_data_source</code></td>
+<td><code>ix_asset_data_source_tenant_source</code></td>
+<td><code>(tenant_id, data_source_id, binding_status)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Bindings reported by source</td>
+<td>Ingestion/connector resolution.</td>
+</tr>
+<tr>
+<td><code>core.source_device_key</code></td>
+<td><code>pk_source_device_key</code></td>
+<td><code>(source_device_key_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Dependent projection lookup</td>
+<td>1:1 with authoritative binding key.</td>
+</tr>
+<tr>
+<td><code>core.source_device_key</code></td>
+<td><code>uq_source_device_key_binding</code></td>
+<td><code>(asset_data_source_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>1:1 binding projection</td>
+<td>Prevents competing rows.</td>
+</tr>
+<tr>
+<td><code>core.source_device_fingerprint_alias</code></td>
+<td><code>pk_source_device_fingerprint_alias</code></td>
+<td><code>(source_device_fingerprint_alias_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.source_device_fingerprint_alias</code></td>
+<td><code>ix_fingerprint_alias_lookup</code></td>
+<td><code>(tenant_id, fingerprint_algorithm, fingerprint_value_protected, alias_status)</code></td>
+<td>Proposed unique/partial</td>
+<td>active/effective predicate TBD (OD-006/overlap semantics)</td>
+<td>Resolve fingerprint to stable binding identity</td>
+<td>Critical identity-resolution path; exact uniqueness must respect approved overlap/rotation rules.</td>
+</tr>
+<tr>
+<td><code>core.source_device_fingerprint_alias</code></td>
+<td><code>ix_fingerprint_alias_binding</code></td>
+<td><code>(tenant_id, asset_data_source_id, effective_from DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Alias history for binding</td>
+<td>Rotation/audit/provenance.</td>
+</tr>
+<tr>
+<td><code>core.asset_identity_claim</code></td>
+<td><code>pk_asset_identity_claim</code></td>
+<td><code>(asset_identity_claim_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.asset_identity_claim</code></td>
+<td><code>ix_asset_identity_claim_resolution</code></td>
+<td><code>(tenant_id, identity_resolution_case_id, claim_status)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Claims in resolution case</td>
+<td>Workflow.</td>
+</tr>
+<tr>
+<td><code>core.asset_identity_claim</code></td>
+<td><code>ix_asset_identity_claim_source_ref</code></td>
+<td><code>(tenant_id, data_source_id, source_claim_reference)</code></td>
+<td>Proposed unique</td>
+<td><code>WHERE source_claim_reference IS NOT NULL</code></td>
+<td>Source claim dedupe/correlation</td>
+<td>If source provides stable refs.</td>
+</tr>
+<tr>
+<td><code>core.identity_resolution_case</code></td>
+<td><code>pk_identity_resolution_case</code></td>
+<td><code>(identity_resolution_case_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.identity_resolution_case</code></td>
+<td><code>ix_identity_resolution_case_tenant_status</code></td>
+<td><code>(tenant_id, case_status, opened_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Pending/conflict case queue</td>
+<td>Operational resolution.</td>
+</tr>
+<tr>
+<td><code>core.asset_lifecycle_event</code></td>
+<td><code>pk_asset_lifecycle_event</code></td>
+<td><code>(asset_lifecycle_event_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.asset_lifecycle_event</code></td>
+<td><code>ix_asset_lifecycle_event_asset_time</code></td>
+<td><code>(tenant_id, asset_id, occurred_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Asset history timeline</td>
+<td>Audit/investigation.</td>
+</tr>
+<tr>
+<td><code>core.asset_merge_operation</code></td>
+<td><code>pk_asset_merge_operation</code></td>
+<td><code>(asset_merge_operation_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.asset_merge_operation</code></td>
+<td><code>ix_asset_merge_operation_tenant_status</code></td>
+<td><code>(tenant_id, operation_status, requested_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Operation tracking</td>
+<td>Workflow/audit.</td>
+</tr>
+<tr>
+<td><code>core.asset_split_operation</code></td>
+<td><code>pk_asset_split_operation</code></td>
+<td><code>(asset_split_operation_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.asset_split_operation</code></td>
+<td><code>ix_asset_split_operation_tenant_status</code></td>
+<td><code>(tenant_id, operation_status, requested_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Operation tracking</td>
+<td>Workflow/audit.</td>
+</tr>
+<tr>
+<td><code>core.asset_lineage_link</code></td>
+<td><code>pk_asset_lineage_link</code></td>
+<td><code>(asset_lineage_link_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.asset_lineage_link</code></td>
+<td><code>ix_asset_lineage_link_from</code></td>
+<td><code>(tenant_id, from_asset_id, effective_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Lineage traversal</td>
+<td>History queries.</td>
+</tr>
+<tr>
+<td><code>core.asset_lineage_link</code></td>
+<td><code>ix_asset_lineage_link_to</code></td>
+<td><code>(tenant_id, to_asset_id, effective_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Reverse lineage traversal</td>
+<td>Investigation.</td>
+</tr>
+<tr>
+<td><code>core.asset_lineage_link</code></td>
+<td><code>uq_asset_lineage_link_edge</code></td>
+<td><code>(tenant_id, link_type, from_asset_id, to_asset_id, COALESCE(merge_operation_id,'00000000-0000-0000-0000-000000000000'::uuid), COALESCE(split_operation_id,'00000000-0000-0000-0000-000000000000'::uuid))</code> (proposed form)</td>
+<td>Yes (proposed)</td>
+<td>none</td>
+<td>Prevent duplicate lineage edges</td>
+<td>Exact expression/columns to be finalized; enforces integrity.</td>
+</tr>
+<tr>
+<td><code>core.subscription_entitlement</code></td>
+<td><code>pk_subscription_entitlement</code></td>
+<td><code>(subscription_entitlement_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.subscription_entitlement</code></td>
+<td><code>ix_subscription_entitlement_tenant_effective</code></td>
+<td><code>(tenant_id, entitlement_status, effective_from DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Resolve active entitlement</td>
+<td>Licensing checks.</td>
+</tr>
+<tr>
+<td><code>core.tenant_license_usage_state</code></td>
+<td><code>pk_tenant_license_usage_state</code></td>
+<td><code>(tenant_license_usage_state_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.tenant_license_usage_state</code></td>
+<td><code>uq_tenant_license_usage_scope</code></td>
+<td><code>(tenant_id, usage_scope)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>One state row per scope</td>
+<td>Atomic update target.</td>
+</tr>
+<tr>
+<td><code>core.asset_license_event</code></td>
+<td><code>pk_asset_license_event</code></td>
+<td><code>(asset_license_event_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.asset_license_event</code></td>
+<td><code>ix_asset_license_event_tenant_time</code></td>
+<td><code>(tenant_id, occurred_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>License history / reconciliation</td>
+<td>Time-based audit.</td>
+</tr>
+<tr>
+<td><code>core.asset_license_event</code></td>
+<td><code>ix_asset_license_event_asset</code></td>
+<td><code>(tenant_id, asset_id, occurred_at DESC)</code></td>
+<td>No</td>
+<td><code>WHERE asset_id IS NOT NULL</code></td>
+<td>Asset licensing history</td>
+<td>Investigation.</td>
+</tr>
+<tr>
+<td><code>core.identity_operation_idempotency_ledger</code></td>
+<td><code>pk_identity_operation_idempotency_ledger</code></td>
+<td><code>(identity_operation_idempotency_ledger_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.identity_operation_idempotency_ledger</code></td>
+<td><code>uq_identity_idempotency_scope</code></td>
+<td><code>(tenant_id, operation_type, idempotency_key)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td><strong>Required idempotency uniqueness (OD-008)</strong></td>
+<td>Prevents duplicate identity/licensing effects under retries/concurrency.</td>
+</tr>
+<tr>
+<td><code>core.identity_operation_idempotency_ledger</code></td>
+<td><code>ix_identity_idempotency_state</code></td>
+<td><code>(tenant_id, request_state, last_attempt_at DESC)</code></td>
+<td>No</td>
+<td>partial for <code>in_progress</code>/<code>timeout_unknown_commit</code> proposed</td>
+<td>Recovery/reconciliation scans</td>
+<td>Supports timeout/unknown-commit processing.</td>
+</tr>
+<tr>
+<td><code>core.asset_license_reservation</code></td>
+<td><code>pk_asset_license_reservation</code></td>
+<td><code>(asset_license_reservation_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.asset_license_reservation</code></td>
+<td><code>ix_asset_license_reservation_tenant_status</code></td>
+<td><code>(tenant_id, reservation_status, expires_at)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Active/expiring reservations</td>
+<td>Enforcement/release flows (OD-003).</td>
+</tr>
+<tr>
+<td><code>core.asset_tombstone</code></td>
+<td><code>pk_asset_tombstone</code></td>
+<td><code>(asset_tombstone_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>core.asset_tombstone</code></td>
+<td><code>uq_asset_tombstone_asset</code></td>
+<td><code>(tenant_id, asset_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>One tombstone per terminal asset</td>
+<td>Prevents duplicate terminal records.</td>
+</tr>
+<tr>
+<td><code>ingest.event_schema_reference</code></td>
+<td><code>pk_event_schema_reference</code></td>
+<td><code>(event_schema_reference_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ingest.event_schema_reference</code></td>
+<td><code>uq_event_schema_ref</code></td>
+<td><code>(schema_namespace, schema_name, schema_version)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Schema resolution</td>
+<td>Validation/normalization.</td>
+</tr>
+<tr>
+<td><code>ingest.event_receipt</code></td>
+<td><code>pk_event_receipt</code></td>
+<td><code>(event_receipt_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ingest.event_receipt</code></td>
+<td><code>uq_event_receipt_dedup_device_scoped</code></td>
+<td><code>(tenant_id, data_source_id, source_device_key_id, event_namespace, upstream_event_identifier)</code></td>
+<td>Yes (proposed)</td>
+<td><code>WHERE upstream_event_identifier IS NOT NULL AND source_device_key_id IS NOT NULL</code></td>
+<td><strong>Device-scoped event dedup (OD-013)</strong></td>
+<td>Prevents cross-device collisions in multi-device connectors; exact namespace predicate per approved semantics.</td>
+</tr>
+<tr>
+<td><code>ingest.event_receipt</code></td>
+<td><code>uq_event_receipt_dedup_fallback</code></td>
+<td><code>(tenant_id, data_source_id, event_namespace, fallback_dedup_fingerprint)</code></td>
+<td>Yes (proposed)</td>
+<td><code>WHERE fallback_dedup_fingerprint IS NOT NULL</code></td>
+<td>Fallback dedup when upstream ID missing/unreliable</td>
+<td>Connector-specific policy-dependent; must be explicit.</td>
+</tr>
+<tr>
+<td><code>ingest.event_receipt</code></td>
+<td><code>ix_event_receipt_tenant_received</code></td>
+<td><code>(tenant_id, received_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Recent ingestion / time-based queries</td>
+<td>Operational dashboard/support; partitioning may later change local index shape.</td>
+</tr>
+<tr>
+<td><code>ingest.event_receipt</code></td>
+<td><code>ix_event_receipt_asset_time</code></td>
+<td><code>(tenant_id, asset_id, event_time DESC)</code></td>
+<td>No</td>
+<td><code>WHERE asset_id IS NOT NULL</code></td>
+<td>Asset event timeline</td>
+<td>Investigation/correlation.</td>
+</tr>
+<tr>
+<td><code>ingest.security_event</code></td>
+<td><code>pk_security_event</code></td>
+<td><code>(security_event_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ingest.security_event</code></td>
+<td><code>uq_security_event_receipt</code></td>
+<td><code>(tenant_id, event_receipt_id)</code></td>
+<td>Yes (proposed if 1:1)</td>
+<td>none</td>
+<td>One normalized event per receipt</td>
+<td>Integrity/correlation.</td>
+</tr>
+<tr>
+<td><code>ingest.security_event</code></td>
+<td><code>ix_security_event_tenant_time</code></td>
+<td><code>(tenant_id, event_time DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Time-based security queries</td>
+<td>Dashboard/investigation; partition candidate.</td>
+</tr>
+<tr>
+<td><code>ingest.security_event</code></td>
+<td><code>ix_security_event_tenant_asset_time</code></td>
+<td><code>(tenant_id, asset_id, event_time DESC)</code></td>
+<td>No</td>
+<td><code>WHERE asset_id IS NOT NULL</code></td>
+<td>Asset-centric security timeline</td>
+<td>Common SOC query.</td>
+</tr>
+<tr>
+<td><code>processing.outbox_message</code></td>
+<td><code>pk_outbox_message</code></td>
+<td><code>(outbox_message_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>processing.outbox_message</code></td>
+<td><code>ix_outbox_message_claimable</code></td>
+<td><code>(message_status, available_at, created_at)</code></td>
+<td>No</td>
+<td><code>WHERE message_status IN ('pending','retryable')</code> (proposed)</td>
+<td>Claim/dispatch queue</td>
+<td>Supports leasing/claim scans; exact status set depends on state machine.</td>
+</tr>
+<tr>
+<td><code>processing.outbox_message</code></td>
+<td><code>uq_outbox_message_dedupe</code></td>
+<td><code>(tenant_id, dedupe_key)</code></td>
+<td>Yes (proposed)</td>
+<td><code>WHERE dedupe_key IS NOT NULL</code></td>
+<td>Idempotent enqueue</td>
+<td>Prevents duplicate work intents when used.</td>
+</tr>
+<tr>
+<td><code>processing.outbox_message</code></td>
+<td><code>ix_outbox_message_tenant_status</code></td>
+<td><code>(tenant_id, message_status, available_at)</code></td>
+<td>No</td>
+<td>tenant-scoped predicate as needed</td>
+<td>Tenant-scoped operational views</td>
+<td>Admin/support queries.</td>
+</tr>
+<tr>
+<td><code>processing.outbox_attempt</code></td>
+<td><code>pk_outbox_attempt</code></td>
+<td><code>(outbox_attempt_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>processing.outbox_attempt</code></td>
+<td><code>uq_outbox_attempt_number</code></td>
+<td><code>(outbox_message_id, attempt_number)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Attempt ordering/integrity</td>
+<td>Recovery/audit.</td>
+</tr>
+<tr>
+<td><code>processing.outbox_attempt</code></td>
+<td><code>ix_outbox_attempt_lease</code></td>
+<td><code>(attempt_status, lease_expires_at)</code></td>
+<td>No</td>
+<td>active/unknown predicates proposed</td>
+<td>Lease expiry/reaper/unknown-outcome scans</td>
+<td>Operational reliability (OD-009).</td>
+</tr>
+<tr>
+<td><code>processing.processing_work_item</code></td>
+<td><code>pk_processing_work_item</code></td>
+<td><code>(processing_work_item_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td>Optional table.</td>
+</tr>
+<tr>
+<td><code>processing.processing_work_item</code></td>
+<td><code>ix_processing_work_item_claimable</code></td>
+<td><code>(work_status, available_at)</code></td>
+<td>No</td>
+<td>pending/eligible predicate</td>
+<td>Optional claim queue</td>
+<td>Only if table used.</td>
+</tr>
+<tr>
+<td><code>audit_evidence.audit_event</code></td>
+<td><code>pk_audit_event</code></td>
+<td><code>(audit_event_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>audit_evidence.audit_event</code></td>
+<td><code>ix_audit_event_tenant_time</code></td>
+<td><code>(tenant_id, occurred_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Tenant audit timeline</td>
+<td>Compliance/investigation.</td>
+</tr>
+<tr>
+<td><code>audit_evidence.audit_event</code></td>
+<td><code>ix_audit_event_target</code></td>
+<td><code>(tenant_id, target_entity_type, target_entity_id, occurred_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Entity-focused audit lookup</td>
+<td>Traceability.</td>
+</tr>
+<tr>
+<td><code>audit_evidence.audit_event</code></td>
+<td><code>ix_audit_event_correlation</code></td>
+<td><code>(correlation_id)</code></td>
+<td>No</td>
+<td><code>WHERE correlation_id IS NOT NULL</code></td>
+<td>Cross-record correlation</td>
+<td>Support/debug (bounded).</td>
+</tr>
+<tr>
+<td><code>audit_evidence.forensic_evidence_record</code></td>
+<td><code>pk_forensic_evidence_record</code></td>
+<td><code>(forensic_evidence_record_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>audit_evidence.forensic_evidence_record</code></td>
+<td><code>ix_forensic_evidence_tenant_status</code></td>
+<td><code>(tenant_id, evidence_status, collected_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Evidence inventory</td>
+<td>Case management.</td>
+</tr>
+<tr>
+<td><code>audit_evidence.evidence_object_version</code></td>
+<td><code>pk_evidence_object_version</code></td>
+<td><code>(evidence_object_version_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>audit_evidence.evidence_object_version</code></td>
+<td><code>uq_evidence_object_version</code></td>
+<td><code>(forensic_evidence_record_id, version_number)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Immutable version identity</td>
+<td>Integrity.</td>
+</tr>
+<tr>
+<td><code>audit_evidence.evidence_custody_event</code></td>
+<td><code>pk_evidence_custody_event</code></td>
+<td><code>(evidence_custody_event_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>audit_evidence.evidence_custody_event</code></td>
+<td><code>ix_evidence_custody_record_time</code></td>
+<td><code>(tenant_id, forensic_evidence_record_id, occurred_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Chain-of-custody timeline</td>
+<td>Forensic traceability.</td>
+</tr>
+<tr>
+<td><code>audit_evidence.evidence_transition_authorization</code></td>
+<td><code>pk_evidence_transition_authorization</code></td>
+<td><code>(evidence_transition_authorization_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>audit_evidence.evidence_transition_authorization</code></td>
+<td><code>ix_evidence_transition_record</code></td>
+<td><code>(tenant_id, forensic_evidence_record_id, authorization_status)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Controlled transition checks</td>
+<td>Governance.</td>
+</tr>
+<tr>
+<td><code>audit_evidence.ai_interaction_audit</code></td>
+<td><code>pk_ai_interaction_audit</code></td>
+<td><code>(ai_interaction_audit_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>audit_evidence.ai_interaction_audit</code></td>
+<td><code>ix_ai_interaction_audit_tenant_time</code></td>
+<td><code>(tenant_id, occurred_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>AI audit timeline</td>
+<td>Compliance/privacy review.</td>
+</tr>
+<tr>
+<td><code>audit_evidence.ai_interaction_audit</code></td>
+<td><code>ix_ai_interaction_audit_provider</code></td>
+<td><code>(tenant_id, provider_configuration_id, occurred_at DESC)</code></td>
+<td>No</td>
+<td><code>WHERE provider_configuration_id IS NOT NULL</code></td>
+<td>Provider-specific audit</td>
+<td>Governance.</td>
+</tr>
+<tr>
+<td><code>integration_ai.integration_configuration</code></td>
+<td><code>pk_integration_configuration</code></td>
+<td><code>(integration_configuration_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>integration_ai.integration_configuration</code></td>
+<td><code>ix_integration_configuration_tenant_code</code></td>
+<td><code>(tenant_id, integration_code, configuration_status)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Resolve integration config</td>
+<td>Admin/runtime lookup.</td>
+</tr>
+<tr>
+<td><code>integration_ai.tenant_ai_provider_configuration</code></td>
+<td><code>pk_tenant_ai_provider_configuration</code></td>
+<td><code>(tenant_ai_provider_configuration_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>integration_ai.tenant_ai_provider_configuration</code></td>
+<td><code>ix_tenant_ai_provider_tenant_effective</code></td>
+<td><code>(tenant_id, configuration_status, is_default, effective_from DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Resolve explicit provider selection</td>
+<td>No silent failover path.</td>
+</tr>
+<tr>
+<td><code>integration_ai.ai_provider_secret_reference</code></td>
+<td><code>pk_ai_provider_secret_reference</code></td>
+<td><code>(ai_provider_secret_reference_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>integration_ai.ai_provider_secret_reference</code></td>
+<td><code>uq_ai_provider_secret_purpose</code></td>
+<td><code>(tenant_id, provider_configuration_id, secret_purpose)</code></td>
+<td>Yes (proposed)</td>
+<td>none</td>
+<td>Secret reference identity</td>
+<td>Rotation governance.</td>
+</tr>
+<tr>
+<td><code>integration_ai.ai_provider_policy_consent_reference</code></td>
+<td><code>pk_ai_provider_policy_consent_reference</code></td>
+<td><code>(ai_provider_policy_consent_reference_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>integration_ai.ai_provider_policy_consent_reference</code></td>
+<td><code>ix_ai_policy_consent_tenant_effective</code></td>
+<td><code>(tenant_id, provider_configuration_id, policy_type, consent_status, effective_from DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Consent/policy checks</td>
+<td>Data governance.</td>
+</tr>
+<tr>
+<td><code>integration_ai.ai_usage_budget_accounting</code></td>
+<td><code>pk_ai_usage_budget_accounting</code></td>
+<td><code>(ai_usage_budget_accounting_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>integration_ai.ai_usage_budget_accounting</code></td>
+<td><code>uq_ai_usage_budget_period</code></td>
+<td><code>(tenant_id, provider_configuration_id, accounting_period_start)</code></td>
+<td>Proposed</td>
+<td>policy-dependent</td>
+<td>Period accounting identity</td>
+<td>Prevent duplicate period rows if modeled that way.</td>
+</tr>
+<tr>
+<td><code>soc.alert</code></td>
+<td><code>pk_alert</code></td>
+<td><code>(alert_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>soc.alert</code></td>
+<td><code>ix_alert_tenant_status_time</code></td>
+<td><code>(tenant_id, alert_status, detected_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Alert queue/dashboard</td>
+<td>SOC operations.</td>
+</tr>
+<tr>
+<td><code>soc.alert</code></td>
+<td><code>ix_alert_asset_time</code></td>
+<td><code>(tenant_id, asset_id, detected_at DESC)</code></td>
+<td>No</td>
+<td><code>WHERE asset_id IS NOT NULL</code></td>
+<td>Asset alert history</td>
+<td>Investigation.</td>
+</tr>
+<tr>
+<td><code>soc.incident_case</code></td>
+<td><code>pk_incident_case</code></td>
+<td><code>(incident_case_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>soc.incident_case</code></td>
+<td><code>ix_incident_case_tenant_status</code></td>
+<td><code>(tenant_id, case_status, opened_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Case queue</td>
+<td>SOC operations.</td>
+</tr>
+<tr>
+<td><code>soc.detection_rule</code></td>
+<td><code>pk_detection_rule</code></td>
+<td><code>(detection_rule_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>soc.detection_rule_version</code></td>
+<td><code>pk_detection_rule_version</code></td>
+<td><code>(detection_rule_version_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>soc.detection_rule_version</code></td>
+<td><code>uq_detection_rule_version</code></td>
+<td><code>(detection_rule_id, version_number)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Version identity</td>
+<td>Immutable rule snapshots.</td>
+</tr>
+<tr>
+<td><code>soc.vulnerability_finding</code></td>
+<td><code>pk_vulnerability_finding</code></td>
+<td><code>(vulnerability_finding_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>soc.vulnerability_finding</code></td>
+<td><code>ix_vulnerability_finding_tenant_status</code></td>
+<td><code>(tenant_id, finding_status, detected_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Findings dashboard</td>
+<td>Remediation tracking.</td>
+</tr>
+<tr>
+<td><code>soc.vulnerability_finding</code></td>
+<td><code>ix_vulnerability_finding_asset</code></td>
+<td><code>(tenant_id, asset_id, detected_at DESC)</code></td>
+<td>No</td>
+<td><code>WHERE asset_id IS NOT NULL</code></td>
+<td>Asset findings</td>
+<td>Investigation.</td>
+</tr>
+<tr>
+<td><code>soc.threat_intelligence_reference</code></td>
+<td><code>pk_threat_intelligence_reference</code></td>
+<td><code>(threat_intelligence_reference_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td>Global catalog.</td>
+</tr>
+<tr>
+<td><code>soc.threat_intelligence_reference</code></td>
+<td><code>uq_threat_intel_source_ref</code></td>
+<td><code>(source_name, external_reference)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>Catalog identity</td>
+<td>Dedup/reference.</td>
+</tr>
+<tr>
+<td><code>soc.asset_inventory_observation</code></td>
+<td><code>pk_asset_inventory_observation</code></td>
+<td><code>(asset_inventory_observation_id)</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>soc.asset_inventory_observation</code></td>
+<td><code>ix_inventory_observation_asset_time</code></td>
+<td><code>(tenant_id, asset_id, observed_at DESC)</code></td>
+<td>No</td>
+<td><code>WHERE asset_id IS NOT NULL</code></td>
+<td>Asset inventory timeline</td>
+<td>Common query; time-series growth.</td>
+</tr>
+<tr>
+<td><code>soc.asset_inventory_observation</code></td>
+<td><code>ix_inventory_observation_tenant_time</code></td>
+<td><code>(tenant_id, observed_at DESC)</code></td>
+<td>No</td>
+<td>none</td>
+<td>Recent observations</td>
+<td>Operational/retention jobs.</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Required pattern coverage</h2>
+<ul>
+<li><strong>Identity resolution and binding lookups:</strong> <code>core.asset_data_source</code> unique <code>(tenant_id, source_device_key_id)</code>; tenant/source/asset lookup indexes; <code>core.source_device_fingerprint_alias</code> lookup/history indexes; identity claim/case indexes.</li>
+<li><strong>Event deduplication:</strong> explicit namespace-aware unique indexes on <code>ingest.event_receipt</code> (device-scoped upstream ID and fallback fingerprint), plus tenant/time/asset access indexes.</li>
+<li><strong>Idempotency ledger:</strong> unique <code>(tenant_id, operation_type, idempotency_key)</code> and recovery-state scan index on <code>core.identity_operation_idempotency_ledger</code>.</li>
+<li><strong>Audit and evidence retrieval:</strong> tenant/time/target/correlation indexes for <code>audit_evidence.audit_event</code>; status/time/version/custody/transition indexes for evidence tables; AI interaction audit timeline/provider indexes.</li>
+<li><strong>Time-based and dashboard queries:</strong> descending time indexes on lifecycle/license/receipt/security/audit/alerts/incidents/findings/observations as listed.</li>
+<li><strong>Outbox claiming:</strong> partial claimable index and dedupe unique on <code>processing.outbox_message</code>; attempt ordering and lease/unknown-state scan indexes on <code>processing.outbox_attempt</code>.</li>
+</ul>
+<h2>4. Trade-offs and validation needs</h2>
+<ul>
+<li>Each additional index increases INSERT/UPDATE/DELETE cost, WAL volume, storage, and vacuum/autovacuum work; high-churn tables (<code>ingest.event_receipt</code>, <code>ingest.security_event</code>, <code>processing.outbox_*</code>, <code>audit_evidence.audit_event</code>, observations) require careful validation.</li>
+<li>Partial indexes reduce size but require predicates to match query shapes; exact status/state vocabularies must be finalized.</li>
+<li>JSONB GIN indexes are <strong>not proposed by default</strong>; add only for proven query paths with selectivity and sensitivity review.</li>
+<li>Workload/query-plan validation, index bloat monitoring, and periodic review are required before implementation (see lifecycle/operations document).</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>
