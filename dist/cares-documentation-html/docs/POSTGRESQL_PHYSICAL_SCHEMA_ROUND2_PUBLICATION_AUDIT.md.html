@@ -107,11 +107,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T10:58:50Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T11:24:26Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Physical Schema Round 2 — Publication Reconciliation &amp; Final Evidence Audit</h1>
 <p><strong>Audit type:</strong> Administrative publication reconciliation and evidence audit only (no technical schema/design/implementation changes).
-<strong>Audit timestamp (UTC, this reconciliation session):</strong> 2026-11-22T10:25:04Z (session context) / evidence collected 2026-11-22.</p>
+<strong>Audit timestamp (UTC):</strong> 2026-11-22T10:25:04Z (initial reconciliation) / 2026-11-22T11:21:21Z (final corrective closure) / evidence collected 2026-11-22.</p>
 <h2>1. Audit scope and objective</h2>
 <p>This audit establishes the actual Git and GitHub publication state for the completed CARES PostgreSQL Physical Schema Design — Round 2, reconciles stale or inconsistent publication statements in execution records, and records verifiable evidence for committed/exported artifacts. It does <strong>not</strong> repeat, revise, expand, or restart Round 2, and it does <strong>not</strong> modify physical schema design, table/column/type/key/constraint/index definitions, RLS/tenant-isolation semantics, transaction/concurrency semantics, retention/partitioning/backup/recovery design, OD-001–OD-013 resolutions/statuses, ADR statuses, architecture/product roadmap, or implementation artifacts.</p>
 <h2>2. Repository, branches, and expected baseline</h2>
@@ -149,7 +149,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </tr>
 </tbody>
 </table>
-<h2>3. Mandatory initial inspection evidence</h2>
+<h2>3. Mandatory inspection evidence</h2>
+<h3>3.1 Initial reconciliation inspection (historical, before first reconciliation edits)</h3>
 <p>Commands/evidence collected before modification (non-destructive):</p>
 <ul>
 <li><code>pwd</code> → <code>/home/ubuntu/cares</code></li>
@@ -163,6 +164,14 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li><code>git rev-parse origin/design/postgresql-round2-physical-schema</code> → <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code></li>
 <li><code>git ls-remote --heads origin design/postgresql-round2-physical-schema</code> → <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8\trefs/heads/design/postgresql-round2-physical-schema</code></li>
 <li><code>git ls-remote --heads origin audit/postgresql-round1-1-publication</code> → <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d\trefs/heads/audit/postgresql-round1-1-publication</code></li>
+</ul>
+<h3>3.2 Final corrective closure inspection (pre-correction, verified)</h3>
+<ul>
+<li><code>git status --short --branch</code> → <code>## design/postgresql-round2-physical-schema...origin/design/postgresql-round2-physical-schema</code> (only pre-existing untracked files; no tracked modifications).</li>
+<li>Local HEAD: <code>1c21c0d5820ee087045b43f3d66b9725ab67731f</code></li>
+<li>Remote-tracking <code>origin/design/postgresql-round2-physical-schema</code>: <code>1c21c0d5820ee087045b43f3d66b9725ab67731f</code></li>
+<li><code>git ls-remote --heads origin design/postgresql-round2-physical-schema</code>: <code>1c21c0d5820ee087045b43f3d66b9725ab67731f\trefs/heads/design/postgresql-round2-physical-schema</code></li>
+<li>Comparison: local HEAD == remote-tracking HEAD == ls-remote HEAD (<strong>matched</strong>). No divergence, no conflicts, no unexpected commits, no permission problems observed.</li>
 </ul>
 <p>Inspected records/artifacts: <a href="../copilot.txt">copilot.txt</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>, <code>dist/cares-documentation-html/EXPORT_MANIFEST.md</code>, <code>dist/cares-documentation-html/EXPORT_MANIFEST.json</code>, <code>dist/cares-documentation-html/index.html</code>, <a href="../dist/CARES_DOCUMENTATION_HTML.zip">dist/CARES_DOCUMENTATION_HTML.zip</a>, and relevant git history/timestamps.</p>
 <h2>4. Publication state reconciliation (Git evidence)</h2>
@@ -237,10 +246,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li>Manifests: <code>dist/cares-documentation-html/EXPORT_MANIFEST.md</code> and <code>EXPORT_MANIFEST.json</code> present and updated by regeneration.</li>
 <li>Exporter run: <code>python3 /tmp/export_cares_docs.py</code> completed successfully after source corrections.
 <ul>
-<li>Manifest: export_timestamp_utc <code>2026-11-22T10:37:16Z</code>, repository_revision <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code>, source_markdown_files_discovered <code>42</code>, html_files_successfully_generated <code>42</code>, failed_conversions <code>[]</code>, missing_referenced_assets <code>[]</code>, broken_internal_links <code>[]</code>, files_not_converted_faithfully <code>[]</code>, copied_assets <code>[copilot.txt, dist/CARES_DOCUMENTATION_HTML.zip]</code>.</li>
+<li>Manifest (current committed export at inspection baseline <code>1c21c0d</code> context): export_timestamp_utc <code>2026-11-22T10:58:50Z</code>, repository_revision <code>f7fb334fc2419f5b7c1570969523445aa8ec2d1c</code>, source_markdown_files_discovered <code>42</code>, html_files_successfully_generated <code>42</code>, failed_conversions <code>[]</code>, missing_referenced_assets <code>[]</code>, broken_internal_links <code>[]</code>, files_not_converted_faithfully <code>[]</code>, copied_assets <code>[copilot.txt, dist/CARES_DOCUMENTATION_HTML.zip]</code>.</li>
 </ul>
 </li>
-<li>ZIP: <a href="../dist/CARES_DOCUMENTATION_HTML.zip">dist/CARES_DOCUMENTATION_HTML.zip</a> rebuilt; <code>ZipFile.testzip()</code> <strong>OK</strong> (no bad member), single top-level directory <code>cares-documentation-html/</code>, 48 entries (includes publication audit and corrected final review/copilot HTML exports).</li>
+<li>ZIP: <a href="../dist/CARES_DOCUMENTATION_HTML.zip">dist/CARES_DOCUMENTATION_HTML.zip</a> rebuilt/validated; <code>ZipFile.testzip()</code> <strong>OK</strong> (no bad member), single top-level directory <code>cares-documentation-html/</code>, 48 entries. Corrective closure regeneration produces a new export/ZIP consistent with corrected sources; final committed hashes/manifest values are those of the final corrective commit state.</li>
 <li>Mermaid: structural validation previously performed where recorded; <strong>actual visual rendering NOT VERIFIED</strong>.</li>
 </ul>
 <h3>6.3 Locally verified SHA-256 hashes (evidence)</h3>
@@ -311,8 +320,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </tr>
 <tr>
 <td><code>dist/CARES_DOCUMENTATION_HTML.zip</code></td>
-<td style="text-align:right">13311587</td>
-<td><code>41de44f988c17e43a6b49c62950f3407a8a116087145aa0e582a87de43fe6d05</code> (post-reconciliation rebuild, ZipFile.testzip OK; final committed ZIP rebuilt at final export)</td>
+<td style="text-align:right">19286653 (committed at <code>1c21c0d</code>)</td>
+<td><code>0d9b86b73594c2c65a2903c7a449be8ea27b61684e098326e6cc2fc324ac1a9c</code> (ZipFile.testzip OK); rebuilt for corrective closure commit with locally verified integrity</td>
 </tr>
 </tbody>
 </table>
@@ -369,27 +378,25 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <ul>
 <li><strong>Original Round 2 artifact commit:</strong> <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code> — &quot;docs: add PostgreSQL physical schema Round 2 design artifacts&quot; (2026-11-22T10:11:47Z), parent <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code>.</li>
 <li><strong>Publication-reconciliation commit:</strong> <code>0d27e1892e1ee3498d3fbbdad9d18fb388e612f9</code> — &quot;docs: reconcile PostgreSQL round 2 publication audit&quot; (pushed and verified).</li>
-<li><strong>Final closure commit:</strong> <code>f7fb334fc2419f5b7c1570969523445aa8ec2d1c</code> — &quot;docs: finalize publication audit closure records&quot; (pushed and verified).</li>
+<li><strong>Publication closure commit:</strong> <code>f7fb334fc2419f5b7c1570969523445aa8ec2d1c</code> — &quot;docs: finalize publication audit closure records&quot; (pushed and verified).</li>
+<li><strong>Evidence-recording commit (pre-corrective final synchronized HEAD):</strong> <code>1c21c0d5820ee087045b43f3d66b9725ab67731f</code> — &quot;docs: record final publication closure verification&quot; (pushed and verified).</li>
 </ul>
-<h3>10.2 Pre-closure inspection</h3>
+<h3>10.2 Pre-corrective final synchronized state (verified)</h3>
 <ul>
-<li>Local HEAD / remote-tracking / <code>git ls-remote</code> before final closure commit: <code>0d27e1892e1ee3498d3fbbdad9d18fb388e612f9</code> — <strong>matched</strong>.</li>
-</ul>
-<h3>10.3 Final closure commit and post-push verification (confirmed)</h3>
+<li><strong>Final local HEAD (pre-correction):</strong> <code>1c21c0d5820ee087045b43f3d66b9725ab67731f</code></li>
+<li><strong>Final remote HEAD (pre-correction):</strong> <code>1c21c0d5820ee087045b43f3d66b9725ab67731f</code></li>
+<li><strong><code>git ls-remote --heads origin design/postgresql-round2-physical-schema</code> result (pre-correction):</strong>
 <ul>
-<li><strong>Final reconciliation/closure commit SHA:</strong> <code>f7fb334fc2419f5b7c1570969523445aa8ec2d1c</code></li>
-<li><strong>Final local HEAD:</strong> <code>f7fb334fc2419f5b7c1570969523445aa8ec2d1c</code></li>
-<li><strong>Final remote HEAD:</strong> <code>f7fb334fc2419f5b7c1570969523445aa8ec2d1c</code></li>
-<li><strong>Post-push <code>git ls-remote --heads origin design/postgresql-round2-physical-schema</code> result:</strong>
-<ul>
-<li><code>f7fb334fc2419f5b7c1570969523445aa8ec2d1c	refs/heads/design/postgresql-round2-physical-schema</code></li>
+<li><code>1c21c0d5820ee087045b43f3d66b9725ab67731f	refs/heads/design/postgresql-round2-physical-schema</code></li>
 </ul>
 </li>
-<li><strong>Explicit confirmation — local and remote HEAD match:</strong> <strong>Yes</strong> (independently verified by post-push <code>git ls-remote</code>).</li>
+<li><strong>Explicit confirmation — local and remote HEAD match (pre-correction):</strong> <strong>Yes</strong> (independently verified).</li>
 </ul>
-<h3>10.4 Final evidence-recording publication</h3>
+<h3>10.3 Final corrective closure publication</h3>
 <ul>
-<li>This evidence-recording commit finalizes the audit/copilot records with the above verified SHAs and ls-remote evidence. After it is committed and pushed normally, the post-push <code>git ls-remote</code> result confirms the exact final remote HEAD (recorded in <code>copilot.txt</code> and reported in the final execution response). No force-push, reset, rebase, or history rewriting performed.</li>
+<li>This corrective closure commit synchronizes publication records/exports with the verified final state (correcting remaining inconsistencies in <code>copilot.txt</code> and this audit, regenerating HTML/index/manifest/ZIP as required). It is committed and pushed normally to <code>design/postgresql-round2-physical-schema</code> and independently verified by post-push <code>git ls-remote</code>.</li>
+<li><strong>Final corrective commit SHA / final local HEAD / final remote HEAD / post-push <code>git ls-remote</code> result / explicit local-remote match:</strong> recorded in <code>copilot.txt</code> and in the final execution report after post-push verification (exact SHA confirmed by <code>git ls-remote</code>).</li>
+<li>No force-push, reset, rebase, or history rewriting performed.</li>
 </ul>
 
 </article>
