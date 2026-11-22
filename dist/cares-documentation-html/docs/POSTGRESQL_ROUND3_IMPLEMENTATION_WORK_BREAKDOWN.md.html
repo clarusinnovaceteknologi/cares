@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3 Implementation Work Breakdown</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T11:47:37Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3 Implementation Work Breakdown</h1>
+<p><strong>Status:</strong> Proposed planning artifact only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This work breakdown decomposes the bounded implementation plan into traceable work packages. It does not authorize implementation and does not create DDL/migrations/DB objects/code.</p>
+<p><strong>Related documents:</strong> <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a>, <a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="POSTGRESQL_ROUND3_CHANGELOG.md.html">POSTGRESQL_ROUND3_CHANGELOG.md</a>, <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>.</p>
+<h2>1. Work breakdown structure (WBS)</h2>
+<table>
+<thead>
+<tr>
+<th>WBS ID</th>
+<th>Increment</th>
+<th>Work package</th>
+<th>Key deliverables (future, when authorized)</th>
+<th>Dependencies</th>
+<th>Readiness</th>
+<th>Primary blockers / approvals</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WP-0.1</td>
+<td>I-00</td>
+<td>Authorization and scope control</td>
+<td>Approved increment scope, change-control record, explicit exclusions, sign-off checklist</td>
+<td>Round 2 baseline, this plan set</td>
+<td>Conditionally ready</td>
+<td>Owner authorization</td>
+</tr>
+<tr>
+<td>WP-0.2</td>
+<td>I-00</td>
+<td>Environment and toolchain readiness</td>
+<td>Target PostgreSQL version/profile selection, migration framework/process selection, non-production environment readiness, backup/PITR/restore rehearsal plan</td>
+<td>WP-0.1</td>
+<td>Conditionally ready</td>
+<td>DBA/ops readiness, PD-001 implications reviewed</td>
+</tr>
+<tr>
+<td>WP-0.3</td>
+<td>I-00</td>
+<td>Security and governance preflight</td>
+<td>Verified-context mechanism design review, role/secret handling approach, audit/legal-hold handling plan, evidence capture plan</td>
+<td>WP-0.1</td>
+<td>Blocked/conditional</td>
+<td>Security/DBA/legal/privacy as applicable</td>
+</tr>
+<tr>
+<td>WP-1.1</td>
+<td>I-01</td>
+<td>Namespace and convention package</td>
+<td>Schema creation order, naming/constraint/index conventions, type/domain/state representation decisions, extension evaluation list</td>
+<td>WP-0.2, PD-001/002/004</td>
+<td>Conditionally ready</td>
+<td>Engineering/DBA approval (PD-001/002/004)</td>
+</tr>
+<tr>
+<td>WP-1.2</td>
+<td>I-02</td>
+<td>Global/catalog foundation package</td>
+<td><code>core.tenant</code>, <code>core.external_identity_subject</code>, <code>core.role</code>, <code>core.role_permission</code>, <code>ingest.event_schema_reference</code>, <code>soc.threat_intelligence_reference</code> structural definitions and integrity checks plan</td>
+<td>WP-1.1</td>
+<td>Conditionally ready</td>
+<td>Global/catalog access posture review</td>
+</tr>
+<tr>
+<td>WP-1.3</td>
+<td>I-03</td>
+<td>Tenant-access/config foundation package</td>
+<td><code>core.tenant_membership</code>, <code>core.membership_role_assignment</code>, <code>core.support_access_grant</code>, <code>core.support_access_approval</code>, <code>core.tenant_configuration</code></td>
+<td>WP-1.2, PD-003</td>
+<td>Conditionally ready</td>
+<td>Tenant-consistent FK strategy (PD-003)</td>
+</tr>
+<tr>
+<td>WP-2.1</td>
+<td>I-04</td>
+<td>Canonical asset and authoritative binding package</td>
+<td><code>core.asset</code>, <code>integration_ai.data_source</code>, <code>core.asset_data_source</code>, optional <code>core.source_device_key</code>, <code>core.source_device_fingerprint_alias</code>, <code>core.asset_identity_claim</code></td>
+<td>WP-1.3, OD-002/006/007, PD-004/011</td>
+<td>Conditionally ready</td>
+<td>OD-002 bounded approval, fingerprint/protection decisions</td>
+</tr>
+<tr>
+<td>WP-2.2</td>
+<td>I-05</td>
+<td>Identity lifecycle/lineage package</td>
+<td><code>core.identity_resolution_case</code>, <code>core.asset_lifecycle_event</code>, <code>core.asset_merge_operation</code>, <code>core.asset_split_operation</code>, <code>core.asset_lineage_link</code>, <code>core.asset_tombstone</code></td>
+<td>WP-2.1, OD-005/007</td>
+<td>Conditionally ready</td>
+<td>OD-005/007 policy inputs, typed-lineage verification</td>
+</tr>
+<tr>
+<td>WP-2.3</td>
+<td>I-06</td>
+<td>Licensing/entitlement/ledger package</td>
+<td><code>core.subscription_entitlement</code>, <code>core.tenant_license_usage_state</code>, <code>core.asset_license_event</code>, <code>core.identity_operation_idempotency_ledger</code>, <code>core.asset_license_reservation</code></td>
+<td>WP-2.1/WP-2.2, OD-001/003/004/008</td>
+<td>Blocked for final semantics</td>
+<td>OD-001/003/004/008 approvals; no assumed accounting semantics</td>
+</tr>
+<tr>
+<td>WP-3.1</td>
+<td>I-07</td>
+<td>Ingestion/event package</td>
+<td><code>ingest.event_receipt</code>, <code>ingest.security_event</code> and required references/index predicates</td>
+<td>WP-2.1, OD-013, PD-008</td>
+<td>Conditionally ready</td>
+<td>OD-013 namespace/fallback approval per connector scope</td>
+</tr>
+<tr>
+<td>WP-3.2</td>
+<td>I-08</td>
+<td>Outbox/processing package</td>
+<td><code>processing.outbox_message</code>, <code>processing.outbox_attempt</code>, optional <code>processing.processing_work_item</code></td>
+<td>WP-3.1, OD-009, PD-007</td>
+<td>Conditionally ready</td>
+<td>OD-009 semantics and claim/lease validation plan</td>
+</tr>
+<tr>
+<td>WP-3.3</td>
+<td>I-09</td>
+<td>Audit/evidence/AI-governance package</td>
+<td><code>audit_evidence.*</code>, <code>integration_ai.integration_configuration</code>, <code>tenant_ai_provider_configuration</code>, <code>ai_provider_secret_reference</code>, <code>ai_provider_policy_consent_reference</code>, <code>ai_usage_budget_accounting</code>, AI interaction audit</td>
+<td>WP-1.3/WP-2.1/WP-3.2, OD-010/011</td>
+<td>Conditionally ready</td>
+<td>Legal/privacy/security governance (OD-010/011)</td>
+</tr>
+<tr>
+<td>WP-3.4</td>
+<td>I-10</td>
+<td>SOC operational package</td>
+<td><code>soc.alert</code>, <code>soc.incident_case</code>, <code>soc.detection_rule</code>, <code>soc.detection_rule_version</code>, <code>soc.vulnerability_finding</code>, <code>soc.asset_inventory_observation</code></td>
+<td>WP-2.1/WP-3.1, PD-012, OD-010/012</td>
+<td>Conditionally ready</td>
+<td>Scope/governance/retention assumptions</td>
+</tr>
+<tr>
+<td>WP-4.1</td>
+<td>I-11</td>
+<td>Constraint and index hardening package</td>
+<td>Tenant-consistent composite uniques/FKs, CHECKs, partial/unique indexes, expression indexes, contention-sensitive indexes per approved subset</td>
+<td>WP-1.2–WP-3.4, PD-003/008/009</td>
+<td>Conditionally ready</td>
+<td>DB review, query/index validation plan (OD-012)</td>
+</tr>
+<tr>
+<td>WP-4.2</td>
+<td>I-11</td>
+<td>Partitioning-preparation (no adoption) package</td>
+<td>Partition-key/uniqueness compatibility review, threshold/runbook planning only for candidate tables</td>
+<td>Lifecycle design, PD-010, OD-010/012</td>
+<td>Deferred</td>
+<td>Workload/retention evidence</td>
+</tr>
+<tr>
+<td>WP-5.1</td>
+<td>I-12</td>
+<td>Verified tenant-context mechanism package</td>
+<td>Approved non-GUC, non-client-authoritative, transaction-bound context mechanism and fail-closed behavior design/implementation prep</td>
+<td>WP-4.1, PD-005</td>
+<td>Blocked</td>
+<td>Security/DBA/architecture approval</td>
+</tr>
+<tr>
+<td>WP-5.2</td>
+<td>I-12</td>
+<td>Roles/privileges and RLS package</td>
+<td>Least-privilege runtime/maintenance role model, grants, RLS enablement/policies/FORCE posture as approved</td>
+<td>WP-5.1, PD-006</td>
+<td>Blocked</td>
+<td>Security/DBA approval, negative tests</td>
+</tr>
+<tr>
+<td>WP-5.3</td>
+<td>I-12</td>
+<td>Pooling/session-safety validation package</td>
+<td>Pool checkout/reset verification, transaction-local context lifecycle, background/admin scope controls</td>
+<td>WP-5.1/WP-5.2</td>
+<td>Blocked</td>
+<td>Runtime behavior evidence in non-production</td>
+</tr>
+<tr>
+<td>WP-6.1</td>
+<td>I-13</td>
+<td>Operation-aligned transactional implementation planning gate</td>
+<td>Authorized implementation specs for Operations 1–13, idempotency coupling, outbox claim/recovery, evidence transitions</td>
+<td>WP-5.3, OD-001/003/004/005/008/009/010/011/013</td>
+<td>Blocked / out of scope now</td>
+<td>All required approvals and prior validation evidence</td>
+</tr>
+<tr>
+<td>WP-6.2</td>
+<td>I-14</td>
+<td>Retention/maintenance automation planning gate</td>
+<td>Partition adoption, purge/archive/legal-hold automation, maintenance tuning/runbooks</td>
+<td>WP-4.2, OD-010/012</td>
+<td>Blocked/Deferred</td>
+<td>Legal/compliance/ops/workload approvals</td>
+</tr>
+</tbody>
+</table>
+<h2>2. Domain-to-entity mapping (planning traceability)</h2>
+<table>
+<thead>
+<tr>
+<th>Domain/schema</th>
+<th>Tables (Round 2 physical baseline)</th>
+<th>Primary increments</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core</code> tenant/access/config</td>
+<td><code>tenant</code>, <code>external_identity_subject</code>, <code>tenant_membership</code>, <code>role</code>, <code>role_permission</code>, <code>membership_role_assignment</code>, <code>support_access_grant</code>, <code>support_access_approval</code>, <code>tenant_configuration</code></td>
+<td>I-02, I-03</td>
+</tr>
+<tr>
+<td><code>core</code> asset/identity/lineage/licensing</td>
+<td><code>asset</code>, <code>asset_data_source</code>, <code>source_device_key</code> (optional dependent), <code>source_device_fingerprint_alias</code>, <code>asset_identity_claim</code>, <code>identity_resolution_case</code>, <code>asset_lifecycle_event</code>, <code>asset_merge_operation</code>, <code>asset_split_operation</code>, <code>asset_lineage_link</code>, <code>subscription_entitlement</code>, <code>tenant_license_usage_state</code>, <code>asset_license_event</code>, <code>identity_operation_idempotency_ledger</code>, <code>asset_license_reservation</code>, <code>asset_tombstone</code></td>
+<td>I-04, I-05, I-06</td>
+</tr>
+<tr>
+<td><code>ingest</code></td>
+<td><code>event_schema_reference</code>, <code>event_receipt</code>, <code>security_event</code></td>
+<td>I-02, I-07</td>
+</tr>
+<tr>
+<td><code>processing</code></td>
+<td><code>outbox_message</code>, <code>outbox_attempt</code>, <code>processing_work_item</code> (optional/non-core)</td>
+<td>I-08</td>
+</tr>
+<tr>
+<td><code>audit_evidence</code></td>
+<td><code>audit_event</code>, <code>forensic_evidence_record</code>, <code>evidence_object_version</code>, <code>evidence_custody_event</code>, <code>evidence_transition_authorization</code>, <code>ai_interaction_audit</code></td>
+<td>I-09</td>
+</tr>
+<tr>
+<td><code>integration_ai</code></td>
+<td><code>data_source</code>, <code>integration_configuration</code>, <code>tenant_ai_provider_configuration</code>, <code>ai_provider_secret_reference</code>, <code>ai_provider_policy_consent_reference</code>, <code>ai_usage_budget_accounting</code></td>
+<td>I-04, I-09</td>
+</tr>
+<tr>
+<td><code>soc</code></td>
+<td><code>alert</code>, <code>incident_case</code>, <code>detection_rule</code>, <code>detection_rule_version</code>, <code>vulnerability_finding</code>, <code>threat_intelligence_reference</code>, <code>asset_inventory_observation</code></td>
+<td>I-02, I-10</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Cross-cutting work packages</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Area</th>
+<th>Planned activities (future)</th>
+<th>Must preserve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>XC-1</td>
+<td>Tenant isolation assurance</td>
+<td>Design review, SQL/privilege review, negative tests, pooling tests, support-access scope tests</td>
+<td>No client/GUC tenant authority; RLS defense-in-depth; fail-closed behavior</td>
+</tr>
+<tr>
+<td>XC-2</td>
+<td>Idempotency and concurrency</td>
+<td>Ledger/receipt uniqueness validation, replay/conflict/unknown-commit scenarios, lock/contention analysis</td>
+<td>Separate ledger vs receipt semantics; no exactly-once external delivery</td>
+</tr>
+<tr>
+<td>XC-3</td>
+<td>Audit/evidence/legal hold</td>
+<td>Append/transition controls, custody/version integrity checks, legal-hold enforcement paths, retention class mapping</td>
+<td>No silent rewrite/delete; controlled transitions only</td>
+</tr>
+<tr>
+<td>XC-4</td>
+<td>Observability and operations</td>
+<td>Migration logs/checksums, object inventory, constraint/index verification, anomaly alerts (reconciliation, unknown outcomes)</td>
+<td>Auditable, reproducible change control</td>
+</tr>
+<tr>
+<td>XC-5</td>
+<td>Documentation and traceability</td>
+<td>Keep plan/WBS/matrix/map synchronized with executed evidence; record deviations/findings explicitly</td>
+<td>No undocumented status promotion of OD/PD/ADR</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Exit criteria per work package (planning-level)</h2>
+<p>A future work package may be considered complete only when: (1) authorized scope executed in the approved environment, (2) verification evidence collected per <a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, (3) rollback/recovery posture confirmed, (4) blockers/approvals satisfied or explicitly bounded, and (5) results recorded without overstating readiness.</p>
+
+</article>
+</div>
+
+</body>
+</html>

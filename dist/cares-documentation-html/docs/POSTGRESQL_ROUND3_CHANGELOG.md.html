@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3 Implementation Planning Changelog</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_CHANGELOG.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T11:47:37Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3 Implementation Planning Changelog</h1>
+<p><strong>Status:</strong> Proposed planning changelog; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This changelog records Round 3 planning artifacts and analysis only. No schema, OD/PD, ADR, architecture, or roadmap status was changed.</p>
+<h2>1. Baseline and scope</h2>
+<ul>
+<li><strong>Planning branch:</strong> <code>planning/postgresql-round3-implementation</code></li>
+<li><strong>Baseline commit:</strong> <code>ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d</code> (verified synchronized Round 2 publication state on <code>design/postgresql-round2-physical-schema</code>)</li>
+<li><strong>Scope:</strong> implementation planning, sequencing, dependency/readiness mapping, migration/deployment strategy, and test/acceptance planning only. No DDL, migrations, database objects/roles/policies/triggers/functions/procedures, ORM/app code, or database provisioning/modification/execution.</li>
+</ul>
+<h2>2. Documents added (Round 3 planning set)</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a></td>
+<td>Phased implementation sequence, invariants, increment objectives/preconditions/dependencies/risks/rollback/verification/approvals, smallest safe first increment (bounded candidate), and explicit exclusions.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a></td>
+<td>Work packages (I-00–I-14/WP/ XC), domain-to-entity mapping for the 50-table Round 2 baseline, and planning-level exit criteria.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a></td>
+<td>Dependency-ordered migration sequencing, environment promotion gates, rollback/recovery/operational considerations, and prohibited actions.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a></td>
+<td>Required test categories (schema correctness; RLS/tenant isolation; identity binding/licensing invariants; idempotency/concurrency; outbox failure/recovery; audit/evidence integrity; retention/legal hold; backup/restore; performance/query-plan validation; migration upgrade/recovery) with objectives, preconditions, expected results, failure conditions, evidence, and release-blocker classification.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a></td>
+<td>Component/increment readiness classification, OD/PD/ADR dependencies, approvals/evidence required, and overall bounded readiness statement.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a></td>
+<td>Mermaid dependency/approval maps, operation-to-domain prerequisites, and planning traceability matrix.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_CHANGELOG.md.html">POSTGRESQL_ROUND3_CHANGELOG.md</a></td>
+<td>This changelog.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a></td>
+<td>Coherence/readiness assessment, final status classification, bounded first increment, required approvals, and out-of-scope confirmation.</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Baseline references preserved (not modified)</h2>
+<ul>
+<li>Round 1.1 logical model/ERD/transaction boundaries/open decisions/changelog/final audit.</li>
+<li>Round 2 physical schema/ERD/index strategy/RLS/physical transaction/lifecycle/open decisions/changelog/final review.</li>
+<li>Architecture/security/data/threat/technology/roadmap/requirements traceability/project status and ADRs 0001–0006 (<strong>ADR 0006 Proposed</strong>).</li>
+</ul>
+<h2>4. Planning findings and constraints recorded</h2>
+<ul>
+<li><strong>Authoritative invariants preserved:</strong> <code>core.asset_data_source</code> owns immutable <code>source_device_key_id</code> (OD-002 Proposed), identity/licensing ledger <code>(tenant_id, operation_type, idempotency_key)</code> distinct from event receipt namespace dedup (OD-008/OD-013 Proposed), typed lineage only, no exactly-once external delivery, strict trusted-transaction-bound tenant isolation with no client/GUC tenant authority, RLS defense-in-depth.</li>
+<li><strong>Execution blockers remain:</strong> verified tenant-context/RLS mechanism and validation (PD-005/PD-006), licensing/idempotency semantic approvals (OD-001/003/004/008, ADR 0006 Proposed), merge/split/fingerprint/lifecycle governance inputs (OD-005/006/007), event namespace/outbox semantics (OD-013/OD-009), and retention/AI governance/workload validation (OD-010/011/012, PD-010 and related PDs).</li>
+<li><strong>No technical inconsistencies silently corrected:</strong> Round 2 baseline treated as authoritative input; any future discovered inconsistency must be documented with owner/approval impact rather than silently modified.</li>
+</ul>
+<h2>5. Documentation/export/publication actions (this round)</h2>
+<ul>
+<li>Regenerated HTML export, index, and manifest; rebuilt and integrity-checked ZIP; recorded SHA-256 hashes in execution/report artifacts as applicable.</li>
+<li>Updated <a href="../copilot.txt">copilot.txt</a> with the actual Round 3 planning execution report.</li>
+<li>Committed and pushed planning artifacts to <code>planning/postgresql-round3-implementation</code> and verified remote HEAD via <code>git ls-remote</code> (see execution report/final review).</li>
+</ul>
+<h2>6. Explicit non-actions</h2>
+<ul>
+<li>No DDL/migrations/ORM/DB roles/policies/triggers/functions/procedures created.</li>
+<li>No database provisioned/modified/executed; no application implementation started.</li>
+<li>No OD/PD/ADR/architecture/roadmap status changes.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

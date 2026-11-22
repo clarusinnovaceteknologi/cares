@@ -1,9 +1,9 @@
 # CARES Documentation Export Manifest
 
-- **Export timestamp (UTC):** 2026-11-22T11:25:10Z
-- **Repository revision/commit hash:** 91d275b59bfb4e60328ae7fd34b81142c770da7a
-- **Total discovered Markdown files:** 42
-- **Total successfully converted HTML files:** 42
+- **Export timestamp (UTC):** 2026-11-22T11:47:37Z
+- **Repository revision/commit hash:** ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d
+- **Total discovered Markdown files:** 50
+- **Total successfully converted HTML files:** 50
 - **Failed conversions:** 0
 - **Copied assets:** 2
 - **Missing referenced assets:** 0
@@ -40,6 +40,14 @@
 | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md.html | converted |
 | docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md | docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html | converted |
 | docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md | docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html | converted |
+| docs/POSTGRESQL_ROUND3_CHANGELOG.md | docs/POSTGRESQL_ROUND3_CHANGELOG.md.html | converted |
+| docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md | docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html | converted |
+| docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md | docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md.html | converted |
+| docs/POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md | docs/POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html | converted |
+| docs/POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md | docs/POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html | converted |
+| docs/POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md | docs/POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html | converted |
+| docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md | docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html | converted |
+| docs/POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md | docs/POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html | converted |
 | docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md | docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html | converted |
 | docs/POSTGRESQL_TECHNICAL_DECISIONS.md | docs/POSTGRESQL_TECHNICAL_DECISIONS.md.html | converted |
 | docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md | docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md.html | converted |

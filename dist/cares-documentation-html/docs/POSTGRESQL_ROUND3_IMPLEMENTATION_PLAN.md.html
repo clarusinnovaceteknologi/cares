@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3 Implementation Plan</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T11:47:37Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3 Implementation Plan</h1>
+<p><strong>Status:</strong> Proposed implementation-planning document only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This document translates the Round 2 physical schema design into a bounded, sequenced implementation plan. It does <strong>not</strong> create DDL, migration files, ORM models, database roles/policies, triggers/functions/procedures, database objects, or application/database implementation. No design element is claimed as implemented, tested, operational, production-ready, or authorized for execution.</p>
+<p><strong>Round 3 scope:</strong> planning, sequencing, dependency mapping, readiness/blocker assessment, migration/deployment strategy, and test/acceptance planning only.</p>
+<h2>1. Authoritative baseline and inspected sources</h2>
+<h3>1.1 Repository and baseline</h3>
+<ul>
+<li><strong>Repository:</strong> <code>https://github.com/clarusinnovaceteknologi/cares</code></li>
+<li><strong>Planning branch:</strong> <code>planning/postgresql-round3-implementation</code></li>
+<li><strong>Verified baseline commit (Round 2 synchronized):</strong> <code>ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d</code></li>
+<li><strong>Round 2 original artifact commit (historical evidence):</strong> <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code></li>
+<li><strong>Round 1.1 publication baseline:</strong> <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code></li>
+</ul>
+<h3>1.2 Inspected baseline documents (planning inputs)</h3>
+<p>Round 1.1 logical baseline: <a href="POSTGRESQL_LOGICAL_DATA_MODEL.md.html">POSTGRESQL_LOGICAL_DATA_MODEL.md</a>, <a href="POSTGRESQL_LOGICAL_ERD.md.html">POSTGRESQL_LOGICAL_ERD.md</a>, <a href="POSTGRESQL_TRANSACTION_BOUNDARIES.md.html">POSTGRESQL_TRANSACTION_BOUNDARIES.md</a>, <a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md.html">POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md</a>, <a href="POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html">POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md</a>.</p>
+<p>Round 2 physical baseline: <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a>, <a href="POSTGRESQL_PHYSICAL_ERD.md.html">POSTGRESQL_PHYSICAL_ERD.md</a>, <a href="POSTGRESQL_INDEX_STRATEGY.md.html">POSTGRESQL_INDEX_STRATEGY.md</a>, <a href="POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a>, <a href="POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a>, <a href="POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html">POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>.</p>
+<p>Architecture/security/project/ADR baselines: <a href="ARCHITECTURE.md.html">ARCHITECTURE.md</a>, <a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a>, <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>, <a href="THREAT_MODEL.md.html">THREAT_MODEL.md</a>, <a href="TECHNOLOGY_SELECTION.md.html">TECHNOLOGY_SELECTION.md</a>, <a href="DEVELOPMENT_ROADMAP.md.html">DEVELOPMENT_ROADMAP.md</a>, <a href="REQUIREMENTS_TRACEABILITY.md.html">REQUIREMENTS_TRACEABILITY.md</a>, <a href="PROJECT_STATUS.md.html">PROJECT_STATUS.md</a>, and ADRs <a href="adr/0001-modular-monolith.md.html">0001</a>–<a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">0006</a> (<strong>ADR 0006 remains Proposed</strong>).</p>
+<h2>2. Non-negotiable invariants (must be preserved by every future increment)</h2>
+<table>
+<thead>
+<tr>
+<th>Invariant</th>
+<th>Planning implication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PostgreSQL is the primary system of record; modular monolith; core remains functional without MELIRA</td>
+<td>Schema/migration planning must prioritize relational correctness and core domains before optional AI-dependent behavior.</td>
+</tr>
+<tr>
+<td>MELIRA is external SaaS only (explicit provider/model/region), no silent failover, no automatic transfer, no local inference, no local GPU</td>
+<td>No local AI inference/GPU infrastructure in DB or migration planning; AI tables/config remain governance/audit references only.</td>
+</tr>
+<tr>
+<td>One unique monitored device = one licensed asset per tenant; equal device-type licensing weight; multi-source same-device does not create duplicate licensing</td>
+<td>Identity binding, ledger, usage-state, merge/split, and idempotency increments must preserve atomic per-tenant accounting semantics and cannot be implemented as assumed-final where OD/PD dependencies remain open.</td>
+</tr>
+<tr>
+<td>Strict tenant isolation: tenant authority only from trusted, verified, transaction-bound context; never client-supplied tenant IDs; never user-settable PostgreSQL GUC authorization</td>
+<td>Any runtime-capable increment touching tenant data requires approved/verified context mechanism and RLS/privilege validation before exposure; RLS is defense-in-depth, not sufficient alone.</td>
+</tr>
+<tr>
+<td><code>core.asset_data_source</code> authoritative stable binding owning immutable <code>source_device_key_id</code>; aliases resolve to same binding (OD-002 Proposed)</td>
+<td>Physical implementation must not create competing identity authority or mutable stable binding keys.</td>
+</tr>
+<tr>
+<td>Identity/licensing idempotency ledger scope <code>(tenant_id, operation_type, idempotency_key)</code> with deterministic canonical hash/state semantics (OD-008 Proposed); event dedup explicit namespace/provenance in <code>ingest.event_receipt</code> (OD-013 Proposed), distinct from identity ledger</td>
+<td>Ledger and receipt semantics must remain separated; no reuse of one for the other.</td>
+</tr>
+<tr>
+<td>Typed lineage only (<code>from_asset_id</code>, <code>to_asset_id</code>, <code>merge_operation_id</code> or <code>split_operation_id</code>); no polymorphic lineage refs</td>
+<td>Constraints/transaction logic must enforce typed lineage integrity.</td>
+</tr>
+<tr>
+<td>No exactly-once external delivery; unknown outcomes retained/reconciled</td>
+<td>Outbox/worker planning must preserve at-least-once, idempotent handling, and unknown-outcome visibility.</td>
+</tr>
+<tr>
+<td>OD-001–OD-013 and PD-001–PD-012 remain as recorded; ADR statuses unchanged</td>
+<td>Planning may prepare bounded work but must not silently approve/close/implement disputed semantics.</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Sequencing principles</h2>
+<ol>
+<li><strong>Dependency-first, invariant-first:</strong> foundational schemas/types/catalogs and integrity primitives before dependent tables, before RLS/policy hardening, before operational indexes/partitioning optimizations, before application/runtime exposure.</li>
+<li><strong>Separate structural correctness from runtime authorization:</strong> schema/constraint correctness can be planned as bounded non-production increments only where it does not violate unresolved invariants or imply tenant-safe runtime access; tenant-scoped runtime behavior remains gated by verified context/RLS validation.</li>
+<li><strong>Atomicity boundaries preserved:</strong> migration units and future transaction implementations must align with Round 2 operation boundaries (Operations 1–13) and must not split correctness-critical coupled state changes.</li>
+<li><strong>No destructive/ambiguous shortcuts:</strong> no implicit tenant authority, no weakening of uniqueness/tenant consistency, no exactly-once claims, no auto-resolution of open decisions.</li>
+<li><strong>Validation gates before promotion:</strong> each increment requires explicit preconditions, verification evidence, rollback/recovery planning, and owner/security/operational approval where applicable.</li>
+<li><strong>Bounded exclusions explicit:</strong> unresolved OD/PD items, unvalidated performance/retention assumptions, and unapproved security mechanisms remain exclusions/blockers, not assumptions.</li>
+</ol>
+<h2>4. Proposed implementation phases and increments</h2>
+<blockquote>
+<p><strong>Readiness legend:</strong> <strong>Ready (bounded planning target)</strong> = planning/preparation coherent and not blocked by technical ambiguity for a future explicitly authorized, non-production structural increment, subject to stated preconditions; <strong>Conditionally ready</strong> = can proceed only after specific approvals/validations/evidence; <strong>Blocked</strong> = cannot be safely implemented without owner decision, security approval, or required validation.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Increment</th>
+<th>Objective</th>
+<th>Primary dependencies (Round 2 refs)</th>
+<th>Readiness</th>
+<th>Key approvals/evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>I-00 Planning authorization and environment readiness</td>
+<td>Confirm owner authorization scope, target PostgreSQL environment class, migration tooling/process, backup/restore discipline, and change-control boundaries for future implementation</td>
+<td>Round 2 final review, lifecycle/maintenance assumptions, PD-001/002/003 decisions where relevant</td>
+<td>Conditionally ready</td>
+<td>Owner authorization, environment/DBA/security readiness evidence</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>I-01 Schema namespaces, extensions-as-needed planning, and shared type/domain conventions</td>
+<td>Establish <code>core</code>, <code>ingest</code>, <code>processing</code>, <code>audit_evidence</code>, <code>integration_ai</code>, <code>soc</code>, and conditional <code>security_internal</code> organization and agreed type/state conventions</td>
+<td>Physical schema §3; PD-001, PD-002, PD-004</td>
+<td>Conditionally ready</td>
+<td>Engineering/DBA convention approval; UUID/state representation decision (PD-001/002)</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>I-02 Platform/global/catalog foundations</td>
+<td>Foundational/global tables with minimal dependencies: <code>core.tenant</code>, <code>core.external_identity_subject</code>, <code>core.role</code>, <code>core.role_permission</code>, <code>ingest.event_schema_reference</code>, <code>soc.threat_intelligence_reference</code> (as modeled)</td>
+<td>Physical schema §6.1, 6.3, 6.7; RLS global/catalog posture</td>
+<td>Conditionally ready</td>
+<td>Review of scope/global access model (PD-012 where applicable)</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>I-03 Core tenant-access and configuration structures</td>
+<td><code>core.tenant_membership</code>, <code>core.membership_role_assignment</code>, <code>core.support_access_grant</code>, <code>core.support_access_approval</code>, <code>core.tenant_configuration</code> with tenant-consistent constraints</td>
+<td>I-02, Physical schema §6.1, tenant-consistency strategy PD-003</td>
+<td>Conditionally ready</td>
+<td>Tenant-consistent FK/composite-key pattern approval (PD-003)</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>I-04 Asset/integration authoritative binding foundations</td>
+<td><code>core.asset</code>, <code>integration_ai.data_source</code>, <code>core.asset_data_source</code> (authoritative), optional dependent <code>core.source_device_key</code> (if PD-004 materialized), <code>core.source_device_fingerprint_alias</code>, <code>core.asset_identity_claim</code></td>
+<td>I-02/I-03, Physical schema §6.2/6.6, OD-002/006/007</td>
+<td>Conditionally ready</td>
+<td>OD-002 approval/bounded acceptance; PD-004/PD-011 decisions; fingerprint protection assumptions reviewed</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>I-05 Identity lifecycle, lineage, and tombstone structures</td>
+<td><code>core.identity_resolution_case</code>, <code>core.asset_lifecycle_event</code>, <code>core.asset_merge_operation</code>, <code>core.asset_split_operation</code>, <code>core.asset_lineage_link</code> (typed), <code>core.asset_tombstone</code></td>
+<td>I-04, Transaction Ops 3–8, lineage integrity rules</td>
+<td>Conditionally ready</td>
+<td>OD-005/007 policy approvals for operational semantics; typed lineage constraints validated in design</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>I-06 Licensing/entitlement/ledger structures</td>
+<td><code>core.subscription_entitlement</code>, <code>core.tenant_license_usage_state</code>, <code>core.asset_license_event</code>, <code>core.identity_operation_idempotency_ledger</code>, <code>core.asset_license_reservation</code></td>
+<td>I-04/I-05, Transaction Ops 1/2/6/7/8/9, OD-001/003/004/008</td>
+<td><strong>Blocked for final semantics / conditionally ready for bounded structural planning only</strong></td>
+<td>OD-001/003/004/008 approvals; PD-001/002/003; accounting formulas not to be finalized without approval</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>I-07 Ingestion and event structures</td>
+<td><code>ingest.event_receipt</code>, <code>ingest.security_event</code>, tenant-scoped integration/SOC observation dependencies as needed</td>
+<td>I-02/I-04, Transaction Op 10, OD-013, PD-008</td>
+<td>Conditionally ready</td>
+<td>OD-013 connector namespace/fallback approval or explicit bounded scope; dedup uniqueness predicate decisions</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>I-08 Processing/outbox structures</td>
+<td><code>processing.outbox_message</code>, <code>processing.outbox_attempt</code>, optional <code>processing.processing_work_item</code></td>
+<td>I-07 and domain producers as applicable, Transaction Ops 11/12, OD-009, PD-007</td>
+<td>Conditionally ready</td>
+<td>OD-009 lease/fencing/reconciliation semantics; PD-007 claim mechanism validation plan</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>I-09 Audit/evidence and AI governance structures</td>
+<td><code>audit_evidence.*</code> tables and <code>integration_ai.*</code> governance/accounting tables, AI interaction audit correlation</td>
+<td>I-02–I-08 correlations, Transaction Op 13, OD-010/011, lifecycle/legal-hold constraints</td>
+<td>Conditionally ready</td>
+<td>OD-010/011 governance/legal/privacy approvals; evidence storage/object sequencing procedures defined</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>I-10 SOC operational structures</td>
+<td><code>soc.alert</code>, <code>soc.incident_case</code>, <code>soc.detection_rule</code>, <code>soc.detection_rule_version</code>, <code>soc.vulnerability_finding</code>, <code>soc.asset_inventory_observation</code></td>
+<td>I-02/I-04/I-07, PD-012 scope modeling</td>
+<td>Conditionally ready</td>
+<td>Detection-rule scope/access governance (PD-012), retention assumptions (OD-010/012)</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>I-11 Integrity hardening: tenant-consistent FKs, CHECKs, partial/unique indexes, and contention-sensitive indexes</td>
+<td>Apply/refine constraints and index set per Round 2 design/index strategy (excluding unapproved/invalid assumptions)</td>
+<td>Prior structural increments, index strategy, PD-003/008/009</td>
+<td>Conditionally ready</td>
+<td>DB design/security review, workload/index validation plan (OD-012), measured trade-off acceptance</td>
+</tr>
+<tr>
+<td>P5</td>
+<td>I-12 Verified tenant context, roles/privileges, and RLS rollout (defense-in-depth)</td>
+<td>Implement approved verified transaction-bound context mechanism, least-privilege roles, grants, and RLS policies/force posture per approved design</td>
+<td>I-01–I-11, RLS design, PD-005/006</td>
+<td><strong>Blocked pending security/DBA approval and validation</strong></td>
+<td>PD-005/006 approval, hardened helper review, pooling/reset design, negative/isolation test evidence; no GUC/client tenant authority</td>
+</tr>
+<tr>
+<td>P5</td>
+<td>I-13 Transactional behavior, idempotency/outbox runtime semantics, and controlled procedures</td>
+<td>Implement operation-aligned transactional logic/procedures/worker behavior only as separately authorized future work</td>
+<td>I-12 and all relevant domain structures, Transaction Ops 1–13, OD-008/009</td>
+<td><strong>Blocked / not in scope of Round 3 execution</strong></td>
+<td>Owner authorization, approved semantics, security and correctness validation, non-production then controlled promotion</td>
+</tr>
+<tr>
+<td>P6</td>
+<td>I-14 Partitioning/maintenance/retention automation (deferred optimization/operations)</td>
+<td>Adopt partitioning or lifecycle automation only after measured thresholds and approved retention/legal-hold rules</td>
+<td>Lifecycle design, OD-010/012, PD-010, validated workload</td>
+<td><strong>Blocked/Deferred</strong></td>
+<td>Legal/compliance/operations approvals, workload evidence, runbook and rollback validation</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Increment detail template (applies to every future implementation increment)</h2>
+<p>For each authorized increment, the implementation owner must document and satisfy:</p>
+<ul>
+<li><strong>Objective and in-scope objects/operations</strong> (tables, constraints, indexes, policies, or behaviors; explicit exclusions).</li>
+<li><strong>Preconditions and entry criteria</strong> (prior increments complete, approvals obtained, environment ready, backups/change window if applicable).</li>
+<li><strong>Dependencies</strong> (schema/object, OD/PD/ADR, tooling, security mechanism, data/governance).</li>
+<li><strong>Risks and invariant checks</strong> (tenant isolation, binding authority, idempotency separation, typed lineage, no exactly-once claims, licensing semantics).</li>
+<li><strong>Rollback/recovery approach</strong> (forward-fix vs rollback migration strategy, backup/PITR considerations, irreversibility assessment).</li>
+<li><strong>Verification evidence required</strong> (schema/object inspection, constraint/index checks, negative security tests, transaction/idempotency tests, migration dry-run/rehearsal evidence as applicable).</li>
+<li><strong>Owner approvals required</strong> (architecture, security/DBA, product/commercial, legal/compliance/privacy, operations).</li>
+</ul>
+<h2>6. Smallest safe first implementation increment (candidate, bounded)</h2>
+<p><strong>Candidate:</strong> <strong>I-00 (planning authorization/environment readiness)</strong> followed by a <strong>bounded I-01/I-02 structural preparation increment in a non-production, isolated environment only</strong> (schema namespace and selected global/catalog foundation objects with reviewed naming/type conventions), executed only under explicit owner authorization and strict change control.</p>
+<p><strong>Why this is the smallest coherent candidate:</strong> it has the fewest domain invariants coupled to unresolved tenant-runtime authorization and licensing-accounting semantics, while establishing traceable structural prerequisites.</p>
+<p><strong>Mandatory caveats:</strong></p>
+<ul>
+<li>Not authorized by this plan; requires explicit owner authorization and environment/DBA controls.</li>
+<li>Must not include tenant-runtime RLS/policy claims, user-settable GUC context, client-supplied tenant authority, licensing enforcement semantics, or any behavior that violates unresolved OD/PD-gated invariants.</li>
+<li>Any object touching tenant-owned semantics beyond isolated structural validation requires prior resolution/approval of relevant dependencies (especially PD-005/006 for runtime isolation, OD-001/002/003/004/008 for identity/licensing correctness).</li>
+<li><strong>Cannot begin safely as tenant-scoped/runtime implementation without violating unresolved invariants and missing approvals.</strong></li>
+</ul>
+<h2>7. Explicit out of scope (Round 3 planning and unauthorized execution)</h2>
+<ul>
+<li>PostgreSQL DDL, migration files, ORM models, DB roles/policies/grants, triggers/functions/procedures, partition DDL, or database provisioning/modification/execution.</li>
+<li>Application repositories/services, runtime code, or integration implementation.</li>
+<li>Changes to Round 1.1/Round 2 schema definitions, OD/PD statuses, ADR statuses, architecture, or roadmap.</li>
+<li>Visual rendering verification of Mermaid diagrams (structural validation only when export is performed).</li>
+<li>Production/capacity/performance/RPO/RTO claims or test-pass claims without executed evidence.</li>
+</ul>
+<h2>8. Related Round 3 documents</h2>
+<ul>
+<li><a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_CHANGELOG.md.html">POSTGRESQL_ROUND3_CHANGELOG.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a></li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

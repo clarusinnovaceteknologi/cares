@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3 Migration and Deployment Strategy</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T11:47:37Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3 Migration and Deployment Strategy</h1>
+<p><strong>Status:</strong> Proposed planning strategy only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This document defines how future PostgreSQL schema implementation should be migrated and deployed if/when explicitly authorized. It does <strong>not</strong> provide DDL, migration files, executable scripts, or infrastructure changes.</p>
+<p><strong>Related documents:</strong> <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a>, <a href="POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a>, <a href="POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html">POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</a>.</p>
+<h2>1. Strategy objectives</h2>
+<ul>
+<li>Deliver schema changes in <strong>small, ordered, reversible-where-feasible increments</strong> aligned with Round 2 dependencies and transaction boundaries.</li>
+<li>Preserve tenant isolation, identity/licensing correctness, audit/evidence integrity, and operational recoverability at every step.</li>
+<li>Ensure every migration unit is <strong>idempotent at the migration-tooling level where possible</strong>, traceable, reviewable, and accompanied by verification and rollback/recovery plans.</li>
+<li>Prevent runtime exposure of partially enforced tenant/security semantics.</li>
+</ul>
+<h2>2. Migration tooling and governance (proposed preconditions)</h2>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Proposed requirement</th>
+<th>Status/dependency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Migration framework</td>
+<td>Select and standardize a versioned migration mechanism with checksum/history tracking, ordered execution, and environment promotion controls (tool choice not decided here)</td>
+<td>Owner/engineering/DBA decision before I-01 execution</td>
+</tr>
+<tr>
+<td>Version control and review</td>
+<td>All future migration artifacts (when authorized) reviewed for correctness, security, tenant consistency, and rollback posture; no ad hoc production edits</td>
+<td>Process prerequisite</td>
+</tr>
+<tr>
+<td>Environment progression</td>
+<td>Non-production/dev → integration/test → staging/pre-production (as available) → production, with gates per environment</td>
+<td>Environment readiness evidence required</td>
+</tr>
+<tr>
+<td>Change windows and approvals</td>
+<td>Controlled windows for sensitive increments (RLS/privileges, contention-sensitive constraints/indexes, partitioning)</td>
+<td>Ops/security approval</td>
+</tr>
+<tr>
+<td>PostgreSQL baseline</td>
+<td>Supported PostgreSQL version/features, extension availability, parameter baselines, and backup/PITR capability confirmed</td>
+<td>DBA validation</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Migration sequencing strategy</h2>
+<h3>3.1 Dependency-ordered domains</h3>
+<ol>
+<li><strong>Foundations:</strong> schemas/namespaces, shared conventions/types (as approved), global/catalog tables (<code>core.tenant</code>, <code>core.external_identity_subject</code>, <code>core.role</code>, <code>core.role_permission</code>, <code>ingest.event_schema_reference</code>, <code>soc.threat_intelligence_reference</code>).</li>
+<li><strong>Tenant access/config:</strong> membership, role assignment, support access grant/approval, tenant configuration.</li>
+<li><strong>Canonical identity and binding:</strong> asset, data source, authoritative binding, optional dependent projection, aliases/claims; preserve OD-002 authority.</li>
+<li><strong>Identity lifecycle and lineage:</strong> resolution cases, lifecycle events, merge/split operations, typed lineage links, tombstones.</li>
+<li><strong>Licensing/idempotency structures:</strong> entitlement, usage state, license events/reservations, identity operation idempotency ledger (<strong>structural planning only where semantics blocked; no final accounting enforcement without approvals</strong>).</li>
+<li><strong>Ingestion/events:</strong> event receipt and security event with explicit namespace/dedup predicates bounded by OD-013.</li>
+<li><strong>Processing/outbox:</strong> outbox messages/attempts and optional work items, aligned with OD-009/PD-007 (no exactly-once claims).</li>
+<li><strong>Audit/evidence and AI governance:</strong> audit/evidence records, transitions/custody/versioning structures, AI config/consent/secret-reference/budget/audit tables (governance-gated).</li>
+<li><strong>SOC operational:</strong> alerts/cases/rules/versions/findings/observations.</li>
+<li><strong>Hardening:</strong> tenant-consistent composite FKs/uniques, CHECKs, partial/unique/expression indexes, contention-sensitive indexes (validated subset).</li>
+<li><strong>Security enforcement rollout:</strong> verified transaction-bound context mechanism (approved), least-privilege roles/grants, RLS policies/FORCE posture, pooling/session-safety controls — only after approval and validation.</li>
+<li><strong>Deferred operations optimizations:</strong> partitioning adoption, retention automation, maintenance tuning only with evidence and approvals.</li>
+</ol>
+<h3>3.2 Within-increment ordering rules</h3>
+<ul>
+<li>Create referenced parent objects before child FKs; create base tables before dependent indexes/constraints that assume finalized structure where separable for safety (but do not expose unconstrained risky states to runtime traffic).</li>
+<li>Introduce uniqueness/idempotency/tenant-consistency constraints early enough to prevent invalid data during subsequent steps in the same controlled rollout.</li>
+<li>For high-risk or high-lock changes (large indexes, constraint validation, RLS enablement), use staged rollout patterns (e.g. create concurrently where supported/safe in future execution context, validate separately) only when explicitly planned and tested; never assume zero impact.</li>
+<li>Separate data-definition rollout from application behavior enablement; feature/runtime paths must remain disabled until verification gates pass.</li>
+</ul>
+<h2>4. Deployment and rollout strategy</h2>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Purpose</th>
+<th>Entry criteria</th>
+<th>Exit/verification criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Design review gate</td>
+<td>Confirm increment scope, dependencies, approvals, and rollback plan</td>
+<td>Authorized increment, updated WBS/matrix</td>
+<td>Signed review record, no unresolved mandatory blocker for scope</td>
+</tr>
+<tr>
+<td>Non-production migration rehearsal</td>
+<td>Execute and time migrations, capture locks/errors, validate scripts/process</td>
+<td>Environment ready, backups/snapshots available</td>
+<td>Successful apply/verify, documented timings/risks, rollback rehearsal evidence where feasible</td>
+</tr>
+<tr>
+<td>Integration/functional validation</td>
+<td>Verify schema objects, constraints, indexes, transaction/idempotency behavior in controlled tests</td>
+<td>Rehearsal passed, test fixtures/procedures approved</td>
+<td>Evidence per test/acceptance plan; no invariant violations</td>
+</tr>
+<tr>
+<td>Security/isolation validation (required for tenant-affecting increments)</td>
+<td>Negative cross-tenant tests, role/privilege checks, pooling/context reset, fail-closed behavior</td>
+<td>Security mechanism approved/implemented for scope</td>
+<td>All mandatory isolation tests pass; findings remediated or increment blocked</td>
+</tr>
+<tr>
+<td>Staging/pre-production gate</td>
+<td>Confirm operational readiness, monitoring, runbooks, and rollback posture</td>
+<td>Prior gates passed</td>
+<td>Owner/ops/security sign-off as required</td>
+</tr>
+<tr>
+<td>Controlled production rollout (future, if authorized)</td>
+<td>Apply approved increment with monitoring and rollback readiness</td>
+<td>All required approvals and evidence</td>
+<td>Post-deploy verification complete; no critical anomalies</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Rollback and recovery planning</h2>
+<ul>
+<li><strong>Preferred approach:</strong> forward-fix migrations for correctness issues when safe and auditable; maintain explicit down/rollback procedures only where technically feasible and non-destructive.</li>
+<li><strong>Irreversible considerations:</strong> data-destructive changes, dropped constraints protecting invariants, purged history, or external side effects are unacceptable without exceptional authorization; evidence/audit/legal-hold data must not be rolled back in ways that violate retention/integrity requirements.</li>
+<li><strong>Backup/PITR:</strong> take/confirm recoverable backups before risky increments; define recovery point objectives and restore validation steps per environment (targets open/assumption until approved).</li>
+<li><strong>Failure handling:</strong> on migration failure, stop promotion, preserve logs/checksums/error evidence, assess partial state, and execute approved rollback/recovery/runbook; do not bypass failed verification gates.</li>
+<li><strong>Unknown/outbox reconciliation impacts:</strong> deployment sequencing must not discard <code>timeout_unknown_commit</code>, <code>unknown</code> delivery, or unresolved reconciliation records.</li>
+</ul>
+<h2>6. Operational considerations</h2>
+<ul>
+<li><strong>Lock/contention management:</strong> schedule and monitor long-running DDL/index builds; avoid peak contention windows; assess impact on <code>tenant_license_usage_state</code>, ledger, receipt, and outbox hot paths.</li>
+<li><strong>Capacity/performance:</strong> no claims made; collect baseline metrics and query plans during validation (OD-012).</li>
+<li><strong>RLS/pooling safety:</strong> never deploy tenant-exposed runtime paths before verified context and RLS/privilege validation; ensure pool reset/transaction-local context behavior is tested.</li>
+<li><strong>Secrets and configuration:</strong> secret references only (no plaintext), least-privilege credentials, controlled rotation/change management.</li>
+<li><strong>Auditability:</strong> record who authorized/executed each increment, artifact hashes/versions, verification outcomes, and deviations.</li>
+</ul>
+<h2>7. Prohibited migration/deployment actions (this round)</h2>
+<ul>
+<li>Creating/applying DDL, migration files, roles/policies, functions/triggers/procedures, or ORM/database implementation.</li>
+<li>Provisioning/modifying/executing against any database or environment.</li>
+<li>Using client-supplied tenant IDs or user-settable PostgreSQL GUCs for authorization/context.</li>
+<li>Force-pushing, history rewriting, or modifying Round 1.1/Round 2 publication branches.</li>
+</ul>
+<h2>8. Cross-references</h2>
+<p>See <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a> for sequencing/approval dependencies and <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a> for readiness classification and bounded first-increment assessment.</p>
+
+</article>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3 Readiness and Blocker Matrix</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T11:47:37Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3 Readiness and Blocker Matrix</h1>
+<p><strong>Status:</strong> Proposed planning assessment only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This matrix classifies readiness for future implementation increments based on the Round 2 baseline and recorded open decisions. It does not authorize implementation and does not resolve OD/PD/ADR items.</p>
+<p><strong>Related documents:</strong> <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a>, <a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>.</p>
+<h2>1. Readiness classification definitions</h2>
+<table>
+<thead>
+<tr>
+<th>Classification</th>
+<th>Meaning in this matrix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ready</strong></td>
+<td>Planning is coherent and no known technical ambiguity blocks a future explicitly authorized, bounded, non-production increment for the stated scope, subject to preconditions and validation gates. (No such runtime-exposed tenant increment is claimed here.)</td>
+</tr>
+<tr>
+<td><strong>Conditionally ready</strong></td>
+<td>Can be prepared/implemented in a bounded future increment only after specified approvals, validations, mechanism decisions, or evidence are satisfied.</td>
+</tr>
+<tr>
+<td><strong>Blocked</strong></td>
+<td>Cannot be safely implemented without owner/security/legal/commercial/operational decisions or required validations; proceeding would risk violating unresolved invariants.</td>
+</tr>
+<tr>
+<td><strong>Deferred</strong></td>
+<td>Intentionally postponed pending evidence, thresholds, or governance inputs; not required for an initial bounded structural increment but required for later operational maturity as applicable.</td>
+</tr>
+</tbody>
+</table>
+<h2>2. Component/increment readiness matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Component / increment</th>
+<th>Scope summary</th>
+<th>Readiness</th>
+<th>Depends on</th>
+<th>Blocking OD/PD/ADR/issues</th>
+<th>Required approvals / evidence before execution</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>I-00 Authorization &amp; environment readiness</td>
+<td>Scope control, environment/tooling/process readiness</td>
+<td>Conditionally ready</td>
+<td>Round 2 baseline, owner intent</td>
+<td>None formal, but prerequisites unresolved</td>
+<td>Owner authorization, DBA/ops/security preflight, migration/change-control process</td>
+<td>Mandatory gate for any future implementation.</td>
+</tr>
+<tr>
+<td>I-01 Schema namespaces &amp; conventions</td>
+<td>Schemas, naming, type/state conventions</td>
+<td>Conditionally ready</td>
+<td>I-00</td>
+<td>PD-001, PD-002, PD-004</td>
+<td>Engineering/DBA decisions; PostgreSQL version/feature confirmation</td>
+<td>Do not assume final UUID/state representation without decision.</td>
+</tr>
+<tr>
+<td>I-02 Global/catalog foundations</td>
+<td><code>core.tenant</code>, <code>core.external_identity_subject</code>, <code>core.role</code>, <code>core.role_permission</code>, <code>ingest.event_schema_reference</code>, <code>soc.threat_intelligence_reference</code></td>
+<td>Conditionally ready</td>
+<td>I-01</td>
+<td>PD-012 (scope-sensitive elements)</td>
+<td>Design review, access-posture review</td>
+<td>Low tenant-runtime coupling but still requires controlled rollout.</td>
+</tr>
+<tr>
+<td>I-03 Tenant access/config structures</td>
+<td>Membership, role assignments, support access, tenant configuration</td>
+<td>Conditionally ready</td>
+<td>I-02</td>
+<td>PD-003</td>
+<td>Tenant-consistent FK/composite-key strategy approval</td>
+<td>Must support audited, time-bound support access model.</td>
+</tr>
+<tr>
+<td>I-04 Canonical asset &amp; authoritative binding</td>
+<td><code>core.asset</code>, <code>integration_ai.data_source</code>, <code>core.asset_data_source</code>, optional <code>core.source_device_key</code>, aliases, claims</td>
+<td>Conditionally ready</td>
+<td>I-03</td>
+<td>OD-002, OD-006, OD-007, PD-004, PD-011</td>
+<td>OD-002 bounded approval, fingerprint/protection/key-rotation policy inputs, security review</td>
+<td>Authoritative binding and immutable <code>source_device_key_id</code> must be preserved.</td>
+</tr>
+<tr>
+<td>I-05 Identity lifecycle/lineage/tombstones</td>
+<td>Resolution, lifecycle, merge/split ops, typed lineage, tombstones</td>
+<td>Conditionally ready</td>
+<td>I-04</td>
+<td>OD-005, OD-007</td>
+<td>Authorization/evidence policy inputs for merge/split; typed integrity validation</td>
+<td>No polymorphic lineage; no canonical ID reuse.</td>
+</tr>
+<tr>
+<td>I-06 Licensing/entitlement/ledger structures</td>
+<td>Entitlement, usage state, license events/reservations, identity idempotency ledger</td>
+<td><strong>Blocked (final semantics)</strong> / conditionally ready for bounded structural planning only</td>
+<td>I-04, I-05</td>
+<td>OD-001, OD-003, OD-004, OD-008, PD-001/002/003; ADR 0006 Proposed</td>
+<td>Formal approvals of accounting, reservation, coupling/contract semantics; DBA/security review</td>
+<td><strong>Must not implement/claim finalized quota/accounting behavior without approvals.</strong></td>
+</tr>
+<tr>
+<td>I-07 Ingestion/event structures</td>
+<td><code>event_receipt</code>, <code>security_event</code></td>
+<td>Conditionally ready</td>
+<td>I-02, I-04</td>
+<td>OD-013, PD-008</td>
+<td>Connector namespace/fallback approval or explicit bounded connector scope; dedup predicate validation</td>
+<td>Event dedup must remain distinct from identity/licensing ledger.</td>
+</tr>
+<tr>
+<td>I-08 Outbox/processing structures</td>
+<td>Outbox messages/attempts, optional work items</td>
+<td>Conditionally ready</td>
+<td>I-07</td>
+<td>OD-009, PD-007</td>
+<td>Lease/fencing/retry/unknown-outcome semantics approval; claim mechanism validation plan</td>
+<td>No exactly-once external delivery.</td>
+</tr>
+<tr>
+<td>I-09 Audit/evidence &amp; AI governance</td>
+<td><code>audit_evidence.*</code>, integration/AI config/consent/secret-ref/budget/audit</td>
+<td>Conditionally ready</td>
+<td>I-03, I-04, I-08</td>
+<td>OD-010, OD-011, PD-011</td>
+<td>Legal/privacy/security/compliance approvals; controlled-transition/object-storage sequencing design</td>
+<td>Legal hold and evidence integrity are release-sensitive.</td>
+</tr>
+<tr>
+<td>I-10 SOC operational structures</td>
+<td>Alerts, cases, detection rules/versions, findings, TI refs, inventory observations</td>
+<td>Conditionally ready</td>
+<td>I-02, I-04, I-07</td>
+<td>OD-010, OD-012, PD-009, PD-012</td>
+<td>Scope/access governance, retention assumptions, query/index validation plan</td>
+<td>Global-vs-tenant rule scope must not create leakage paths.</td>
+</tr>
+<tr>
+<td>I-11 Integrity/index hardening (non-partitioning subset)</td>
+<td>Tenant-consistent FKs/uniques/CHECKs, selected indexes</td>
+<td>Conditionally ready</td>
+<td>I-02–I-10</td>
+<td>PD-003, PD-008, PD-009, OD-012</td>
+<td>DB/security review, workload/query-plan validation</td>
+<td>Avoid unvalidated GIN/index proliferation.</td>
+</tr>
+<tr>
+<td>I-12 Verified context, roles/privileges, RLS</td>
+<td>Transaction-bound verified context, least-privilege roles, RLS policies/FORCE posture</td>
+<td><strong>Blocked</strong></td>
+<td>I-11</td>
+<td>PD-005, PD-006, OD-010 (controlled admin implications)</td>
+<td>Security/DBA/architecture approval, hardened mechanism review, pooling/reset and negative isolation test evidence</td>
+<td><strong>No client-supplied tenant IDs; no user-settable PostgreSQL GUC authorization.</strong></td>
+</tr>
+<tr>
+<td>I-13 Transactional/runtime semantics implementation</td>
+<td>Operations 1–13 behavior, ledger/outbox runtime, evidence transitions</td>
+<td><strong>Blocked / out of Round 3 scope</strong></td>
+<td>I-12 and domain increments</td>
+<td>OD-001,003,004,005,008,009,010,011,013 and relevant PDs</td>
+<td>Full prerequisite approvals, validated designs, authorized implementation plan</td>
+<td>Not authorized/executable in this planning round.</td>
+</tr>
+<tr>
+<td>I-14 Partitioning/maintenance/retention automation</td>
+<td>Partition adoption, purge/archive/legal-hold automation, tuning</td>
+<td><strong>Deferred / Blocked by evidence &amp; governance</strong></td>
+<td>I-11, operational evidence</td>
+<td>OD-010, OD-012, PD-010</td>
+<td>Measured thresholds, legal/compliance/ops approvals, runbooks</td>
+<td>Do not adopt prematurely.</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Open decision and dependency blockers (summary)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Status (preserved)</th>
+<th>Blocks / constrains</th>
+<th>Owner/approval type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OD-001</td>
+<td>Proposed / pending ADR acceptance (ADR 0006 Proposed)</td>
+<td>Licensing accounting/enforcement semantics finalization (I-06, I-13)</td>
+<td>Architecture/security/ADR governance, commercial as applicable</td>
+</tr>
+<tr>
+<td>OD-002</td>
+<td>Proposed (open approval)</td>
+<td>Authoritative binding/uniqueness/finality for identity structures (I-04+)</td>
+<td>Architecture/data-model/security</td>
+</tr>
+<tr>
+<td>OD-003</td>
+<td>Proposed (open approval)</td>
+<td>Reservation/timeout/committed-reserved semantics (I-06, Ops 1/9)</td>
+<td>Product/commercial/security/ops</td>
+</tr>
+<tr>
+<td>OD-004</td>
+<td>Proposed (open approval)</td>
+<td>Tenant-level counter scope/reconciliation formulas (I-06)</td>
+<td>Commercial/product/finance as applicable</td>
+</tr>
+<tr>
+<td>OD-005</td>
+<td>Proposed (open approval)</td>
+<td>Merge/split authorization/evidence/licensing effects (I-05, Ops 6/7)</td>
+<td>Security/governance/product/compliance</td>
+</tr>
+<tr>
+<td>OD-006</td>
+<td>Proposed (open approval)</td>
+<td>Fingerprint protection, custody, rotation overlap (I-04, Ops 3/4)</td>
+<td>Security/cryptography/platform ops</td>
+</tr>
+<tr>
+<td>OD-007</td>
+<td>Proposed (open approval)</td>
+<td>Reinstall/re-enrollment/reset lifecycle rules (I-04/I-05)</td>
+<td>Architecture/product/operations</td>
+</tr>
+<tr>
+<td>OD-008</td>
+<td>Proposed (open approval)</td>
+<td>Idempotency contract, states, coupling, reconciliation (I-06, Ops 1–9)</td>
+<td>Technical architecture/data consistency</td>
+</tr>
+<tr>
+<td>OD-009</td>
+<td>Proposed (open approval)</td>
+<td>Outbox leasing/fencing/retry/unknown-delivery handling (I-08, Ops 11/12)</td>
+<td>Engineering/reliability/operations</td>
+</tr>
+<tr>
+<td>OD-010</td>
+<td>Deferred / pending governance approval</td>
+<td>Retention/legal hold/deletion/archive classes and automation (I-09/I-14, evidence lifecycle)</td>
+<td>Legal/compliance/privacy/security</td>
+</tr>
+<tr>
+<td>OD-011</td>
+<td>Deferred / pending policy and privacy approval</td>
+<td>AI consent/classification/redaction/budget/provider governance (I-09)</td>
+<td>Product/privacy/legal/security/commercial</td>
+</tr>
+<tr>
+<td>OD-012</td>
+<td>Deferred / validation required</td>
+<td>Workload/index/partition/capacity validation (I-11/I-14, performance planning)</td>
+<td>DBA/operations/engineering</td>
+</tr>
+<tr>
+<td>OD-013</td>
+<td>Proposed (open/partial)</td>
+<td>Connector event identity namespace/fallback dedup predicates (I-07, Op 10)</td>
+<td>Architecture/integration/operations/security</td>
+</tr>
+<tr>
+<td>PD-001–PD-012</td>
+<td>Proposed/Deferred as recorded</td>
+<td>Physical mechanism choices, index/partition/FK/RLS/context/claim/hash/scope strategies</td>
+<td>Engineering/DBA/security/architecture as applicable</td>
+</tr>
+<tr>
+<td>ADR 0006</td>
+<td>Proposed (unchanged)</td>
+<td>Formal acceptance of licensing invariants and schema-level implications</td>
+<td>ADR governance/architecture/security owners</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Overall Round 3 planning readiness statement</h2>
+<ul>
+<li><strong>Implementation planning artifacts:</strong> complete in this round if all required Round 3 documents are produced, cross-referenced, and published with validated exports.</li>
+<li><strong>Bounded implementation execution:</strong> <strong>not ready without explicit owner authorization and prerequisite approvals/validations</strong>. Tenant-scoped/runtime implementation is <strong>blocked</strong> by verified-context/RLS approval and validation (PD-005/PD-006) and by unresolved semantic/governance dependencies (notably OD-001/002/003/004/005/008/009/010/011/013 where applicable).</li>
+<li><strong>Safe first increment:</strong> only a tightly bounded, authorized, non-production structural/preparatory increment may be considered after I-00 prerequisites; it cannot claim tenant-safe runtime readiness or resolved licensing/idempotency semantics.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

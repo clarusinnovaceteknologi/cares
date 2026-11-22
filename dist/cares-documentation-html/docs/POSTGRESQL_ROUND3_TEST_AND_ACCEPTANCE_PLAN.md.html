@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3 Test and Acceptance Plan</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T11:47:37Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3 Test and Acceptance Plan</h1>
+<p><strong>Status:</strong> Proposed planning artifact only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT EXECUTED</strong>. This document defines required test and acceptance categories for future authorized PostgreSQL implementation increments. <strong>No test is claimed to have passed unless it has actually been executed and evidenced.</strong> No production/performance/security/compliance readiness is claimed.</p>
+<p><strong>Related documents:</strong> <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>, and Round 2 baselines (<a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a>, <a href="POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a>, <a href="POSTGRESQL_INDEX_STRATEGY.md.html">POSTGRESQL_INDEX_STRATEGY.md</a>, <a href="POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a>, <a href="POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html">POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>).</p>
+<h2>1. Test governance and evidence rules</h2>
+<ul>
+<li><strong>Environment:</strong> execute in controlled non-production environments first; production validation only under separately authorized change control.</li>
+<li><strong>Authorization:</strong> tests affecting security controls, tenant data handling, evidence/legal-hold behavior, or external integrations require applicable owner/security/legal/privacy approvals.</li>
+<li><strong>Evidence:</strong> each executed test must record scope, environment, commit/migration version, inputs/fixtures, commands/procedures, observed results, logs/artifacts, reviewer, and pass/fail disposition.</li>
+<li><strong>Release-blocker handling:</strong> a release-blocker failure, missing evidence, or unverified control prevents promotion/readiness claims for the affected scope.</li>
+<li><strong>No false certainty:</strong> structural/query/constraint checks do not prove workload performance, visual correctness, operational resilience, or complete security.</li>
+</ul>
+<h2>2. Test category matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Objective</th>
+<th>Preconditions</th>
+<th>Expected result</th>
+<th>Failure conditions</th>
+<th>Required evidence</th>
+<th>Release blocker?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schema correctness</td>
+<td>Verify schemas, tables, columns, data types/nullability, defaults, PKs, FKs, uniques, CHECKs, and object naming match the approved physical baseline for the increment.</td>
+<td>Authorized increment scope; migration/design review complete; target non-production DB available; baseline docs identified.</td>
+<td>All in-scope objects exist with correct definitions; no missing/extra unintended objects; dependency order and integrity objects are valid.</td>
+<td>Missing/mistyped objects, wrong nullability/default/type, absent or incorrect constraints/keys, naming/ownership drift from approved scope.</td>
+<td>Schema introspection snapshots, migration logs/checksums, object diff/review record, constraint/index catalogs, reviewer sign-off.</td>
+<td><strong>Yes</strong> (for in-scope structural increment).</td>
+</tr>
+<tr>
+<td>RLS and tenant isolation</td>
+<td>Verify tenant-owned data access/mutation is restricted to verified, transaction-bound tenant context and fails closed; prevent cross-tenant reads/writes/joins/references/indirect leakage.</td>
+<td>Approved verified context mechanism (non-GUC, non-client-authoritative) implemented for scope; roles/policies/grants applied in test env; tenant fixtures prepared; pooling/reset behavior configured.</td>
+<td>Authorized tenant-scoped operations succeed; missing/invalid/unverified/mismatched context denied; cross-tenant SELECT/INSERT/UPDATE/DELETE/JOIN/RETURNING and reference attempts blocked as designed.</td>
+<td>Any cross-tenant data exposure or mutation, context leakage across pooled sessions/transactions, bypass by client-supplied tenant ID or user-settable GUC, privilege escalation, unintended admin/runtime bypass.</td>
+<td>Negative and positive test scripts/results, role/privilege reports, policy enablement/FORCE status, pool reset tests, audit logs, security review sign-off.</td>
+<td><strong>Yes</strong> (mandatory before any tenant-exposed runtime use).</td>
+</tr>
+<tr>
+<td>Identity binding and licensing invariants</td>
+<td>Verify authoritative <code>asset_data_source</code>/immutable <code>source_device_key_id</code> semantics, alias resolution to same binding, one-device-one-licensed-asset-per-tenant behavior, and merge/split/tombstone/typed-lineage correctness.</td>
+<td>Relevant schema/constraints/transaction logic implemented per approved semantics; OD-002/005/006/007 decisions bounded/approved as required; fixtures for multi-source same-device and conflict cases.</td>
+<td>No competing binding authority; same stable identity attaches without duplicate licensed usage; canonical IDs not reused; typed lineage and lifecycle transitions remain consistent and auditable.</td>
+<td>Mutable/conflicting binding authority, duplicate licensed usage for same monitored device, incorrect alias resolution, polymorphic/invalid lineage, tombstone/ID reuse violations.</td>
+<td>Operation-level test cases, constraint violation evidence, state snapshots before/after, lineage/license event records, reconciliation outputs.</td>
+<td><strong>Yes</strong> (core correctness invariant).</td>
+</tr>
+<tr>
+<td>Idempotency and concurrency</td>
+<td>Verify identity/licensing ledger scope/behavior, event receipt namespace dedup, replay/conflict/unknown-commit handling, and concurrent contention safety for hot paths.</td>
+<td>OD-008/013 semantics bounded/approved as required; implemented transaction paths; concurrent test harness/fixtures; deterministic canonicalization/hash inputs where applicable.</td>
+<td>Same key+same hash replays safely; same key+different hash conflicts deterministically; duplicates deduplicated per namespace; concurrent operations preserve invariants without double-counting or lost updates.</td>
+<td>Double allocation/licensing, duplicate canonical assets/bindings, ledger/receipt misuse across domains, race-condition corruption, non-deterministic replay/conflict outcomes, unresolved unknown-commit states.</td>
+<td>Concurrency test logs, unique-constraint/conflict traces, ledger/receipt state evidence, deadlock/retry metrics, reconciliation procedure results.</td>
+<td><strong>Yes</strong>.</td>
+</tr>
+<tr>
+<td>Outbox failure and recovery</td>
+<td>Verify outbox claim/attempt recording, at-least-once processing assumptions, retry/terminal handling, lease/heartbeat behavior (if implemented), and unknown-outcome reconciliation without exactly-once claims.</td>
+<td>OD-009/PD-007 semantics bounded/approved as required; outbox tables/worker logic implemented in test scope; failure-injection capability.</td>
+<td>Claims are safe under contention; attempts/outcomes recorded; retryable/terminal/unknown states transition correctly; unknown delivery never treated as success; no silent loss of work.</td>
+<td>Duplicate unsafe side effects without safeguards, lost/ghost claims, unrecorded attempts, unknown outcomes marked success, unrecoverable stuck messages without visibility.</td>
+<td>Attempt/message state traces, failure-injection logs, lease expiry/reclaim evidence, reconciliation records, idempotency-handler verification.</td>
+<td><strong>Yes</strong> (for async processing/reliability scope).</td>
+</tr>
+<tr>
+<td>Audit and evidence integrity</td>
+<td>Verify append-only/auditable records, evidence creation/version/custody/authorization flows, controlled transitions, correlation integrity, and tamper-resistance expectations within DB scope.</td>
+<td>Audit/evidence schema/logic implemented; OD-010 constraints understood; authorized transition procedures defined; object-storage interaction boundaries documented if applicable.</td>
+<td>Required audit/custody/version records created; unauthorized transitions denied; legal-hold-protected records cannot be improperly disposed/overwritten; correlations remain traceable.</td>
+<td>Missing/inconsistent audit trails, unauthorized evidence transition/deletion/overwrite, broken custody/version linkage, unverifiable hash/metadata handling.</td>
+<td>Audit row samples, transition attempt logs, custody/version chain evidence, authorization records, integrity/hash verification results.</td>
+<td><strong>Yes</strong> (for audit/evidence/compliance-sensitive scope).</td>
+</tr>
+<tr>
+<td>Retention and legal hold</td>
+<td>Verify retention classification behavior, purge/archive eligibility, legal-hold enforcement, tenant offboarding preservation, and prevention of premature deletion.</td>
+<td>OD-010/PD-010 policies bounded/approved for tested scope; lifecycle jobs/procedures (if any) implemented; representative aged/legal-hold fixtures.</td>
+<td>Eligible data handled per approved policy; legal-hold or unresolved records excluded from purge; preserved historical/licensing/audit/evidence records remain accessible per policy.</td>
+<td>Premature or unauthorized deletion, legal-hold bypass, loss of required history/traceability, inconsistent tenant-offboarding outcomes.</td>
+<td>Retention job logs, hold/eligibility decision records, before/after inventories, policy mapping evidence, legal/compliance review sign-off.</td>
+<td><strong>Yes</strong> where applicable (legal/compliance blocker).</td>
+</tr>
+<tr>
+<td>Backup and restore</td>
+<td>Verify backup capture, restore/PITR procedures, and post-restore integrity of schema, constraints, critical data, and isolation controls for the tested scope.</td>
+<td>Backup/PITR configured in non-production; RPO/RTO targets or validation objectives defined; representative dataset and runbook available.</td>
+<td>Restore completes within planned procedure; restored environment passes integrity and scoped functional/security checks; no silent corruption or missing critical objects.</td>
+<td>Restore failure, unrecoverable point, schema/data inconsistency, missing WAL/backups, post-restore isolation/control regressions.</td>
+<td>Backup/restore logs, recovery timeline, checksums/object counts, integrity and smoke-test results, runbook review.</td>
+<td><strong>Yes</strong> (operational readiness blocker for deployable increments).</td>
+</tr>
+<tr>
+<td>Performance and query-plan validation</td>
+<td>Validate key query/index behavior, lock/contention characteristics, and maintenance impact for representative workloads without claiming production capacity.</td>
+<td>OD-012 workload assumptions defined; representative data volume/shape; indexes/constraints implemented; observability available.</td>
+<td>Critical paths meet planned correctness and acceptable observed behavior for test scope; query plans/use of indexes understood; contention/bloat risks identified and mitigated or accepted.</td>
+<td>Unacceptable lock waits/deadlocks, plan regressions, missing index support for mandatory access paths, uncontrolled bloat/growth under test load.</td>
+<td>EXPLAIN/ANALYZE outputs, benchmark/load results, lock/deadlock stats, autovacuum/bloat observations, DBA review notes.</td>
+<td><strong>Conditional / Yes for performance-sensitive increments</strong> (blocker when SLO-like or correctness-under-load risk is material).</td>
+</tr>
+<tr>
+<td>Migration upgrade and recovery tests</td>
+<td>Verify forward migration apply, ordering, repeatability/idempotence behavior per tooling, partial-failure handling, and rollback/recovery/fix-forward procedures.</td>
+<td>Versioned migration artifacts for authorized increment; clean and pre-existing environment fixtures; backup/recovery plan; CI/non-prod execution path.</td>
+<td>Migrations apply in order to expected state; reruns behave as designed; failures produce diagnosable state; recovery/rollback or fix-forward restores controlled, verifiable state.</td>
+<td>Ordering/dependency failure, checksum drift, partial unapplied state, irrecoverable failure without procedure, data/constraint corruption during upgrade/recovery.</td>
+<td>Migration execution logs, before/after schema state, failure-injection/recovery drills, rollback/fix-forward evidence, change-control records.</td>
+<td><strong>Yes</strong> (for any deployable migration increment).</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Traceability to Round 2 operations and domains</h2>
+<table>
+<thead>
+<tr>
+<th>Test focus</th>
+<th>Round 2 operations / domains</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Identity binding and licensing invariants</td>
+<td>Ops 1,2,3,4,5,6,7,8,9; <code>core.asset*</code>, binding/alias/claim, lineage, license/reservation/ledger tables</td>
+<td>Must preserve OD-002/008 semantics and no duplicate licensed usage.</td>
+</tr>
+<tr>
+<td>Idempotency and concurrency</td>
+<td>Ops 1–12; <code>core.identity_operation_idempotency_ledger</code>, <code>ingest.event_receipt</code>, usage/outbox contention points</td>
+<td>Separate ledger vs receipt domains; unknown-commit/replay handling required.</td>
+</tr>
+<tr>
+<td>Outbox failure and recovery</td>
+<td>Ops 11,12; <code>processing.outbox_message</code>, <code>processing.outbox_attempt</code></td>
+<td>No exactly-once external delivery.</td>
+</tr>
+<tr>
+<td>Audit and evidence integrity</td>
+<td>Op 13 and cross-cutting audit; <code>audit_evidence.*</code>, <code>audit_evidence.ai_interaction_audit</code></td>
+<td>Controlled transitions, custody/version integrity, legal-hold awareness.</td>
+</tr>
+<tr>
+<td>RLS and tenant isolation</td>
+<td>All tenant-scoped domains/tables and access paths</td>
+<td>Trusted transaction-bound context only; fail closed.</td>
+</tr>
+<tr>
+<td>Retention and legal hold</td>
+<td>Lifecycle candidates in ingest/audit/evidence/processing/SOC per lifecycle design</td>
+<td>Governed by OD-010/012 and approved policy.</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Acceptance criteria summary</h2>
+<p>An increment is <strong>not acceptable for promotion</strong> unless: required category tests for its scope are executed with passing evidence (or explicitly waived only by authorized owner decision, documented as risk), release blockers are resolved, invariants are preserved, and open-decision dependencies affecting the scope are satisfied or formally bounded and approved. Planning completion of this document is <strong>not</strong> test execution.</p>
+
+</article>
+</div>
+
+</body>
+</html>
