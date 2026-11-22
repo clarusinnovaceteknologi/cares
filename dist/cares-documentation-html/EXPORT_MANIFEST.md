@@ -1,13 +1,13 @@
 # CARES Documentation Export Manifest
 
-- **Export timestamp (UTC):** 2026-11-22T13:29:17Z
-- **Repository revision/commit hash:** ee6e005bc50ffa8f3cd376a83b01369044005c3b
-- **Total discovered Markdown files:** 59
-- **Total successfully converted HTML files:** 59
+- **Export timestamp (UTC):** 2026-11-22T19:13:45Z
+- **Repository revision/commit hash:** Not available (not a git repository or unavailable)
+- **Total discovered Markdown files:** 64
+- **Total successfully converted HTML files:** 64
 - **Failed conversions:** 0
-- **Copied assets:** 2
+- **Copied assets:** 1
 - **Missing referenced assets:** 0
-- **Broken/unresolved internal links:** 0
+- **Broken/unresolved internal links:** 10
 - **Files with faithfulness notes:** 0
 
 ## Source-to-output path mapping
@@ -48,6 +48,11 @@
 | docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_GATE.md | docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_GATE.md.html | converted |
 | docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_RECORD_TEMPLATE.md | docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_RECORD_TEMPLATE.md.html | converted |
 | docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md | docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md.html | converted |
+| docs/POSTGRESQL_ROUND3_2_CHANGELOG.md | docs/POSTGRESQL_ROUND3_2_CHANGELOG.md.html | converted |
+| docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md | docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html | converted |
+| docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md | docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html | converted |
+| docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md | docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html | converted |
+| docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md | docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html | converted |
 | docs/POSTGRESQL_ROUND3_CHANGELOG.md | docs/POSTGRESQL_ROUND3_CHANGELOG.md.html | converted |
 | docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md | docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html | converted |
 | docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md | docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md.html | converted |
@@ -83,12 +88,22 @@ _No eligible CARES Markdown files were excluded. Non-documentation/vendor/build/
 _None_
 
 ## Broken/unresolved internal links
-_None_
+| source | link | reason |
+| --- | --- | --- |
+| docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md | /home/ubuntu/cares/docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md | target outside repository or unresolvable |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md | /home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip | target outside repository or unresolvable |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md | /home/ubuntu/cares/copilot.txt | target outside repository or unresolvable |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md | /home/ubuntu/cares/copilot.txt | target outside repository or unresolvable |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md | /home/ubuntu/cares/copilot.txt | target outside repository or unresolvable |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md | /home/ubuntu/cares/copilot.txt | target outside repository or unresolvable |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md | /home/ubuntu/cares/copilot.txt | target outside repository or unresolvable |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md | /home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip | target outside repository or unresolvable |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md | /home/ubuntu/cares/copilot.txt | target outside repository or unresolvable |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md | /home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip | target outside repository or unresolvable |
 
 ## Files not converted faithfully / notes
 _None_
 
 ## Copied assets
 - `copilot.txt`
-- `dist/CARES_DOCUMENTATION_HTML.zip`
 

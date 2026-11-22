@@ -107,13 +107,14 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T13:29:17Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
 <article class="markdown-body">
 <h1>ADR 0006: Enforce per-tenant asset quota atomically in PostgreSQL</h1>
 <ul>
 <li><strong>Status:</strong> Proposed (mandatory licensing semantics preserved; transactional/licensing design proposed pending owner approval and formal schema/security review)</li>
 <li><strong>Date:</strong> 2026-11-16</li>
 <li><strong>Last reviewed/updated:</strong> 2026-11-21 (documentation-only consistency review; no implementation)</li>
+<li><strong>Round 3.2 governance reconciliation:</strong> 2026-11-22 (documentation-only consolidation; see “Round 3.2 owner decision consolidation and governance reconciliation” below)</li>
 </ul>
 <h2>Problem</h2>
 <p>The one-device-one-asset rule is not reliable if concurrent enrollments both pass an in-memory quota check, if a retry creates another asset, if source attachment increments usage, or if fingerprint rotation/merge/split operations create duplicate bindings, assets, or licensed usage. Licensing must be per tenant, authoritative in PostgreSQL, and remain consistent through registration, attachment, conflict resolution, merge, split, deactivation, reactivation, removal, fingerprint rotation, and recovery.</p>
@@ -290,127 +291,159 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <p><strong>Source-binding reassignment (proposed):</strong></p>
 <ul>
 <li>Merge: eligible <code>asset_data_source</code> bindings (and associated stable <code>source_device_key_id</code> contexts as applicable) are reassigned to the survivor only when tenant/uniqueness/conflict checks pass; ineligible/conflicting bindings remain blocked for review.</li>
-<li>Split: specified bindings/claims are moved to the new canonical asset per approved evidence; ambiguous bindings remain with the appropriate asset or pending review, never silently duplicated.</li>
+<li>Split: specified bindings/claims move to the new or retained canonical asset according to approved rules; no binding may be duplicated or left ambiguously attached.</li>
+<li>Fingerprint aliases remain attached to their stable binding unless a separately approved, auditable rebinding operation is required; alias-to-binding consistency must be preserved.</li>
 </ul>
-<p><strong>Fingerprint alias reassignment (proposed):</strong></p>
+<p><strong>Atomic licensing and lineage preservation (proposed):</strong></p>
 <ul>
-<li>All versioned <code>source_device_fingerprint_alias</code> records associated with reassigned stable bindings move with those bindings and must continue to satisfy tenant/data-source/algorithm/key-version/fingerprint uniqueness and resolve to the correct stable binding/canonical asset.</li>
-<li>No alias may map to multiple bindings/assets; no rotation/merge/split may create duplicate aliases or licensed usage.</li>
+<li>A merge or split transaction must atomically: validate tenant/policy/authorization context, lock affected licensing/asset/binding rows in defined order, recheck state/uniqueness/conflicts, update canonical/tombstone/binding relationships, append lineage/merge-split records, update active billable/reserved/pending counters according to approved mapping, append licensing history, write audit/evidence linkage, and persist idempotency outcome/result.</li>
+<li>The operation must preserve stable lineage/history and must not create duplicate assets, duplicate bindings, duplicate aliases, or duplicate/inflated licensed usage.</li>
 </ul>
-<p><strong>Licensing counter effects (proposed):</strong></p>
+<p><strong>Rollback and idempotency behavior (proposed):</strong></p>
 <ul>
-<li>Merge: net licensed usage must not increase because two records represent one device; decrement/reconciliation occurs only when approved invariants prove duplicate representation and counters/history are updated atomically (survivor remains one billable asset as applicable).</li>
-<li>Split: licensed usage/capacity impact is applied atomically. If split creates an additional active billable asset, required capacity must be verified and reserved/consumed in the same transaction; if capacity is unavailable, reject/fail without partial effects.</li>
-<li>All counter changes append licensing/lifecycle/audit history with before/after values, entitlement/policy version context, actor, reason, and idempotency/result linkage.</li>
+<li>If any precondition, uniqueness, policy, or accounting invariant fails, the transaction rolls back with no partial merge/split/licensing effects.</li>
+<li>Retries with the same tenant-scoped idempotency key and equivalent request must return/reconcile the recorded outcome (completed, failed, or pending/recovering per ledger state) without applying effects twice.</li>
+<li>Requests with the same idempotency key but different payload/target/effect must be rejected as conflicts.</li>
 </ul>
-<p><strong>Lifecycle history (proposed):</strong></p>
+<p><strong>Unresolved-identity interaction (proposed):</strong></p>
 <ul>
-<li>Append-only lifecycle and licensing events record state transitions, merges, splits, binding/alias reassignment, and counter deltas. Original history is preserved; corrections use compensating/auditable actions, not silent rewrites.</li>
+<li>Assets/bindings in pending/unresolved identity states must not be merged/split in a way that finalizes licensing incorrectly; resolution, reservation handling, and billing-impacting transitions require approved policy and explicit workflow state.</li>
 </ul>
-<p><strong>Audit and identity-resolution evidence (proposed):</strong></p>
+<h3>4. Idempotent operations (proposed, NOT IMPLEMENTED)</h3>
+<p>Idempotency applies to registration, attachment, rotation, merge, split, deactivation, reactivation, removal, conflict-resolution transitions, and recovery/retry flows that can affect identity, bindings, aliases, lifecycle state, counters, or history.</p>
+<p><strong>Idempotency key concept (proposed):</strong></p>
 <ul>
-<li>Record actor/service identity, authorization basis, reason, evidence/provenance references, matched rules/confidence context, affected tenants/assets/bindings/aliases, timestamps, and before/after linkage. Evidence references must remain tenant-scoped and immutable per approved evidence architecture.</li>
+<li>The caller/worker supplies a tenant-scoped idempotency key per logical operation instance (or the system derives an approved deterministic key from a stable external event/request identifier). The key must be bound to tenant, operation type, and request fingerprint/hash as designed.</li>
 </ul>
-<p><strong>Idempotent retries (proposed):</strong></p>
+<p><strong>Ledger/recording expectations (proposed):</strong></p>
 <ul>
-<li>Merge/split operations require idempotency keys and durable result recording. Retries with the same tenant/operation/idempotency key and same request hash return the original committed outcome; unknown-commit outcomes require reconciliation against recorded results.</li>
+<li>A durable tenant-scoped idempotency ledger records operation identity, tenant, operation type, request hash/fingerprint, processing/completed/failed state, result reference/outcome, timestamps, and correlation identifiers.</li>
+<li>A successful or definitively failed idempotent operation produces at most one logical effect and one canonical recorded outcome for that key+request; retries read/replay the ledger outcome.</li>
+<li>Unknown commit (for example timeout after commit uncertainty) must be recoverable by consulting the ledger/state and must not create duplicate effects.</li>
 </ul>
-<p><strong>Conflict and rollback behavior (proposed):</strong></p>
+<p><strong>Replay/duplicate handling (proposed):</strong></p>
 <ul>
-<li>Any uniqueness conflict, stale state, quota/capacity failure, authorization failure, or invariant violation aborts the transaction with no partial counter/binding/alias/lifecycle mutation.</li>
-<li>Conflicting identity evidence or concurrent incompatible changes produce explicit conflict/review states as designed; no automatic merge/split completion on ambiguity.</li>
+<li>Duplicate/replayed requests: no second asset, binding, alias, lineage record, counter increment/decrement, or history side effect.</li>
+<li>Conflicting requests reusing a key with different intent/payload: reject and audit.</li>
 </ul>
-<p><strong>Concurrent registration or attachment during merge/split (proposed):</strong></p>
+<h3>5. PostgreSQL concurrency control (proposed, reference strategy)</h3>
+<p><strong>Target isolation level (proposed):</strong> <code>READ COMMITTED</code> with explicit row locking and uniqueness-constraint enforcement for critical licensing/identity transactions. Serializable may be considered only if validated for contention/latency; not assumed.</p>
+<p><strong>Lock ordering (proposed, must be defined and consistent):</strong></p>
 <ul>
-<li>Registration/attachment/rotation/merge/split/deactivation/reactivation/removal targeting overlapping tenant/assets/bindings must serialize or conflict safely using the defined lock ordering and post-lock rechecks.</li>
-<li>Operations that observe stale pre-merge/pre-split state must retry/revalidate and must not attach/create duplicates or misapply counters.</li>
+<li>Acquire locks in a deterministic order to reduce deadlocks, for example: tenant licensing/entitlement/usage row(s) -&gt; canonical asset row(s) in stable ID order -&gt; stable binding/<code>asset_data_source</code>/<code>source_device_key</code> row(s) in stable ID order -&gt; alias/fingerprint rows as needed.</li>
+<li>Use <code>SELECT ... FOR UPDATE</code> (or equivalent approved lock strength) on rows that gate quota, canonical identity, binding reassignment, or state transitions.</li>
 </ul>
-<p><strong>Tenant isolation (proposed):</strong></p>
+<p><strong>Uniqueness and recheck after lock (proposed):</strong></p>
 <ul>
-<li>All merge/split reads/writes are tenant-scoped, protected by verified transaction context and RLS/policy design (per latest architecture), and must never affect another tenant's assets, bindings, aliases, counters, or history.</li>
+<li>Enforce tenant-inclusive uniqueness/foreign-key constraints as the final guard against races.</li>
+<li>After acquiring required locks, recheck quota/capacity, asset/binding/alias existence, lifecycle state, merge/split eligibility, and idempotency outcome before mutating state.</li>
 </ul>
-<h3>4. Lock ordering and concurrency (PostgreSQL reference, proposed)</h3>
-<p><strong>Consistent lock-order strategy (proposed):</strong></p>
-<ol>
-<li>Establish and verify protected tenant transaction context (fail closed; no untrusted tenant/GUC authority).</li>
-<li>Acquire/process durable idempotency ledger record for the operation/request as applicable (to detect duplicates/conflicting payloads safely).</li>
-<li>Lock the tenant licensing/entitlement-usage row (<code>SELECT ... FOR UPDATE</code>) for any operation that may read/modify quota, active billable usage, reserved capacity, pending reservation accounting, or licensed state transitions.</li>
-<li>Lock affected canonical asset rows in deterministic order (for example ascending canonical asset UUID) when merge/split/deactivation/reactivation/removal/attachment requires asset-level serialization.</li>
-<li>Lock/recheck affected stable binding rows (<code>asset_data_source</code> / <code>source_device_key_id</code> context) and relevant alias/identity rows in a deterministic order (for example binding UUID then alias uniqueness dimensions/IDs) as required.</li>
-<li>Perform all uniqueness/state/capacity rechecks <strong>after locks are held</strong>; then apply mutations, append history/licensing/audit/idempotency result records, and commit.</li>
-</ol>
-<p><strong>Operation-specific application (proposed):</strong></p>
+<p><strong>Retry/deadlock handling (proposed):</strong></p>
 <ul>
-<li><strong>Registration:</strong> tenant licensing row + identity/binding/alias rechecks; create or attach without duplicate usage.</li>
-<li><strong>Existing asset attachment:</strong> tenant licensing row (if policy/counter/lifecycle may change) + target asset/binding/alias locks/rechecks; no licensed-usage increment for additional sources on same canonical asset.</li>
-<li><strong>Merge:</strong> tenant licensing row + both/all affected asset rows in deterministic order + affected bindings/aliases; atomic reassignment/counter/history.</li>
-<li><strong>Split:</strong> tenant licensing row + source asset row (+ new asset creation context) + affected bindings/aliases; verify/reserve capacity atomically before commit.</li>
-<li><strong>Deactivation/reactivation/removal:</strong> tenant licensing row + asset row + affected bindings/lifecycle records; apply approved counter/state mapping atomically.</li>
-<li><strong>Fingerprint rotation:</strong> tenant licensing row if licensing/capacity state can be affected (normally no usage change) or as required by approved serialization scope; lock binding/alias rows for the rotated binding and recheck uniqueness/resolution.</li>
+<li>Application/service logic may retry transient serialization/deadlock/lock-timeout failures with bounded backoff and the same idempotency key; retries must be safe and must not duplicate effects.</li>
+<li>Constraint violations representing true conflicts/duplicates must not be blindly retried as success-creating operations.</li>
 </ul>
-<p><strong>Concurrency handling (proposed):</strong></p>
+<h3>6. Transaction boundaries (proposed)</h3>
+<p>For each multi-step operation below, all database writes affecting identity, licensing counters, lifecycle state, lineage, and idempotency outcome must occur in <strong>one PostgreSQL transaction</strong> (or a formally proven equivalent with compensating controls; none proposed/approved):</p>
 <ul>
-<li><strong>Concurrent registrations for the same identity:</strong> uniqueness constraints and post-lock alias/binding rechecks allow at most one canonical creation/attachment outcome; duplicates return the idempotent/original result or conflict as defined.</li>
-<li><strong>Concurrent registrations for different identities in the same tenant:</strong> serialized by the tenant licensing row when quota/counters may change; may contend but must preserve correctness.</li>
-<li><strong>Unique-constraint conflicts:</strong> treated as concurrency/conflict signals requiring rollback/retry or conflict handling; never ignored or converted into duplicate assets/bindings/licensed usage.</li>
-<li><strong>Deadlocks:</strong> possible under multi-row locking; callers must retry safely using idempotency keys and bounded retry policy.</li>
-<li><strong>Serialization failures:</strong> retryable only with idempotency/recheck semantics; non-retryable invariant/authorization/capacity failures must fail explicitly.</li>
-<li><strong>Transaction retries:</strong> require same operation idempotency key, same request hash for duplicate intent, and post-lock revalidation of state/capacity/identity.</li>
-<li><strong>Lock contention:</strong> expected on tenant licensing row for quota-affecting operations; measure with representative PostgreSQL load tests before changing design.</li>
+<li><strong>Registration/identity resolution that allocates a new licensed asset:</strong> tenant/entitlement validation, alias/binding lookup, lock/recheck, capacity/quota check, canonical asset creation (if needed), stable binding/alias creation, counter/history updates, idempotency result.</li>
+<li><strong>Attachment of additional source to existing canonical asset:</strong> validate resolved canonical asset/binding, create/attach binding/alias records as approved, append history/audit linkage; <strong>no licensed-usage increment</strong>.</li>
+<li><strong>Fingerprint rotation/overlap update:</strong> alias insert/state changes, binding consistency checks, audit/history, idempotency result.</li>
+<li><strong>Merge:</strong> authorization/evidence linkage, lock/recheck, binding reassignment, tombstone/lineage creation, counter reconciliation per approved mapping, history/audit, idempotency result.</li>
+<li><strong>Split:</strong> authorization/evidence linkage, lock/recheck, new canonical asset creation, binding reassignment, lineage creation, counter reconciliation per approved mapping, history/audit, idempotency result.</li>
+<li><strong>Deactivation/reactivation/removal:</strong> state transition, grace/reservation/capacity effects per approved policy, tombstone/history where applicable, audit, idempotency result.</li>
 </ul>
-<p><strong>Role of tenant licensing row and post-lock identity rechecks (proposed):</strong></p>
+<h3>7. Audit and licensing history requirements (proposed)</h3>
+<p><strong>Append-only history expectations (proposed):</strong></p>
 <ul>
-<li>The tenant licensing row is the per-tenant serialization point for quota/counter correctness and state-to-counter transitions; it is not a substitute for identity uniqueness constraints or RLS/authorization.</li>
-<li>Post-lock identity rechecks are mandatory because pre-lock reads are racy: after acquiring locks, re-resolve aliases/bindings/assets, confirm target state still permits the operation, verify uniqueness/capacity/invariants, and only then mutate.</li>
+<li>Licensing entitlement/quota changes, usage/counter-affecting transitions, merge/split lineage, deactivation/reactivation/removal, fingerprint rotation/alias lifecycle, conflict resolution outcomes, and idempotency outcomes must be recorded as append-only history/events where applicable (no in-place rewrite of historical facts except approved correction patterns with full audit trail, if ever defined).</li>
+<li>Canonical asset IDs, stable <code>source_device_key_id</code>/binding IDs, and historical licensed-asset/tombstone identities are never reused.</li>
 </ul>
-<h3>5. Idempotency ledger (proposed persistence model)</h3>
-<p>Idempotency must <strong>not</strong> depend only on application memory. The licensing/identity operation idempotency ledger described here is a proposed durable PostgreSQL record consulted/updated within the same transactional discipline as licensing operations. It is distinct from ingestion <code>event_receipt</code> idempotency (durable acceptance of source events) and from outbox attempt/replay records (delivery/recovery semantics); see <a href="../DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a> and <a href="../POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a> for the unified taxonomy and operation boundaries.</p>
-<p><strong>Proposed model:</strong></p>
+<p><strong>Linkage requirements (proposed):</strong></p>
 <ul>
-<li><strong>Tenant-scoped uniqueness:</strong> unique per tenant and operation/request identity (for example <code>(tenant_id, operation_type, idempotency_key)</code> and/or approved equivalent), with request hash/payload digest for integrity.</li>
-<li><strong>Operation type and request hash:</strong> explicit operation type (registration, attachment, merge, split, deactivation, reactivation, removal, fingerprint rotation, etc.) and canonical request hash; same key with different payload is a conflict/error (no silent reuse).</li>
-<li><strong>Source/actor context where appropriate:</strong> store authenticated actor/service identity, source/connector context, target references, and correlation/request identifiers as approved (sanitized/audited).</li>
-<li><strong>Processing/completed/failed state semantics:</strong> durable states such as <code>processing</code>/<code>started</code>, <code>completed</code>, <code>failed</code> (terminal or retryable as defined), with timestamps, attempt metadata, and error classification/result code as approved.</li>
-<li><strong>Stored operation result or result reference:</strong> store sufficient result data or immutable result reference to return the original committed outcome after retry/response loss (for example created/attached asset ID, binding IDs, counter deltas, conflict disposition), subject to security/privacy constraints.</li>
-<li><strong>Concurrent duplicate requests:</strong> first transaction establishes/locks the ledger entry for the key; concurrent duplicates wait/conflict/retry and must observe the committed outcome without duplicating side effects.</li>
-<li><strong>Same key with different payload:</strong> reject as idempotency conflict; do not execute with mismatched request hash.</li>
-<li><strong>Response lost after commit:</strong> retry with same key and same payload returns stored committed result/reference.</li>
-<li><strong>Retry after merge/split or lifecycle transitions:</strong> recheck current state under locks; if the idempotency key already completed, return recorded result; if operation is no longer valid, return the recorded terminal failure/conflict without creating duplicates.</li>
-<li><strong>Retention period and owner decision where applicable:</strong> retention/pruning window for idempotency records is an <strong>owner/security/operations decision</strong>; pruning must not occur before supported retry/reconciliation windows and must preserve required auditability.</li>
+<li>Every licensing/identity-affecting transaction links to tenant, actor/service identity, correlation/request ID, idempotency key (where applicable), affected canonical asset(s), affected bindings/aliases, reason/evidence references for manual/exception operations, and resulting counter/state snapshot or delta as designed.</li>
+<li>Audit records must be sufficient to explain why capacity was consumed, reserved, released, or preserved and to support reconciliation between backend, API, and Dashboard reporting when implemented.</li>
 </ul>
-<h3>6. Verification requirements (proposed tests; NOT EXECUTED)</h3>
-<p>All PostgreSQL concurrency and RLS tests must run against PostgreSQL using production-equivalent non-owner runtime roles (and separately controlled migration/maintenance roles as applicable). No tests below are claimed executed.</p>
-<p><strong>Required proposed coverage:</strong></p>
+<p><strong>Operational telemetry distinction (proposed):</strong> licensing/identity history and audit evidence are not the same as operational telemetry; telemetry must not be used as the authority for licensing decisions.</p>
+<h2>Rationale</h2>
 <ul>
-<li>Concurrent registration at quota boundary: no over-allocation; committed count/effects respect remaining capacity; rejected attempts leave no partial rows/counter changes.</li>
-<li>Same source-device identity submitted concurrently: exactly one stable binding/canonical asset outcome and no duplicate licensed usage; idempotent/conflict behavior as specified.</li>
-<li>Multiple sources reporting one already-resolved asset: bindings attach to the same canonical asset with no licensed-usage increment.</li>
-<li>Fingerprint rotation with old/new aliases: overlap lookup resolves to same stable binding/asset; no duplicate binding/asset/usage.</li>
-<li>Rotation interrupted and resumed: idempotent/resumable completion with no duplicates or missing audit/history.</li>
-<li>Merge and split under concurrent ingestion/registration/attachment: deterministic locking, no duplicate assets/bindings/licensed usage, correct lineage/counter effects or safe conflict/rejection.</li>
-<li>Idempotent retries after unknown commit outcome: same key/payload returns original result or reconciled outcome; no duplicate side effects.</li>
-<li>Deadlock and serialization failure recovery: safe bounded retries with idempotency and post-lock rechecks; correctness preserved.</li>
-<li>Counter reconciliation: compare counters to authoritative state/history; discrepancies detected/reported (and corrected only by approved audited procedure, if designed).</li>
-<li>Cross-tenant isolation: tenant A cannot read/mutate/affect tenant B assets, bindings, aliases, counters, idempotency records, or history under RLS/verified context.</li>
-<li>Deactivation and reactivation under concurrent registration: state-to-counter mapping and lock ordering prevent double-counting, lost updates, or unauthorized capacity release/consumption.</li>
-<li>Removal and tombstone preservation: approved removal preserves required tombstone/history/evidence; canonical IDs not reused; licensing/capacity effects follow approved policy.</li>
+<li><strong>Correctness and commercial protection:</strong> PostgreSQL transactions, tenant-scoped serialization/locking, tenant-inclusive uniqueness constraints, and idempotency are the authoritative controls to prevent duplicate licensed assets and quota races.</li>
+<li><strong>Stable identity model:</strong> separating canonical assets, stable bindings, stable <code>source_device_key_id</code>, and versioned fingerprint aliases supports rotation, overlap, merge/split, and recovery without treating fingerprints as permanent identity.</li>
+<li><strong>Auditability and recovery:</strong> append-only history, lineage, tombstones, and idempotency ledgers enable reconciliation and safe retries after partial failures/timeouts.</li>
+<li><strong>Operational simplicity (initial):</strong> a single PostgreSQL authority avoids premature distributed coordination while preserving a path to evolve if measured contention requires it.</li>
 </ul>
-<p>Representative contention/load tests must measure lock wait, retry/deadlock rates, and registration/merge/split throughput before changing the locking design. SQLite, in-memory, or process-local tests are insufficient evidence of PostgreSQL concurrency safety.</p>
-<h2>Trade-offs</h2>
+<h2>Consequences</h2>
+<p><strong>Benefits:</strong></p>
 <ul>
-<li><strong>Benefits:</strong> correctness-oriented enforcement of the one-device-one-asset invariant, protection against duplicate billing/over-allocation under concurrency, auditable/idempotent lifecycle operations, and no separate allocator service initially.</li>
-<li><strong>Costs:</strong> tenant licensing-row serialization can contend for quota-affecting operations; merge/split/rotation add transactional complexity; precise state-to-counter mapping and idempotency semantics are required.</li>
-<li><strong>Failure handling:</strong> callers must handle deadlocks/serialization failures/timeouts with bounded retries and idempotency; unknown commit outcomes require durable result reconciliation.</li>
-<li><strong>Operational risk:</strong> stale/corrupted counters, retention misconfiguration, or incorrect role/RLS/context setup can undermine enforcement; reconciliation, monitoring, and audited procedures are required (proposed).</li>
+<li>Aligns proposed enforcement with the mandatory one-device-one-asset invariant and no-duplicate-asset rule across sources.</li>
+<li>Provides a clear conceptual model for quota accounting, merge/split, rotation, and idempotent retries.</li>
+<li>Improves reviewability for future schema/security/implementation work and highlights required owner decisions.</li>
 </ul>
-<h2>Consistency Review and Remaining Owner Decisions</h2>
-<h3>Corrections made</h3>
+<p><strong>Costs/risks:</strong></p>
 <ul>
-<li>Aligned ADR with latest <code>DATA_ARCHITECTURE.md</code> and architecture decision packages by separating stable <code>asset_data_source</code> binding relationships, stable <code>source_device_key_id</code> identity, and versioned <code>source_device_fingerprint_alias</code> records; clarified that fingerprints/aliases are not permanent binding identities.</li>
-<li>Added proposed binding/alias uniqueness, overlap, atomic registration/rotation, overlap lookup, collision handling, and migration requirements that prohibit duplicate assets, bindings, aliases, or licensed usage.</li>
-<li>Replaced implicit licensing language with an explicit proposed accounting model separating active billable usage, reserved capacity, pending identity reservation, available capacity, and historical/tombstone records, including equations and state-to-counter mapping.</li>
-<li>Specified proposed atomic merge/split behavior (authorization/evidence, canonical selection, binding/alias reassignment, counter effects, lifecycle/audit evidence, idempotency, conflict/rollback, concurrency, tenant isolation).</li>
-<li>Defined proposed PostgreSQL lock-ordering/concurrency strategy and mandatory post-lock identity rechecks across registration, attachment, merge, split, deactivation, reactivation, removal, and fingerprint rotation.</li>
+<li>Per-tenant serialization/locking can increase contention for tenants with high concurrent registration or lifecycle operations.</li>
+<li>Additional schema complexity (bindings, aliases, ledgers, history, tombstones, state mappings) and stricter operational procedures for merges/splits/rotations.</li>
+<li>Incorrect lock ordering or incomplete recheck logic can cause deadlocks or correctness gaps if later implemented poorly.</li>
+<li>Owner-approved policy choices (reservations, grace periods, pending behavior) materially affect counter semantics and must be resolved before implementation.</li>
+</ul>
+<p><strong>Operational impact (when/if implemented):</strong></p>
+<ul>
+<li>Requires monitored contention metrics, deadlock/constraint-violation telemetry, reconciliation jobs, and runbooks for conflict resolution, rotation, merge/split, and recovery.</li>
+<li>Requires production-equivalent validation of RLS/verified tenant context behavior and concurrent transaction scenarios.</li>
+</ul>
+<h2>Verification requirements</h2>
+<p>These are <strong>required proposed verification scenarios</strong> for future implementation and testing. They are <strong>NOT</strong> executed in this documentation update.</p>
+<p><strong>Required PostgreSQL concurrency tests (proposed):</strong></p>
+<ul>
+<li>Concurrent registration of the same device/fingerprint alias and different aliases resolving to the same binding must not create duplicate assets, bindings, or licensed usage.</li>
+<li>Concurrent registration attempts at quota boundary must not exceed entitled/allowed capacity under the approved policy mapping.</li>
+<li>Concurrent merge/split/attach/rotate/deactivate/reactivate/remove operations on overlapping entities must preserve invariants, lineage, and counter correctness or fail safely.</li>
+<li>Deadlock/retry paths must be exercised with idempotency keys to confirm no duplicate effects.</li>
+</ul>
+<p><strong>RLS validation expectations (proposed):</strong></p>
+<ul>
+<li>All licensing, binding, alias, asset, counter, history, and idempotency access paths must be validated under tenant-scoped RLS/verified transaction context using production-equivalent, non-owner roles.</li>
+<li>Cross-tenant reads/writes, tenant-context spoofing, and missing-context behavior must be tested and must fail closed.</li>
+</ul>
+<p><strong>Idempotency verification (proposed):</strong></p>
+<ul>
+<li>Replayed identical requests (including after timeout/unknown commit) return consistent outcomes with no duplicate logical effects.</li>
+<li>Conflicting payloads with the same idempotency key are rejected and audited.</li>
+<li>Ledger/result retention and recovery behavior are verified for supported retry windows.</li>
+</ul>
+<p><strong>Fingerprint rotation verification (proposed):</strong></p>
+<ul>
+<li>Overlap-period lookups resolve old/new aliases to the same stable binding/canonical asset.</li>
+<li>Rotation does not create duplicate bindings/assets/aliases or inflate licensed usage.</li>
+<li>Retirement of old aliases/keys preserves required history and respects approved retention/security controls.</li>
+</ul>
+<p><strong>Merge/split verification (proposed):</strong></p>
+<ul>
+<li>Authorized merge preserves survivor, tombstones losing IDs, reassigns eligible bindings, reconciles counters correctly, and maintains lineage/audit.</li>
+<li>Authorized split creates a new non-reused canonical asset, reassigns specified bindings correctly, reconciles counters correctly, and maintains lineage/audit.</li>
+<li>Unauthorized, conflicting, or invalid merge/split attempts fail atomically with no partial effects.</li>
+</ul>
+<p><strong>Audit and reconciliation verification (proposed):</strong></p>
+<ul>
+<li>Append-only licensing/history records are complete and linked for all counter-affecting and identity-affecting operations.</li>
+<li>Reconciliation can explain active/reserved/pending/available/historical states per tenant under the approved policy mapping.</li>
+<li>Backend/API/Dashboard licensing views (when implemented) agree with PostgreSQL-authoritative records.</li>
+</ul>
+<h2>References</h2>
+<ul>
+<li><a href="../DATA_ARCHITECTURE.md.html">docs/DATA_ARCHITECTURE.md</a></li>
+<li><a href="../POSTGRESQL_TECHNICAL_DECISIONS.md.html">docs/POSTGRESQL_TECHNICAL_DECISIONS.md</a></li>
+<li><a href="../ARCHITECTURE.md.html">docs/ARCHITECTURE.md</a></li>
+<li><a href="../SECURITY_ARCHITECTURE.md.html">docs/SECURITY_ARCHITECTURE.md</a></li>
+</ul>
+<h2>2026-11-21 documentation-only consistency review</h2>
+<h3>What was reconciled</h3>
+<ul>
+<li>Aligned this ADR to the current stable source-device identity model: <strong><code>asset_data_source</code> + stable <code>source_device_key_id</code> + versioned <code>source_device_fingerprint_alias</code></strong> with fingerprint-as-lookup-evidence (not permanent identity), tenant-inclusive uniqueness concepts, overlap alias resolution to the same stable binding, and no duplicate licensed asset/binding/alias/usage on registration, attachment, rotation, migration, merge, or split.</li>
+<li>Made mandatory licensing invariants explicit and preserved: one unique monitored device = one licensed asset, multiple sources for the same device do not create duplicate licensed assets, PostgreSQL is the authoritative licensing database, and adding bindings to an existing canonical asset does not increment licensed usage.</li>
+<li>Expanded the proposed licensing accounting model to separate <strong>active billable usage, reserved capacity, pending identity reservation, available capacity, and historical/tombstone records</strong>, with illustrative equations/state mapping and explicit owner-decision labels.</li>
+<li>Added proposed atomic <strong>merge/split</strong> requirements (authorization/evidence, stable canonical selection, tombstones/no ID reuse, binding reassignment, lineage preservation, counter reconciliation, rollback/idempotency).</li>
+<li>Added proposed <strong>idempotency</strong> requirements (tenant-scoped keys, durable ledger/outcome recording, replay/conflict handling, unknown-commit recovery) and clarified concurrency/transaction expectations.</li>
 <li>Defined a proposed durable, tenant-scoped idempotency ledger model with operation type/request hash, processing/completed/failed semantics, stored results/references, duplicate/conflict handling, and retry behavior after unknown commit/lifecycle transitions.</li>
 <li>Expanded verification requirements to required proposed PostgreSQL concurrency/RLS/idempotency/rotation/merge-split/reconciliation scenarios using production-equivalent non-owner runtime roles; explicitly distinguished proposed tests from executed tests.</li>
 </ul>
@@ -445,6 +478,46 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li>No application source code, PostgreSQL schema files, migrations, or test files were modified.</li>
 <li>ADR remains <strong>proposed</strong> until approved through the required architecture/owner/security review process.</li>
 <li>No PostgreSQL tests have been run or claimed as passed; all verification requirements above are proposed.</li>
+</ul>
+<h2>Round 3.2 owner decision consolidation and governance reconciliation</h2>
+<p><strong>Record type:</strong> documentation-only governance reconciliation (2026-11-22). <strong>No database implementation or runtime code was created or authorized by this reconciliation.</strong> No DDL, migrations, ORM models, database roles/policies, triggers/stored procedures, provisioning scripts, application code, runtime configuration, or production infrastructure were created or modified.</p>
+<h3>Authoritative input (current project conversation)</h3>
+<ul>
+<li>The owner has <strong>approved the principles and bounded conditions of all thirteen Owner Decisions (OD-001 through OD-013)</strong> for governance consolidation purposes.</li>
+<li><strong>OD-001:</strong> the owner has approved <strong>acceptance of ADR 0006 in principle</strong> with the agreed bounded exclusions and preserved deferred dependencies. This <strong>does not</strong> constitute unconditional formal ADR status transition.</li>
+<li>Approval of bounded principles/conditions <strong>must not</strong> be interpreted as approval of unresolved technical details, final formulas/predicates/mechanisms/policies not explicitly specified, or authorization for any implementation increment.</li>
+</ul>
+<h3>Approved principles preserved (ADR 0006 / licensing-accounting governance context)</h3>
+<p>The following principles are explicitly preserved as owner-approved in principle (bounded):</p>
+<ol>
+<li><strong>One unique monitored device per tenant equals one licensed asset.</strong></li>
+<li><strong>Multiple sources reporting the same device must not cause duplicate licensing.</strong></li>
+<li><strong>Device types have equal licensing weight.</strong></li>
+<li><strong>Asset licensing remains separate from technical resource quotas.</strong></li>
+<li><strong>PostgreSQL is the transactional authority for licensing accounting and quota enforcement.</strong></li>
+<li><strong>Concurrent operations must not cause oversubscription or duplicate business effects.</strong></li>
+</ol>
+<h3>Bounded exclusions and deferred dependencies (explicitly retained)</h3>
+<p>The following remain <strong>not resolved, not finalized, and not authorized</strong> by this in-principle acceptance and must not be silently closed:</p>
+<ul>
+<li>Reservation policy details (including whether/when/how pending identity reservations reserve capacity, duration/timeout/release/representation, and policy-to-schema mapping).</li>
+<li>Counter transitions, authoritative counter scope, and recomputation/reconciliation semantics/formulas.</li>
+<li>Merge/split accounting edge cases and all merge/split authorization/evidence/licensing-effect details pending required approvals.</li>
+<li>Unresolved lifecycle details (including but not limited to deactivation grace/removal/re-enrollment/reset interactions as governed by OD/PD decisions).</li>
+<li>Formal idempotency contract approval details, coupling-mode approval, canonicalization/hash/state/retention/reconciliation specifics, and staged-exception approvals (OD-008).</li>
+<li>ADR 0006 schema-level interpretation finalization where still ambiguous; any required formal schema/security/architecture review and acceptance process.</li>
+<li>All other OD-001–OD-013 and PD-001–PD-012 unresolved technical details, validations, and governance approvals as recorded in the Round 3.2 Owner Decision Register and dependency/blocker reconciliation.</li>
+</ul>
+<h3>Formal ADR status transition — explicitly pending (not mechanically changed)</h3>
+<ul>
+<li><strong>Recorded formal ADR status remains:</strong> <strong>Proposed</strong> (as stated above). This reconciliation <strong>does not</strong> mechanically change ADR 0006 to “Accepted”.</li>
+<li><strong>Reason:</strong> unconditional/formal ADR status transition requires verification and completion of the applicable ADR governance/acceptance requirements (including formal review/acceptance record as required by project governance) and must accurately reflect bounded acceptance versus excluded/deferred technical details. Those formal governance steps and records are <strong>not</strong> completed by this documentation-only consolidation.</li>
+<li><strong>Distinction preserved:</strong> OD-001 records <strong>acceptance of ADR 0006 in principle with agreed bounded exclusions</strong>; this is distinct from, and does not replace, an unconditional formal ADR status transition. Any future formal status change must be explicitly documented, evidence-backed, and consistent with resolved exclusions/dependencies.</li>
+</ul>
+<h3>Implementation and authorization impact</h3>
+<ul>
+<li><strong>No implementation authorized.</strong> OD approvals and this in-principle ADR acceptance do not authorize I-06, I-07, I-09, I-12, I-13, I-14, or any other implementation increment.</li>
+<li>Any future implementation requires separate, explicit owner authorization records per increment/scope, satisfied prerequisites/approvals/validations, and compliant technical design—none of which are granted by this task.</li>
 </ul>
 <h2>Revisit when</h2>
 <p>Measured per-tenant registration contention violates declared objectives, owner-approved lifecycle/commercial policy requires different state mapping, or formal schema/security review identifies required structural changes. Any revision must preserve the one-device-one-asset invariant, no-duplicate-licensed-asset rule, historical licensing evidence, and tenant isolation.</p>

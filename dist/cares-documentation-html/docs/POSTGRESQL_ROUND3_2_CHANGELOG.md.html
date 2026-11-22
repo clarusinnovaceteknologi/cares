@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3.2 — Changelog</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_2_CHANGELOG.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3.2 — Changelog</h1>
+<p><strong>Status:</strong> Documentation/governance changelog only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT AN IMPLEMENTATION AUTHORIZATION</strong>.<br />
+<strong>Round:</strong> Round 3.2 — Owner Decision Consolidation and Governance Reconciliation<br />
+<strong>Branch:</strong> <code>governance/postgresql-round3-2-owner-decision-consolidation</code><br />
+<strong>Source baseline:</strong> <code>governance/postgresql-round3-owner-decision-gate</code> @ <code>7c58808157ab512c49abeed3efd0757b4c37824c</code></p>
+<h2>Scope of this round</h2>
+<p>Documentation and governance consolidation only. No SQL DDL, database migrations, ORM models, database roles/policies, triggers/stored procedures, provisioning scripts, application code, runtime configuration, or production infrastructure were created or modified. No implementation was authorized.</p>
+<h2>Added / revised artifacts (Round 3.2)</h2>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Type</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html">docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md</a></td>
+<td>Added</td>
+<td>Consolidated OD-001–OD-013 with decision scope, owner approval status (principles/bounded conditions approved per Round 3.2 authoritative directive), bounded approved principles, explicitly deferred technical details, dependencies/cross-references, and explicit non-authorization; preserved PD-001–PD-012 visibility and ADR 0006 formal-status distinction.</td>
+</tr>
+<tr>
+<td><a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a></td>
+<td>Added (reconciled markdown source on branch)</td>
+<td>Reconciled ADR 0006 content preserving Proposed baseline and adding Round 3.2 governance reconciliation: bounded in-principle acceptance (OD-001), preserved approved principles and explicit deferred exclusions/dependencies, and documented reason why unconditional formal ADR status transition remains pending (no mechanical promotion to Accepted).</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html">docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</a></td>
+<td>Added</td>
+<td>Reconciled I-00–I-14 authorization posture distinguishing owner-approved principles, technically unresolved details, planning-ready increments, blocked increments, and explicitly authorized implementation increments (none); explicit non-authorization including I-06/I-07/I-09/I-12/I-13/I-14.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html">docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md</a></td>
+<td>Added</td>
+<td>Reconciled OD-001–OD-013, PD-001–PD-012, ADR 0006, and I-00–I-14 dependencies using required classifications; technical blockers not marked resolved by principle approval.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html">docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md</a></td>
+<td>Added</td>
+<td>Final governance review answering required representation, visibility, authorization-safety, next-step, and remaining-evidence/decision questions.</td>
+</tr>
+<tr>
+<td><a href="POSTGRESQL_ROUND3_2_CHANGELOG.md.html">docs/POSTGRESQL_ROUND3_2_CHANGELOG.md</a></td>
+<td>Added</td>
+<td>This changelog.</td>
+</tr>
+<tr>
+<td><a href="../copilot.txt">copilot.txt</a></td>
+<td>Revised</td>
+<td>Updated execution evidence/report for Round 3.2 (scope, sources, deliverables, validations, commit/remote state, limitations).</td>
+</tr>
+</tbody>
+</table>
+<h2>Preserved / unchanged governance history</h2>
+<ul>
+<li>Round 3.1 governance artifacts (<code>POSTGRESQL_ROUND3_1_*</code>) and prior Round 3/2/1.1 records remain in repository history and were not modified to erase prior governance state.</li>
+<li>OD-001–OD-013 and PD-001–PD-012 identifiers preserved; recorded statuses/history carried forward without fabricated closure.</li>
+<li>I-00–I-14 baseline classifications preserved (no implementation authorized).</li>
+<li>ADR 0006 formal status remains <strong>Proposed</strong>; bounded in-principle acceptance recorded distinctly from unconditional formal status transition.</li>
+</ul>
+<h2>Authoritative inputs applied</h2>
+<ul>
+<li>Explicit owner approvals supplied in the current project conversation (Round 3.2 directive): principles and bounded conditions approved for OD-001–OD-013; OD-001 acceptance of ADR 0006 in principle with bounded exclusions and preserved deferred dependencies.</li>
+<li>Recovered original sources consulted: <code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> (blob <code>dc9a813...</code>, provenance incomplete) and ADR 0006 (blob <code>324a6eed...</code>, provenance incomplete), plus committed Round 3/3.1/2/1.1 records.</li>
+</ul>
+<h2>Non-changes / confirmations</h2>
+<ul>
+<li>No DDL, migrations, ORM models, roles/policies, triggers/functions, provisioning, application/runtime code, or infrastructure changes.</li>
+<li>No owner decision fabricated; no unresolved technical detail inferred as approved.</li>
+<li>No implementation increment authorized (including I-06, I-07, I-09, I-12, I-13, I-14).</li>
+<li>No original product roadmap change and no new implementation scope introduced.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

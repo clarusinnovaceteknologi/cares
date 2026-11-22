@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3.2 — Implementation Authorization Matrix (Consolidated)</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3.2 — Implementation Authorization Matrix (Consolidated)</h1>
+<p><strong>Status:</strong> Proposed governance/authorization-control record only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT AN IMPLEMENTATION AUTHORIZATION</strong>.<br />
+<strong>Round:</strong> Round 3.2 — Owner Decision Consolidation and Governance Reconciliation (documentation/governance only).<br />
+<strong>Source baseline:</strong> <code>governance/postgresql-round3-owner-decision-gate</code> @ <code>7c58808157ab512c49abeed3efd0757b4c37824c</code>.</p>
+<h2>1. Purpose and controlling rule</h2>
+<p>This matrix reconciles implementation readiness/authorization posture for <strong>I-00–I-14</strong> after Round 3.2 owner decision consolidation. It explicitly distinguishes:</p>
+<ol>
+<li><strong>Owner-approved principles</strong> (bounded conditions approved in principle by owner, Round 3.2 directive),</li>
+<li><strong>Technically unresolved details</strong> (not approved, not finalized),</li>
+<li><strong>Planning-ready increments</strong> (planning/preparation only, no execution authorization implied),</li>
+<li><strong>Blocked increments</strong> (cannot be safely authorized/executed due to unresolved prerequisites/validations/approvals),</li>
+<li><strong>Explicitly authorized implementation increments, if any</strong> (only with a separate, explicit owner authorization record satisfying required prerequisites).</li>
+</ol>
+<p><strong>Controlling rule (no accidental implementation):</strong> <strong>No implementation is authorized by this consolidation task.</strong> Owner approval of OD-001–OD-013 principles/bounded conditions <strong>does not</strong> authorize I-06, I-07, I-09, I-12, I-13, I-14, or any other implementation increment. Any implementation requires a separate, explicit owner authorization record per increment/scope with satisfied prerequisites, approvals, validations, evidence, and exclusions.</p>
+<h2>2. Evidence checked (authorization records)</h2>
+<ul>
+<li>Repository governance artifacts reviewed: Round 3/3.1 implementation plans, readiness/blocker matrices, dependency maps, authorization templates, and this Round 3.2 consolidation package.</li>
+<li><strong>Explicit owner authorization records found:</strong> <strong>None.</strong> No completed, separately executed implementation authorization record exists for any I-00–I-14 increment.</li>
+</ul>
+<h2>3. Increment matrix (I-00–I-14)</h2>
+<table>
+<thead>
+<tr>
+<th>Increment</th>
+<th>Baseline classification (Round 3, preserved)</th>
+<th>1) Owner-approved principles relevant to increment</th>
+<th>2) Technically unresolved details (not approved/finalized)</th>
+<th>3) Planning-ready status</th>
+<th>4) Blocked status</th>
+<th>5) Explicitly authorized implementation increment?</th>
+<th>Authorization posture</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>I-00</strong> — Preconditions and governance alignment</td>
+<td>Conditionally ready</td>
+<td>OD principles approved in principle (bounded) provide governance direction; ADR 0006 accepted in principle with bounded exclusions (not formally transitioned).</td>
+<td>All OD/PD technical details, formal approvals, validations, and authorization records remain unresolved/incomplete as applicable.</td>
+<td><strong>Planning/precondition review:</strong> yes (documentation/governance preparation only).</td>
+<td><strong>Not execution-authorized;</strong> dependent on completion of explicit preconditions/authorizations.</td>
+<td><strong>No.</strong></td>
+<td><strong>Not authorized.</strong></td>
+</tr>
+<tr>
+<td><strong>I-01</strong> — Naming/type/identifier and tenant-boundary conventions</td>
+<td>Conditionally ready</td>
+<td>Principle-level governance direction available; tenant-isolation/identity invariants preserved.</td>
+<td>PD-001/PD-002/PD-004 and related technical choices/validations not finalized; no implementation authorization.</td>
+<td><strong>Planning-ready (conditional):</strong> bounded convention planning may be discussed; no DDL/migration execution authorized.</td>
+<td><strong>Blocked for implementation</strong> pending required approvals/validations and explicit authorization.</td>
+<td><strong>No.</strong></td>
+<td><strong>Not authorized.</strong></td>
+</tr>
+<tr>
+<td><strong>I-02</strong> — Base schema scaffolding (bounded, non-runtime)</td>
+<td>Conditionally ready</td>
+<td>Principle-level direction only.</td>
+<td>PD-012 scope-sensitive modeling and dependent technical details unresolved; no schema/runtime execution authorized.</td>
+<td><strong>Planning-ready (conditional):</strong> documentation-level scaffolding planning only.</td>
+<td><strong>Blocked for implementation</strong> (no DDL/migrations authorized; prerequisites/authorization absent).</td>
+<td><strong>No.</strong></td>
+<td><strong>Not authorized.</strong></td>
+</tr>
+<tr>
+<td><strong>I-03</strong> — Tenant-consistency and structural constraints</td>
+<td>Conditionally ready</td>
+<td>Tenant-isolation invariants preserved as principles.</td>
+<td>PD-003 pattern/validation unresolved; technical design not finalized/approved.</td>
+<td><strong>Planning-ready (conditional).</strong></td>
+<td><strong>Blocked for implementation</strong> pending PD-003 validation/approval and explicit authorization.</td>
+<td><strong>No.</strong></td>
+<td><strong>Not authorized.</strong></td>
+</tr>
+<tr>
+<td><strong>I-04</strong> — Identity tables and binding/alias structures</td>
+<td>Conditionally ready</td>
+<td>OD-002/OD-006/OD-007 principles approved in principle (bounded); no-duplicate-identity/licensing invariants preserved.</td>
+<td>OD-002 ownership/materialization, OD-006 protection/custody/rotation, OD-007 lifecycle mappings, PD-004/PD-011 details and validations unresolved.</td>
+<td><strong>Planning-ready (conditional).</strong></td>
+<td><strong>Blocked for implementation</strong> pending technical resolutions/approvals/validations and explicit authorization.</td>
+<td><strong>No.</strong></td>
+<td><strong>Not authorized.</strong></td>
+</tr>
+<tr>
+<td><strong>I-05</strong> — Canonical asset/lifecycle/lineage structures</td>
+<td>Conditionally ready</td>
+<td>OD-005/OD-007 principles approved in principle (bounded); lineage/audit/no-duplicate-usage invariants preserved.</td>
+<td>Merge/split authority/evidence/licensing edge cases, lifecycle mappings, and structural/transaction details unresolved.</td>
+<td><strong>Planning-ready (conditional).</strong></td>
+<td><strong>Blocked for implementation</strong> pending approvals/validations and explicit authorization.</td>
+<td><strong>No.</strong></td>
+<td><strong>Not authorized.</strong></td>
+</tr>
+<tr>
+<td><strong>I-06</strong> — Licensing/entitlement/reservation/idempotency structures and final semantics</td>
+<td>Blocked (final semantics) / conditionally ready for bounded structural planning only</td>
+<td>OD-001/OD-003/OD-004/OD-008 principles approved in principle (bounded); ADR 0006 accepted in principle with bounded exclusions (not formally transitioned). PostgreSQL transactional authority/no-oversubscription/no-duplicate-effects principles preserved.</td>
+<td><strong>Technically unresolved:</strong> reservation policy details, counter transitions/formulas/authoritative scope/reconciliation, merge/split accounting edge cases, unresolved lifecycle details, formal idempotency contract/coupling/canonicalization/hash/state/retention/reconciliation, ADR 0006 schema-level interpretation finalization, and all required validations/approvals.</td>
+<td><strong>Not planning-ready for final/authorized execution semantics.</strong> Bounded conceptual/structural planning only may be discussed without claiming final semantics or authorization.</td>
+<td><strong>Blocked (hard):</strong> final semantics and any correctness-critical/runtime implementation remain blocked.</td>
+<td><strong>No (explicitly not authorized).</strong></td>
+<td><strong>Not authorized.</strong> OD principle approval does <strong>not</strong> authorize I-06.</td>
+</tr>
+<tr>
+<td><strong>I-07</strong> — Ingest/event receipt dedup structures</td>
+<td>Conditionally ready</td>
+<td>OD-013 principles approved in principle (bounded); dedup distinct from identity/licensing ledger; collision-safe/tenant-isolated intent preserved.</td>
+<td>OD-013 connector namespace/capability/fallback/reject-quarantine/payload-hash/pre-binding predicates and PD-008 uniqueness-predicate finalization unresolved.</td>
+<td><strong>Planning-ready (conditional).</strong></td>
+<td><strong>Blocked for implementation/finalization</strong> pending OD-013/PD-008 technical decisions and validation.</td>
+<td><strong>No (explicitly not authorized).</strong></td>
+<td><strong>Not authorized.</strong> OD principle approval does <strong>not</strong> authorize I-07.</td>
+</tr>
+<tr>
+<td><strong>I-08</strong> — Outbox/attempt structures and processing semantics preparation</td>
+<td>Conditionally ready</td>
+<td>OD-009 principles approved in principle (bounded); at-least-once/no exactly-once-external, delivery ambiguity representable/reconcilable.</td>
+<td>OD-009 lease/fencing/claim/retry/dead-letter/replay/reconciliation details and PD-007 mechanism validation unresolved.</td>
+<td><strong>Planning-ready (conditional).</strong></td>
+<td><strong>Blocked for runtime implementation/semantics finalization</strong> pending approvals/validation.</td>
+<td><strong>No.</strong></td>
+<td><strong>Not authorized.</strong></td>
+</tr>
+<tr>
+<td><strong>I-09</strong> — Audit/evidence/AI-governance structures</td>
+<td>Conditionally ready</td>
+<td>OD-010/OD-011 principles approved in principle (bounded); governed retention/evidence/custody/AI constraints preserved.</td>
+<td>OD-010 retention/legal-hold/deletion policy/workflow specifics, OD-011 consent/classification/budget/provider-policy enforcement details, PD-011 representation and required legal/privacy/security/compliance approvals unresolved.</td>
+<td><strong>Planning-ready (conditional).</strong></td>
+<td><strong>Blocked for automation/final enforcement implementation</strong> pending governance approvals and technical finalization.</td>
+<td><strong>No (explicitly not authorized).</strong></td>
+<td><strong>Not authorized.</strong> OD principle approval does <strong>not</strong> authorize I-09.</td>
+</tr>
+<tr>
+<td><strong>I-10</strong> — SOC/catalog/scope-sensitive structures</td>
+<td>Conditionally ready</td>
+<td>OD-012/PD-012 principle-level direction preserved (explicit scope modeling, evidence-driven decisions).</td>
+<td>OD-010/OD-012 governance/workload specifics, PD-009/PD-012 technical choices and isolation/access validation unresolved.</td>
+<td><strong>Planning-ready (conditional).</strong></td>
+<td><strong>Blocked for implementation</strong> pending approvals/validation.</td>
+<td><strong>No.</strong></td>
+<td><strong>Not authorized.</strong></td>
+</tr>
+<tr>
+<td><strong>I-11</strong> — Indexes/constraints refinement (evidence-informed)</td>
+<td>Conditionally ready</td>
+<td>OD-012 principle approved in principle (bounded): evidence-driven, no premature optimization.</td>
+<td>PD-003/PD-008/PD-009 and workload/index/partition evidence unresolved; dependent structural decisions not finalized.</td>
+<td><strong>Planning-ready (conditional).</strong></td>
+<td><strong>Blocked for implementation</strong> pending evidence/approvals and dependent increment readiness.</td>
+<td><strong>No.</strong></td>
+<td><strong>Not authorized.</strong></td>
+</tr>
+<tr>
+<td><strong>I-12</strong> — RLS, verified tenant context, privileges/roles hardening</td>
+<td>Blocked</td>
+<td>Tenant-isolation invariants and verified-transaction-bound context principles preserved (no client-supplied tenant IDs, no user-settable GUC authorization).</td>
+<td><strong>Hard unresolved:</strong> PD-005 verified tenant-context DB mechanism selection/approval, PD-006 FORCE/ownership hardening applicability, negative isolation and pooling/reset validation evidence, controlled-admin implications (OD-010) unresolved.</td>
+<td><strong>Not planning-ready for execution authorization.</strong></td>
+<td><strong>Blocked (hard).</strong></td>
+<td><strong>No (explicitly not authorized).</strong></td>
+<td><strong>Not authorized.</strong> OD principle approval does <strong>not</strong> authorize I-12.</td>
+</tr>
+<tr>
+<td><strong>I-13</strong> — Domain/runtime transaction paths and operation execution</td>
+<td>Blocked / out of Round 3 scope</td>
+<td>OD-001/003/004/005/008/009/010/011/013 principles approved in principle (bounded) where applicable.</td>
+<td>All runtime/domain correctness-critical semantics unresolved or unvalidated (licensing/idempotency/outbox/identity/ingest/evidence/AI governance couplings); depends on blocked prerequisites (including I-12 and approved semantics).</td>
+<td><strong>Not planning-ready for execution authorization.</strong></td>
+<td><strong>Blocked / out of scope.</strong></td>
+<td><strong>No (explicitly not authorized).</strong></td>
+<td><strong>Not authorized.</strong> OD principle approval does <strong>not</strong> authorize I-13.</td>
+</tr>
+<tr>
+<td><strong>I-14</strong> — Partitioning/lifecycle automation/performance-operability finalization</td>
+<td>Deferred / Blocked by evidence &amp; governance</td>
+<td>OD-010/OD-012 principles approved in principle (bounded): governance- and evidence-driven lifecycle/performance decisions.</td>
+<td>OD-010/OD-012 governance approvals, retention classes, workload/index/partition thresholds, PD-010 adoption/constraint/lifecycle validation evidence unresolved.</td>
+<td><strong>Not planning-ready for execution authorization.</strong></td>
+<td><strong>Deferred/blocked by evidence and governance.</strong></td>
+<td><strong>No (explicitly not authorized).</strong></td>
+<td><strong>Not authorized.</strong> OD principle approval does <strong>not</strong> authorize I-14.</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Summary</h2>
+<ul>
+<li><strong>Owner-approved principles:</strong> recorded for OD-001–OD-013 (bounded, principle-level; ADR 0006 accepted in principle with bounded exclusions, formal status remains Proposed).</li>
+<li><strong>Technically unresolved details:</strong> remain across all relevant OD/PD/I dependencies (reservation/counter/merge-split-lifecycle details, idempotency contract, connector dedup specifics, retention/legal-hold/AI policy specifics, outbox/runtime mechanics, tenant-context/RLS validation evidence, partition/performance evidence, and all formal approvals/validations not explicitly completed).</li>
+<li><strong>Planning-ready increments:</strong> conditionally planning-ready only where Round 3 baseline indicated (I-00–I-05, I-07–I-11 in bounded planning sense), with <strong>no execution authorization</strong>.</li>
+<li><strong>Blocked increments:</strong> I-06 (final semantics/correctness-critical), I-12, I-13, and I-14 (deferred/blocked by evidence &amp; governance), plus implementation-blocked posture for all others absent explicit authorization and satisfied prerequisites.</li>
+<li><strong>Explicitly authorized implementation increments:</strong> <strong>None.</strong></li>
+</ul>
+<p><strong>No implementation is authorized by this matrix or by Round 3.2 consolidation.</strong></p>
+
+</article>
+</div>
+
+</body>
+</html>

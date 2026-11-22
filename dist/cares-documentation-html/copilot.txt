@@ -1,0 +1,69 @@
+# CARES PostgreSQL Round 3.2 — Owner Decision Consolidation and Governance Reconciliation (Execution Report)
+
+## 1. Task identity and scope
+- **Task:** CARES — PostgreSQL Round 3.2 Owner Decision Consolidation and Governance Reconciliation (documentation and governance only).
+- **Execution mode:** documentation/governance consolidation; no DDL, migrations, ORM models, database roles/policies, triggers/stored procedures, provisioning scripts, application code, runtime configuration, or production infrastructure created or modified. No implementation authorized.
+- **Owner decisions/authorization:** no owner decision fabricated; no unresolved technical detail inferred as approved from principle-level approvals; no implementation increment authorized.
+
+## 2. Verified source baseline and repository state (pre-change)
+- **Main repository (`/home/ubuntu/cares`):** `planning/postgresql-round3-implementation` @ `ee6e005bc50ffa8f3cd376a83b01369044005c3b` (local==remote), tracked tree clean; pre-existing untracked files present and untouched.
+- **Governance source worktree (`/tmp/cares-postgresql-round3-1`):** `governance/postgresql-round3-owner-decision-gate` @ `7c58808157ab512c49abeed3efd0757b4c37824c` (local==remote), clean working tree (`## governance/postgresql-round3-owner-decision-gate... origin/governance/postgresql-round3-owner-decision-gate`).
+- **Remote verification (pre-change):**
+  - `origin/governance/postgresql-round3-owner-decision-gate` = `7c58808157ab512c49abeed3efd0757b4c37824c`
+  - `origin/planning/postgresql-round3-implementation` = `ee6e005bc50ffa8f3cd376a83b01369044005c3b` (unchanged baseline reference)
+  - `origin/governance/postgresql-round3-2-owner-decision-consolidation` did not exist prior to publication.
+- **Target branch/worktree:** `governance/postgresql-round3-2-owner-decision-consolidation` created in isolated worktree `/tmp/cares-postgresql-round3-2` from verified source baseline `7c58808157ab512c49abeed3efd0757b4c37824c`.
+
+## 3. Sources consulted (authoritative/evidence inputs)
+- **Explicit owner approvals supplied in current project conversation (authoritative):** principles and bounded conditions approved for OD-001–OD-013 (Round 3.2 directive). For OD-001, owner approved acceptance of ADR 0006 in principle with agreed bounded exclusions and preserved deferred dependencies; distinct from unconditional formal ADR status transition. No per-OD technical-detail approvals inferred beyond explicit inputs.
+- **Round 3.1 governance artifacts:** `POSTGRESQL_ROUND3_1_OWNER_DECISION_GATE.md`, `POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md`, `POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md`, `POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_MATRIX.md`, `POSTGRESQL_ROUND3_1_OWNER_DECISION_RECORD_TEMPLATE.md`, `POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md`, `POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md`, `POSTGRESQL_ROUND3_1_FINAL_REVIEW.md`.
+- **Round 3 planning artifacts:** `POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md`, `POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md`, `POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md`, `POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md`, `POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md`, `POSTGRESQL_ROUND3_DEPENDENCY_MAP.md`, `POSTGRESQL_ROUND3_CHANGELOG.md`, `POSTGRESQL_ROUND3_FINAL_REVIEW.md`, `POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md`.
+- **Round 2 / physical / logical / audit artifacts:** `POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md` (PD-001–PD-012 preserved statuses), `POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md`, `POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md`, and related Round 1.1/Round 2 records.
+- **Recovered original decision sources (read-only evidence, provenance `FOUND BUT PROVENANCE INCOMPLETE`):**
+  - `docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md` — blob `dc9a813be82bfa6ba1384b404d3805b67f2be88c`, introduced in `278daf4623404f573132cee57e1d6fbe33b0846d` (2026-11-21T16:11:58Z), present in agent checkpoint refs `refs/agents/8c785fc7-340d-4bfa-b371-b9b81d67385b/checkpoints/turn/0..17`; hash-identical untracked copy consulted at `/home/ubuntu/cares/docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md`.
+  - ADR 0006 `docs/adr/0006-atomic-per-tenant-asset-licensing.md` — blob `324a6eedcf7da9ced1294cc48a832e2c56bad99f`, same provenance context; hash-identical untracked copy consulted at `/home/ubuntu/cares/docs/adr/0006-atomic-per-tenant-asset-licensing.md`. Verified as **Proposed**, PostgreSQL licensing/accounting/quota/reservation/concurrency/timeout/idempotency semantics (not software licensing).
+
+## 4. Deliverables created/revised (Round 3.2)
+
+### Created
+- `docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md` — consolidated OD-001–OD-013 (scope, owner approval status/principles-bounded, approved principles without invention, explicitly deferred technical details, dependencies/cross-references, no implementation authorization); PD-001–PD-012 visibility preserved; ADR 0006 formal-status distinction preserved.
+- `docs/adr/0006-atomic-per-tenant-asset-licensing.md` — reconciled ADR 0006 markdown preserving Proposed baseline and adding Round 3.2 governance reconciliation (bounded in-principle acceptance, approved principles, retained bounded exclusions/deferred dependencies, and explicit reason formal unconditional status transition remains pending; no mechanical promotion to Accepted).
+- `docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md` — I-00–I-14 reconciliation distinguishing owner-approved principles, technically unresolved details, planning-ready increments, blocked increments, and explicitly authorized implementation increments (none); explicit non-authorization including I-06/I-07/I-09/I-12/I-13/I-14.
+- `docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md` — OD-001–OD-013, PD-001–PD-012, ADR 0006, I-00–I-14 dependencies classified as owner decision resolved / principle approved-technical details deferred / partially resolved / still blocked / requires technical validation / requires separate owner authorization; no technical blocker marked resolved by principle approval alone.
+- `docs/POSTGRESQL_ROUND3_2_CHANGELOG.md` — Round 3.2 changelog.
+- `docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md` — final governance review answering all required questions.
+
+### Revised
+- `copilot.txt` — this execution/publication report.
+
+### Preserved (unchanged by this round)
+- All existing Round 3.1 `POSTGRESQL_ROUND3_1_*` documents and prior Round 1/1.1/2/3 governance/design records retained in history; OD/PD identifiers and I-00–I-14 baseline classifications preserved.
+
+## 5. Key reconciliation outcomes
+- **OD-001–OD-013:** principles and bounded conditions recorded as owner-approved (authoritative conversation directive); technical details not inferred/closed; no implementation authorized.
+- **ADR 0006:** accepted in principle with bounded exclusions (OD-001) and documented accordingly; **formal ADR status remains Proposed**; unconditional formal status transition pending formal ADR governance/acceptance requirements and accurate bounded representation.
+- **Authorization posture:** no explicit owner authorization records exist; all increments I-00–I-14 remain **not authorized**. OD approvals do not authorize I-06, I-07, I-09, I-12, I-13, I-14, or any other increment.
+- **Dependencies/blockers:** unresolved PD decisions remain visible; technical blockers/validations/authorizations remain required where applicable; principle approval does not resolve technical blockers.
+
+## 6. Documentation export/publication artifacts
+- Documentation export regenerated from a build-scoped copy of the Round 3.2 worktree state (to include created/revised Markdown while preserving directory structure and producing consistent index/manifest/ZIP). Aggregate export artifacts in `dist/cares-documentation-html/` and `dist/CARES_DOCUMENTATION_HTML.zip` were rebuilt as required for index/manifest/ZIP consistency and inclusion of Round 3.2 documents.
+- **Validation (see git/command evidence recorded during execution):** export completed for eligible Markdown files including Round 3.2 deliverables and ADR 0006; index and manifest regenerated; ZIP rebuilt and integrity-checked; internal links/assets reviewed via export process results. Mermaid bundling/visual browser rendering not claimed beyond exporter output.
+- **Note:** `copilot.txt` is not a Markdown (`.md`) file and is not discovered by the Markdown export script; it is included as a repository artifact and reported here.
+
+## 7. Git/publication evidence
+- **Source branch/head (verified):** `governance/postgresql-round3-owner-decision-gate` @ `7c58808157ab512c49abeed3efd0757b4c37824c`.
+- **Target branch:** `governance/postgresql-round3-2-owner-decision-consolidation`.
+- **Commit/publication details:** recorded in final git verification outputs and final response (commit SHA(s), push result, local/remote HEAD comparison via `git rev-parse` and `git ls-remote`). Local and remote HEAD must match after push.
+- **Protected/other branches unchanged:** `planning/postgresql-round3-implementation` remained `ee6e005bc50ffa8f3cd376a83b01369044005c3b`; no modification to main/master/protected branches.
+
+## 8. Limitations
+- Per-OD individually enumerated technical approval parameters for OD-002–OD-013 were not provided in the Round 3.2 conversation beyond the general principle/bounded-condition approval directive; consolidation preserves source-deferred technical details and avoids inference/invention.
+- Recovered logical OD register and ADR 0006 markdown sources have provenance labeled `FOUND BUT PROVENANCE INCOMPLETE` (present in agent checkpoint lineage/unmerged commit and as hash-identical untracked copies; not in tracked trees of evaluated published branch tips). Consulted read-only for reconciliation evidence.
+- Formal ADR status transition to Accepted not performed (formal governance/acceptance requirements not completed/verified as unconditionally satisfied); bounded in-principle acceptance documented.
+- No technical validation, security penetration/isolation testing, performance/workload measurement, or implementation verification performed.
+
+## 9. Explicit confirmations
+- Only documentation/governance artifacts and required export/report artifacts for this round were created or revised on the target branch.
+- No governance decision was fabricated.
+- No implementation increment was authorized.
+- **No database implementation or runtime code was created or authorized by this task.**

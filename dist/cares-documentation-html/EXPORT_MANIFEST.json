@@ -1,12 +1,63 @@
 {
-  "export_timestamp_utc": "2026-11-22T13:29:17Z",
-  "repository_revision": "ee6e005bc50ffa8f3cd376a83b01369044005c3b",
-  "source_markdown_files_discovered": 59,
-  "html_files_successfully_generated": 59,
+  "export_timestamp_utc": "2026-11-22T19:13:45Z",
+  "repository_revision": null,
+  "source_markdown_files_discovered": 64,
+  "html_files_successfully_generated": 64,
   "failed_conversions": [],
   "excluded_files_and_reasons": [],
   "missing_referenced_assets": [],
-  "broken_internal_links": [],
+  "broken_internal_links": [
+    {
+      "source": "docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md",
+      "link": "/home/ubuntu/cares/docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md",
+      "reason": "target outside repository or unresolvable"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md",
+      "link": "/home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip",
+      "reason": "target outside repository or unresolvable"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md",
+      "link": "/home/ubuntu/cares/copilot.txt",
+      "reason": "target outside repository or unresolvable"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md",
+      "link": "/home/ubuntu/cares/copilot.txt",
+      "reason": "target outside repository or unresolvable"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md",
+      "link": "/home/ubuntu/cares/copilot.txt",
+      "reason": "target outside repository or unresolvable"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md",
+      "link": "/home/ubuntu/cares/copilot.txt",
+      "reason": "target outside repository or unresolvable"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md",
+      "link": "/home/ubuntu/cares/copilot.txt",
+      "reason": "target outside repository or unresolvable"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md",
+      "link": "/home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip",
+      "reason": "target outside repository or unresolvable"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md",
+      "link": "/home/ubuntu/cares/copilot.txt",
+      "reason": "target outside repository or unresolvable"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md",
+      "link": "/home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip",
+      "reason": "target outside repository or unresolvable"
+    }
+  ],
   "files_not_converted_faithfully": [],
   "source_to_output_mapping": [
     {
@@ -185,6 +236,31 @@
       "status": "converted"
     },
     {
+      "source": "docs/POSTGRESQL_ROUND3_2_CHANGELOG.md",
+      "output": "docs/POSTGRESQL_ROUND3_2_CHANGELOG.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md",
+      "output": "docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md",
+      "output": "docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md",
+      "output": "docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md",
+      "output": "docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html",
+      "status": "converted"
+    },
+    {
       "source": "docs/POSTGRESQL_ROUND3_CHANGELOG.md",
       "output": "docs/POSTGRESQL_ROUND3_CHANGELOG.md.html",
       "status": "converted"
@@ -306,7 +382,6 @@
     }
   ],
   "copied_assets": [
-    "copilot.txt",
-    "dist/CARES_DOCUMENTATION_HTML.zip"
+    "copilot.txt"
   ]
 }
