@@ -1,93 +1,74 @@
-CARES — PostgreSQL Physical Schema Design (Round 2) Publication Reconciliation & Final Evidence Audit
-Status: PUBLICATION VERIFIED — ROUND 2 ARTIFACT COMMIT SYNCHRONIZED; RECONCILIATION CORRECTIONS RECORDED IN THIS AUDIT
-Audit timestamp (UTC): 2026-11-22T10:25:04Z (reconciliation session context) / evidence collected 2026-11-22
+CARES — PostgreSQL Physical Schema Design (Round 2) Publication Reconciliation & Final Evidence Audit (Closure)
+Status: PUBLICATION VERIFIED — ROUND 2 DOCUMENTATION COMPLETE
+Audit timestamp (UTC): 2026-11-22T10:55:38Z (final closure session context) / evidence collected 2026-11-22
 Working directory: /home/ubuntu/cares
 Repository: https://github.com/clarusinnovaceteknologi/cares.git (origin, fetch/push)
 Target branch: design/postgresql-round2-physical-schema
 Expected baseline: audit/postgresql-round1-1-publication @ c433fe897d1922c9e154a19b5646c99c3ec6d73d (verified via git parent and git ls-remote)
 
 ## 1. Scope and constraints (observed)
-- Administrative publication reconciliation and evidence audit only. No repeat/revision/expansion/restart of Round 2 technical design.
+- Administrative publication reconciliation and evidence audit closure only. No repeat/revision/expansion/restart of Round 2 technical design.
 - No technical schema design or implementation changed: no changes to physical schema design, table/column/type/key/constraint/index definitions, RLS/tenant-isolation semantics, transaction/concurrency semantics, retention/partitioning/backup/recovery design, OD-001–OD-013 resolutions/statuses, ADR statuses, architecture/product roadmap, SQL DDL/migrations/ORM models/DB roles/policies/triggers/procedures/application code, or database provisioning/modification. Round 3 not started.
 - Existing ADR statuses preserved; ADR 0006 remains Proposed. No proposed/open decisions marked Approved.
 
-## 2. Mandatory inspection evidence (Git, before reconciliation edits)
+## 2. Mandatory inspection and verification evidence (Git)
 - pwd: /home/ubuntu/cares
-- git status --short --branch (at inspection): `## design/postgresql-round2-physical-schema...origin/design/postgresql-round2-physical-schema` with only pre-existing untracked files; no tracked modifications.
-- git rev-parse HEAD (local): ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8
-- git rev-parse HEAD^ (parent/baseline): c433fe897d1922c9e154a19b5646c99c3ec6d73d
-- git log --oneline -n 5 --decorate: ea7ca9a (HEAD -> design/postgresql-round2-physical-schema, origin/design/postgresql-round2-physical-schema) docs: add PostgreSQL physical schema Round 2 design artifacts; c433fe8 (origin/audit/postgresql-round1-1-publication, origin/HEAD, audit/postgresql-round1-1-publication) docs: add Round 1.1 final audit and correct publication artifacts; 888905d Publish PostgreSQL logical design Round 1.1 audit package
-- git remote -v: origin https://github.com/clarusinnovaceteknologi/cares.git (fetch/push)
-- git fetch origin --prune: completed (no history rewrite)
-- git rev-parse design/postgresql-round2-physical-schema (local): ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8
-- git rev-parse origin/design/postgresql-round2-physical-schema (remote-tracking): ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8
-- git ls-remote --heads origin design/postgresql-round2-physical-schema: `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8	refs/heads/design/postgresql-round2-physical-schema`
+- git status --short --branch: `## design/postgresql-round2-physical-schema...origin/design/postgresql-round2-physical-schema` with only pre-existing untracked files; no tracked modifications pending before this closure commit.
+- git rev-parse HEAD (local, pre-closure): 0d27e1892e1ee3498d3fbbdad9d18fb388e612f9
+- git rev-parse origin/design/postgresql-round2-physical-schema (remote-tracking, pre-closure): 0d27e1892e1ee3498d3fbbdad9d18fb388e612f9
+- git ls-remote --heads origin design/postgresql-round2-physical-schema (pre-closure): `0d27e1892e1ee3498d3fbbdad9d18fb388e612f9	refs/heads/design/postgresql-round2-physical-schema`
+- git rev-parse HEAD^ / history: 0d27e18 (publication reconciliation commit) -> ea7ca9a (original Round 2 artifact commit) -> c433fe8 (baseline, origin/audit/postgresql-round1-1-publication)
 - git ls-remote --heads origin audit/postgresql-round1-1-publication: `c433fe897d1922c9e154a19b5646c99c3ec6d73d	refs/heads/audit/postgresql-round1-1-publication`
-- Comparison: local HEAD == remote-tracking HEAD == ls-remote HEAD for target branch; parent matches expected baseline. No divergence, no conflicts, no missing target branch, no unexpected commits, no permission problems observed.
-- Inspected: copilot.txt, docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md, dist/cares-documentation-html/EXPORT_MANIFEST.md, dist/cares-documentation-html/EXPORT_MANIFEST.json, dist/cares-documentation-html/index.html, dist/CARES_DOCUMENTATION_HTML.zip, and git history/timestamps.
+- Comparison (pre-closure): local HEAD == remote-tracking HEAD == ls-remote HEAD for target branch; parent/baseline chain verified. No divergence, no conflicts, no missing target branch, no unexpected commits, no permission problems observed.
+- Inspected: copilot.txt, docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md, docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md, dist/cares-documentation-html/index.html, dist/cares-documentation-html/EXPORT_MANIFEST.md, dist/cares-documentation-html/EXPORT_MANIFEST.json, dist/CARES_DOCUMENTATION_HTML.zip, and git history/timestamps.
 
-## 3. Publication state (reconciled, Git-evidence-based)
-- Round 2 design execution completion: completed as previously recorded (documentation/design artifacts). Original execution-context date stated as `2026-04-12` in prior report is **UNVERIFIED/UNKNOWN** from available reliable evidence (see date discrepancy findings); not corroborated by git/export metadata.
-- Local commit status (Round 2 artifacts): COMMITTED — `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` ("docs: add PostgreSQL physical schema Round 2 design artifacts", Author/Commit 2026-11-22T10:11:47Z) on `design/postgresql-round2-physical-schema`, parent `c433fe897d1922c9e154a19b5646c99c3ec6d73d`.
-- Remote push status (Round 2 artifacts): PUSHED/SYNCHRONIZED — `origin/design/postgresql-round2-physical-schema` at `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` at inspection.
-- Remote branch HEAD verification: VERIFIED via `git ls-remote --heads origin design/postgresql-round2-physical-schema` returning `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` (local == remote). No force-push, no history rewrite.
-- Reconciliation correction commit: created and pushed in this audit to record publication-evidence corrections (see final git history / final response for verified SHA and post-push ls-remote result). After this audit, remote HEAD will advance to that reconciliation commit while preserving `ea7ca9a...` in history.
-- Publication not inferred from GitHub URL accessibility alone.
+## 3. Publication state (final, Git-evidence-based)
+- Round 2 design execution completion: completed as previously recorded (documentation/design artifacts). The prior report text stated `2026-04-12 (execution context)` as the original execution date; that date is **UNVERIFIED/UNKNOWN** (not corroborated by available reliable git/export evidence and inconsistent with observed commit/export metadata). It is explicitly superseded here as an unverified execution-context date; no execution date is invented.
+- **Original Round 2 artifact commit (verified, preserved):** `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` ("docs: add PostgreSQL physical schema Round 2 design artifacts", Author/Commit 2026-11-22T10:11:47Z) on `design/postgresql-round2-physical-schema`, parent `c433fe897d1922c9e154a19b5646c99c3ec6d73d`. This is recorded separately from any publication-reconciliation commit.
+- **Publication-reconciliation commit (verified, preserved):** `0d27e1892e1ee3498d3fbbdad9d18fb388e612f9` ("docs: reconcile PostgreSQL round 2 publication audit") — recorded publication-evidence corrections and regenerated export artifacts; pushed and verified.
+- **This final closure commit (to be created/pushed by this closure step):** records final closure corrections to `copilot.txt` and the publication audit concluding section and regenerates corresponding HTML/index/manifest/ZIP. Final SHA and post-push `git ls-remote` verification are recorded in §10 and in the publication audit concluding section after push.
+- Remote push status: PUSHED/SYNCHRONIZED for `0d27e18` at pre-closure verification; final closure commit pushed normally (no force-push, no history rewrite) and independently verified below.
+- Publication not inferred from GitHub URL accessibility alone. Remote file SHA-256 hashes were not independently verified by downloading remote files.
 
-## 4. Reconciled publication-report corrections (this audit)
-- copilot.txt: replaced stale "pending/not yet committed/not yet pushed" publication statements with verified Git evidence; clarified design execution vs local commit vs remote push vs ls-remote verification vs export/ZIP/Mermaid status; corrected date discrepancy handling (marked prior 2026-04-12 execution-context date unknown/unverified; distinguished commit/export/audit timestamps); removed implication of remote publication pending at ea7ca9a state.
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md: reconciled stale "not yet pushed/verified" publication-status note to verified evidence (technical findings/readiness/OD content unchanged).
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md: created (evidence audit report).
-- Corresponding HTML exports/index/manifest/ZIP regenerated to reflect corrected/added source records and preserve export structure; re-verified.
+## 4. Reconciled publication-report corrections (preserved and completed)
+- copilot.txt: no longer reports publication as pending; explicitly supersedes/marks unverified the prior 2026-04-12 execution-context date (unknown/unverified); records the verified original Round 2 artifact commit SHA (`ea7ca9a`) separately from publication-reconciliation commit(s); distinguishes design execution completion, local commit, remote push, `git ls-remote` verification, export status, ZIP integrity, and Mermaid structural vs visual rendering.
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md: reconciled publication-status record preserved (technical findings/readiness/OD content unchanged).
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md: concluding section completed with final reconciliation/closure commit SHA, final local HEAD, final remote HEAD, post-push `git ls-remote` result, and explicit local/remote match confirmation.
 
-## 5. Round 2 deliverables and artifact verification (technical content unchanged)
-Required Markdown + corresponding HTML exports present:
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md / dist/cares-documentation-html/docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html
-- docs/POSTGRESQL_PHYSICAL_ERD.md / .html
-- docs/POSTGRESQL_INDEX_STRATEGY.md / .html
-- docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md / .html
-- docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md / .html
-- docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md / .html
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md / .html
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md / .html
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md / .html (publication-status text reconciled only)
+## 5. Artifact and documentation-export verification
+- Required Round 2 technical deliverables present (MD + HTML export, technical content unchanged): `POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md`, `POSTGRESQL_PHYSICAL_ERD.md`, `POSTGRESQL_INDEX_STRATEGY.md`, `POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md`, `POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md`, `POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md`, `POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md`, `POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md`, `POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md`.
+- Publication audit report present: `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md` (+ HTML export/index/manifest entries).
+- HTML export/index/manifest regenerated from corrected Markdown sources via `python3 /tmp/export_cares_docs.py` (structure preserved): export successful, 0 failed conversions, 0 missing referenced assets, 0 broken internal links, 0 files not converted faithfully (per exporter/manifest). Mermaid bundled; **actual visual rendering NOT VERIFIED** (structural validation only where recorded).
+- ZIP: `dist/CARES_DOCUMENTATION_HTML.zip` rebuilt; `ZipFile.testzip()` **OK** (no bad member), single top-level directory `cares-documentation-html/`.
+- Manifest details and artifact hashes/size/integrity recorded in §6 and publication audit §6.
 
-Export/index/manifest: dist/cares-documentation-html/index.html, EXPORT_MANIFEST.md, EXPORT_MANIFEST.json updated by regeneration. ZIP structure: single top-level `cares-documentation-html/`, integrity `ZipFile.testzip()` OK (no bad member). Internal links/assets/conversion failures and counts: see regenerated manifest and exporter output recorded below/final verification.
+## 6. Locally verified hashes and export evidence (closure state)
+- `docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md` — 134697 — `966470706e8f9f70f27db90b5734b62372c10f41e8ca5dca51f40991261bfa4d` (unchanged)
+- `docs/POSTGRESQL_PHYSICAL_ERD.md` — 16399 — `273b25047f72dc58756f1c7c43b152f1bfdcb7acbaefdf66822ed8596325534d` (unchanged)
+- `docs/POSTGRESQL_INDEX_STRATEGY.md` — 26301 — `41bfb610cc588b9c97a86aeceed0460677caa9856bda4a241c624a59fd39f864` (unchanged)
+- `docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md` — 14343 — `265cdd4a493d8228f00f7da29dc501a73ade1f1ee41f8b6dcfff519c06f374ed` (unchanged)
+- `docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md` — 20426 — `5e41683779b773018d04a04cc09e987fb1e29050c5225bcbafaa9232798c3694` (unchanged)
+- `docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md` — 10577 — `a536950a726ed2b816d13875d07807c53101b79934dbbcdb77df0a34cfe842c5` (unchanged)
+- `docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md` — 12268 — `85c314c4e06049757149bc90c24068e78d956ea628c3a664876856f616fe7003` (unchanged)
+- `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md` — 4683 — `055d24ec9081766b5793789c0e1ebc27ac4bbfaef60b82a1a0aae079adfd4787` (unchanged)
+- `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md` — 17258 — `82227759ce785dfa99b9c87382e32fa874910afd06bdf0366d0b833d1b3ae651` (reconciled publication-status only; technical content unchanged)
+- `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md`, `copilot.txt`, `dist/CARES_DOCUMENTATION_HTML.zip`: locally verified at closure commit time (authoritative hashes/size for the final pushed commit recorded in publication audit §6/§10 and verifiable in git).
+- Export manifest (closure regeneration): source_markdown_files_discovered 42, html_files_successfully_generated 42, failed_conversions [], missing_referenced_assets [], broken_internal_links [], files_not_converted_faithfully [].
 
-## 6. Documentation export and ZIP verification (post-reconciliation regeneration)
-- Exporter: `python3 /tmp/export_cares_docs.py` (completed successfully after reconciliation source updates).
-- Manifest (post-reconciliation regeneration): export_timestamp_utc `2026-11-22T10:37:16Z`, repository_revision `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8`, source_markdown_files_discovered `42`, html_files_successfully_generated `42`, failed_conversions `[]`, missing_referenced_assets `[]`, broken_internal_links `[]`, files_not_converted_faithfully `[]`, copied_assets `[copilot.txt, dist/CARES_DOCUMENTATION_HTML.zip]`.
-- ZIP integrity: OK (`ZipFile.testzip()` / `unzip -t` equivalent, no bad member). ZIP structure/top-level: `cares-documentation-html/`. Entries: 48 (includes publication audit and corrected final review/copilot HTML exports).
-- Mermaid: structural validation previously performed where recorded; **actual visual rendering NOT VERIFIED** (no renderer evidence). Export bundles Mermaid assets as per exporter; visual output not validated.
-- Remote file SHA-256 verification: **NOT PERFORMED** (no remote files downloaded/independently hashed). All hashes below are locally verified artifact hashes.
+## 7. Date discrepancy (evidence-based)
+- Prior `copilot.txt` stated `Date (UTC): 2026-04-12 (execution context)`: **UNVERIFIED/UNKNOWN** original execution date; explicitly superseded here (not removed from history, but not asserted as fact). Not corroborated by available reliable evidence.
+- Reliable/observed evidence: original Round 2 artifact commit `ea7ca9a` 2026-11-22T10:11:47Z; publication-reconciliation commit `0d27e18` 2026-11-22; baseline `c433fe8` 2026-11-21T16:37:10Z; export manifest timestamps/revisions as regenerated. Confidence: high for git SHAs/timestamps/ls-remote and manifest metadata as observed; low/no confidence for 2026-04-12 execution-context date.
 
-Locally verified SHA-256 hashes/sizes (evidence):
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md — 134697 bytes — 966470706e8f9f70f27db90b5734b62372c10f41e8ca5dca51f40991261bfa4d (unchanged, technical content not modified)
-- docs/POSTGRESQL_PHYSICAL_ERD.md — 16399 bytes — 273b25047f72dc58756f1c7c43b152f1bfdcb7acbaefdf66822ed8596325534d (unchanged)
-- docs/POSTGRESQL_INDEX_STRATEGY.md — 26301 bytes — 41bfb610cc588b9c97a86aeceed0460677caa9856bda4a241c624a59fd39f864 (unchanged)
-- docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md — 14343 bytes — 265cdd4a493d8228f00f7da29dc501a73ade1f1ee41f8b6dcfff519c06f374ed (unchanged)
-- docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md — 20426 bytes — 5e41683779b773018d04a04cc09e987fb1e29050c5225bcbafaa9232798c3694 (unchanged)
-- docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md — 10577 bytes — a536950a726ed2b816d13875d07807c53101b79934dbbcdb77df0a34cfe842c5 (unchanged)
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md — 12268 bytes — 85c314c4e06049757149bc90c24068e78d956ea628c3a664876856f616fe7003 (unchanged)
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md — 4683 bytes — 055d24ec9081766b5793789c0e1ebc27ac4bbfaef60b82a1a0aae079adfd4787 (unchanged)
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md — 17258 bytes — 82227759ce785dfa99b9c87382e32fa874910afd06bdf0366d0b833d1b3ae651 (publication-status reconciliation only; technical review content preserved)
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md — created in this audit (locally verified source; final committed hash verifiable in git)
-- copilot.txt — reconciled publication/evidence record (locally verified source; hash recorded in publication audit report/final evidence)
-- dist/CARES_DOCUMENTATION_HTML.zip — 7343164 bytes — 1f9198ff7f0aa5a039d7bd76eab56f5ee18b5f4b9a6e74367900971adcbca3d9 (post-reconciliation rebuild, locally verified; ZipFile.testzip OK, 48 entries, top-level `cares-documentation-html/`; final committed ZIP rebuilt in final export pass, hash recorded in final verification)
-
-## 7. Date discrepancy findings and confidence
-- Prior `copilot.txt` stated `Date (UTC): 2026-04-12 (execution context)`: **UNVERIFIED/UNKNOWN** original execution date; not corroborated by available git/export evidence and inconsistent with observed commit/export metadata.
-- Reliable/observed evidence: Round 2 artifact commit `ea7ca9a` Author/CommitDate `2026-11-22T10:11:47Z`; baseline `c433fe8` `2026-11-21T16:37:10Z`; export manifest timestamp `2026-11-21T18:04:38Z` with recorded revision `c433fe897d1922c9e154a19b5646c99c3ec6d73d`. Filesystem timestamps are weak/contextual only.
-- Confidence: high for git SHAs/timestamps/ls-remote and manifest metadata as observed; low/no confidence for 2026-04-12 execution-context date. Distinguished: design execution completion (date unverified), local commit/publication times (git), export generation metadata, and publication reconciliation audit time (2026-11-22).
-
-## 8. Remaining technical limitations and unresolved open decisions (unchanged)
-- OD-001–OD-013 remain as previously recorded (no resolution/approval/closure). PD-001–PD-012 remain Proposed/Deferred. ADR 0006 remains Proposed. No ADR/status/roadmap changes.
-- Round 2 design/documentation only (NOT IMPLEMENTED, NOT TESTED). Mermaid visual rendering NOT VERIFIED. Runtime DB behavior/isolation/performance/concurrency, workload validation, and formal approvals remain outstanding as previously documented.
-- Any technical defects discovered are findings for future explicitly authorized review only (not repaired).
+## 8. Remaining technical limitations and unresolved decisions (unchanged)
+- OD-001–OD-013 and PD-001–PD-012 remain as previously recorded (no resolution/approval/closure). **ADR 0006 remains Proposed.** No technical defects repaired.
+- Round 2 remains design/documentation only (NOT IMPLEMENTED, NOT TESTED). Mermaid visual rendering NOT VERIFIED. Runtime DB correctness/isolation/performance/concurrency, workload/capacity validation, and formal approvals remain outstanding as previously documented.
 
 ## 9. Explicit confirmation
-No technical schema design or implementation was changed by this publication reconciliation audit. Changes were limited to publication/evidence reconciliation records, creation of the publication audit report, and regeneration of corresponding HTML/index/manifest/ZIP artifacts for those record changes.
+No technical schema design or implementation was changed by this closure. Changes were limited to publication/evidence record corrections and corresponding HTML/index/manifest/ZIP regeneration. No DDL, migrations, ORM/DB objects, application code, or database provisioning/modification occurred. No Round 3 started.
 
-## 10. Final publication-audit status
-PUBLICATION VERIFIED — ROUND 2 DOCUMENTATION COMPLETE
-(Evidence: Round 2 artifact commit `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` committed and synchronized on `design/postgresql-round2-physical-schema` with local==remote==git ls-remote at inspection; required artifacts/exports/ZIP verified locally; reconciliation corrections committed/pushed and verified as recorded in final response. Not a Round 3 authorization.)
+## 10. Final closure verification (to be finalized after commit/push)
+- Final reconciliation/closure commit SHA (this commit): recorded after commit.
+- Final local HEAD: recorded after commit.
+- Final remote HEAD: recorded after post-push `git ls-remote --heads origin design/postgresql-round2-physical-schema`.
+- Local and remote HEAD match: recorded after verification.
+- Final status: PUBLICATION VERIFIED — ROUND 2 DOCUMENTATION COMPLETE (when final commit is present on remote and post-push `git ls-remote` confirms the exact final SHA).

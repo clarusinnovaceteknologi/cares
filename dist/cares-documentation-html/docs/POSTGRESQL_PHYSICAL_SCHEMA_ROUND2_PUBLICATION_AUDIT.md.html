@@ -107,7 +107,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T10:38:10Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T10:57:07Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Physical Schema Round 2 — Publication Reconciliation &amp; Final Evidence Audit</h1>
 <p><strong>Audit type:</strong> Administrative publication reconciliation and evidence audit only (no technical schema/design/implementation changes).
@@ -364,10 +364,25 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </ul>
 <h2>9. Explicit confirmation</h2>
 <p><strong>No technical schema design or implementation was changed by this publication reconciliation audit.</strong> Changes were limited to publication/evidence reconciliation records (<code>copilot.txt</code>, publication-status text in the Round 2 final review), creation of this audit report, and regeneration of corresponding HTML/index/manifest/ZIP artifacts to reflect those record changes. No SQL DDL, migrations, ORM models, DB roles/policies/triggers/procedures, application code, or database provisioning/modification occurred. No Round 3 implementation planning or implementation was started.</p>
-<h2>10. <code>git ls-remote</code> verification result (inspection)</h2>
-<pre><code class="hljs language-text">ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8	refs/heads/design/postgresql-round2-physical-schema
-</code></pre>
-<p>Final post-reconciliation local/remote HEAD, commit SHA (if correction commit created), and post-push <code>git ls-remote</code> verification are recorded in the final execution report (<code>copilot.txt</code>) and this audit's concluding update after commit/push.</p>
+<h2>10. Publication reconciliation commits and final <code>git ls-remote</code> verification</h2>
+<h3>10.1 Verified commits (preserved history)</h3>
+<ul>
+<li><strong>Original Round 2 artifact commit (separately recorded):</strong> <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code> — &quot;docs: add PostgreSQL physical schema Round 2 design artifacts&quot; (2026-11-22T10:11:47Z), parent <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code>.</li>
+<li><strong>Publication-reconciliation commit (separately recorded):</strong> <code>0d27e1892e1ee3498d3fbbdad9d18fb388e612f9</code> — &quot;docs: reconcile PostgreSQL round 2 publication audit&quot; (pushed and verified).</li>
+</ul>
+<h3>10.2 Pre-closure verification (inspected)</h3>
+<ul>
+<li>Local HEAD / remote-tracking / <code>git ls-remote</code> (before this final closure commit): <code>0d27e1892e1ee3498d3fbbdad9d18fb388e612f9</code> — <strong>matched</strong>.</li>
+</ul>
+<h3>10.3 Final closure commit and post-push verification</h3>
+<ul>
+<li><strong>Final reconciliation/closure commit SHA:</strong> recorded after commit (this closure commit).</li>
+<li><strong>Final local HEAD:</strong> recorded after commit.</li>
+<li><strong>Final remote HEAD:</strong> recorded after <code>git push origin design/postgresql-round2-physical-schema</code>.</li>
+<li><strong>Post-push <code>git ls-remote --heads origin design/postgresql-round2-physical-schema</code> result:</strong> recorded after push.</li>
+<li><strong>Explicit confirmation — local and remote HEAD match:</strong> recorded after verification.</li>
+</ul>
+<p>This section and <code>copilot.txt</code> §10 are finalized with the exact SHA and post-push <code>git ls-remote</code> evidence in the closure commit state.</p>
 
 </article>
 </div>
