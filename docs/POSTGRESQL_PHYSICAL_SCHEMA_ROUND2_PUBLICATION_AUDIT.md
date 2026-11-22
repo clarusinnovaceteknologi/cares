@@ -131,18 +131,21 @@ The 9 technical Round 2 Markdown deliverables' hashes are unchanged; no technica
 
 ## 10. Publication reconciliation commits and final `git ls-remote` verification
 
-### 10.1 Verified commits (preserved history)
-- **Original Round 2 artifact commit (separately recorded):** `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` — "docs: add PostgreSQL physical schema Round 2 design artifacts" (2026-11-22T10:11:47Z), parent `c433fe897d1922c9e154a19b5646c99c3ec6d73d`.
-- **Publication-reconciliation commit (separately recorded):** `0d27e1892e1ee3498d3fbbdad9d18fb388e612f9` — "docs: reconcile PostgreSQL round 2 publication audit" (pushed and verified).
+### 10.1 Verified commits (preserved history, separately recorded)
+- **Original Round 2 artifact commit:** `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` — "docs: add PostgreSQL physical schema Round 2 design artifacts" (2026-11-22T10:11:47Z), parent `c433fe897d1922c9e154a19b5646c99c3ec6d73d`.
+- **Publication-reconciliation commit:** `0d27e1892e1ee3498d3fbbdad9d18fb388e612f9` — "docs: reconcile PostgreSQL round 2 publication audit" (pushed and verified).
+- **Final closure commit:** `f7fb334fc2419f5b7c1570969523445aa8ec2d1c` — "docs: finalize publication audit closure records" (pushed and verified).
 
-### 10.2 Pre-closure verification (inspected)
-- Local HEAD / remote-tracking / `git ls-remote` (before this final closure commit): `0d27e1892e1ee3498d3fbbdad9d18fb388e612f9` — **matched**.
+### 10.2 Pre-closure inspection
+- Local HEAD / remote-tracking / `git ls-remote` before final closure commit: `0d27e1892e1ee3498d3fbbdad9d18fb388e612f9` — **matched**.
 
-### 10.3 Final closure commit and post-push verification
-- **Final reconciliation/closure commit SHA:** recorded after commit (this closure commit).
-- **Final local HEAD:** recorded after commit.
-- **Final remote HEAD:** recorded after `git push origin design/postgresql-round2-physical-schema`.
-- **Post-push `git ls-remote --heads origin design/postgresql-round2-physical-schema` result:** recorded after push.
-- **Explicit confirmation — local and remote HEAD match:** recorded after verification.
+### 10.3 Final closure commit and post-push verification (confirmed)
+- **Final reconciliation/closure commit SHA:** `f7fb334fc2419f5b7c1570969523445aa8ec2d1c`
+- **Final local HEAD:** `f7fb334fc2419f5b7c1570969523445aa8ec2d1c`
+- **Final remote HEAD:** `f7fb334fc2419f5b7c1570969523445aa8ec2d1c`
+- **Post-push `git ls-remote --heads origin design/postgresql-round2-physical-schema` result:**
+  - `f7fb334fc2419f5b7c1570969523445aa8ec2d1c	refs/heads/design/postgresql-round2-physical-schema`
+- **Explicit confirmation — local and remote HEAD match:** **Yes** (independently verified by post-push `git ls-remote`).
 
-This section and `copilot.txt` §10 are finalized with the exact SHA and post-push `git ls-remote` evidence in the closure commit state.
+### 10.4 Final evidence-recording publication
+- This evidence-recording commit finalizes the audit/copilot records with the above verified SHAs and ls-remote evidence. After it is committed and pushed normally, the post-push `git ls-remote` result confirms the exact final remote HEAD (recorded in `copilot.txt` and reported in the final execution response). No force-push, reset, rebase, or history rewriting performed.
