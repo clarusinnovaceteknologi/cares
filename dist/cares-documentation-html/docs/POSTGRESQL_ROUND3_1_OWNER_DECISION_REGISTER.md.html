@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3.1 — Owner Decision Register</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T13:29:17Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3.1 — Owner Decision Register</h1>
+<p><strong>Status:</strong> Proposed governance register only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION, NOT AN OWNER DECISION RECORD</strong>. Consolidates OD-001–OD-013 and PD-001–PD-012 from committed repository sources for owner review. Existing identifiers and recorded statuses are preserved; missing/unavailable information is explicitly marked.</p>
+<p><strong>Verified source baseline:</strong> <code>planning/postgresql-round3-implementation</code> @ <code>ee6e005bc50ffa8f3cd376a83b01369044005c3b</code>. <strong>Source note:</strong> committed logical register <code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> is not present at this baseline; OD entries are traced from committed carry-forward/review/planning sources (primarily <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html">POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>). Where original-register detail is unavailable, marked <strong>Requires owner clarification / source unavailable at baseline</strong>. <strong>ADR 0006 remains Proposed</strong> (no promotion).</p>
+<h2>1. OD-001 through OD-013 (logical/carried-forward open decisions)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Current status (preserved)</th>
+<th>Source document(s)</th>
+<th>Unresolved question</th>
+<th>Affected components/increments</th>
+<th>Dependencies</th>
+<th>Implementation impact / blocking scope</th>
+<th>Approval/authority type (source-backed where stated)</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OD-001</td>
+<td>Proposed / pending ADR acceptance (ADR 0006 remains Proposed)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; corroborated in docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md, docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md, docs/POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</td>
+<td>What licensing accounting/enforcement semantics and schema-level interpretations are accepted for ADR 0006 context (concurrency/quota/timeout ambiguity) and when is ADR 0006 formally accepted?</td>
+<td>Licensing counters/usage/reservation structures, reconciliation semantics, transaction flows (Ops 1/9), I-06 and I-13</td>
+<td>OD-003, OD-004, OD-008; ADR 0006 Proposed</td>
+<td>I-06 final semantics (blocked/conditional structural planning only); I-13; transaction/runtime correctness for licensing</td>
+<td>Architecture/security/ADR governance; commercial as applicable (per readiness matrix)</td>
+<td>Formal acceptance/clarification required; do not finalize accounting/enforcement without approval.</td>
+</tr>
+<tr>
+<td>OD-002</td>
+<td>Proposed (open approval)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 plan/readiness/final review</td>
+<td>Is the authoritative binding ownership/uniqueness model (and optional dependent projection posture) approved as final for implementation?</td>
+<td><code>core.asset_data_source</code>, optional <code>core.source_device_key</code>, alias/claim/binding workflows, uniqueness/index/transaction checks (I-04, Ops 3/4/5/8)</td>
+<td>OD-006, OD-007, PD-004</td>
+<td>I-04 and downstream identity structures/operations; binding authority sign-off</td>
+<td>Architecture/data-model/security</td>
+<td>Preserve recommended model; do not create competing identity authority or mutable stable binding key.</td>
+</tr>
+<tr>
+<td>OD-003</td>
+<td>Proposed (open approval)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan/final review</td>
+<td>What are the approved reservation timeout/release and committed/reserved counter semantics?</td>
+<td><code>core.asset_license_reservation</code>, <code>core.tenant_license_usage_state</code>, license events, Ops 1/9, I-06</td>
+<td>OD-001, OD-004, OD-008</td>
+<td>I-06 final semantics and licensing transaction behavior (I-13)</td>
+<td>Product/commercial/security/operations</td>
+<td>Blocks final accounting/enforcement details.</td>
+</tr>
+<tr>
+<td>OD-004</td>
+<td>Proposed (open approval)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan/final review</td>
+<td>What is the authoritative tenant-level counter scope and how are recomputation/reconciliation formulas defined and governed?</td>
+<td>Usage-state structure, reconciliation procedures, entitlement coupling, I-06/Ops 1/9</td>
+<td>OD-001, OD-003, OD-008</td>
+<td>I-06 final semantics and reconciliation behavior</td>
+<td>Commercial/product/finance as applicable</td>
+<td>Blocks final counter formulas and reconciliation implementation rules.</td>
+</tr>
+<tr>
+<td>OD-005</td>
+<td>Proposed (open approval)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What authorization/evidence requirements and licensing effects govern merge/split operations?</td>
+<td><code>asset_merge_operation</code>, <code>asset_split_operation</code>, typed <code>asset_lineage_link</code>, tombstones, lifecycle/license transactions (Ops 6/7), I-05/I-06</td>
+<td>OD-007, OD-008, OD-001/003/004 as applicable</td>
+<td>I-05 operational semantics; licensing/ledger impacts tied to I-06/I-13</td>
+<td>Security/governance/product/compliance</td>
+<td>Blocks final operational policy and some edge-case enforcement details; typed lineage invariant must remain.</td>
+</tr>
+<tr>
+<td>OD-006</td>
+<td>Proposed (open approval)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What approved fingerprint protection, custody, rotation-overlap, and reassignment safeguards apply?</td>
+<td>Fingerprint storage representation, alias uniqueness predicates, rotation procedures, binding/claim flows (I-04, Ops 3/4)</td>
+<td>OD-002, OD-007, PD-011</td>
+<td>I-04 and identity-binding security posture</td>
+<td>Security/cryptography/platform operations</td>
+<td>Blocks final security/overlap constraints and storage protections.</td>
+</tr>
+<tr>
+<td>OD-007</td>
+<td>Proposed (open approval)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What lifecycle rules govern reinstall/re-enrollment/controlled identity reset and rebinding?</td>
+<td>Resolution/claim/binding workflows, alias rotation/rebinding rules, lifecycle/tombstone handling (I-04/I-05)</td>
+<td>OD-002, OD-005, OD-006</td>
+<td>I-04/I-05 workflow and lifecycle semantics</td>
+<td>Architecture/product/operations</td>
+<td>Blocks specific workflow-state finalization.</td>
+</tr>
+<tr>
+<td>OD-008</td>
+<td>Proposed (open approval)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan/final review</td>
+<td>What is the formally approved idempotency contract (scope, canonical hash, states/transitions, replay/conflict/timeout/unknown-commit handling, retention, coupling mode)?</td>
+<td><code>core.identity_operation_idempotency_ledger</code> schema/indexes/state semantics and transaction coupling (Ops 1–9), distinct from event receipt dedup</td>
+<td>OD-001/003/004/005/009 interactions as applicable</td>
+<td>I-06 structural/semantic correctness and all ledger-backed operations (I-13)</td>
+<td>Technical architecture/data consistency</td>
+<td>Physical design documents proposed contract shape but does not constitute approval; must remain distinct from event dedup.</td>
+</tr>
+<tr>
+<td>OD-009</td>
+<td>Proposed (open approval)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What approved lease/fencing/claim/retry/unknown-delivery semantics apply to outbox processing?</td>
+<td><code>processing.outbox_message</code>/<code>outbox_attempt</code>, claim indexes/state transitions, recovery (I-08, Ops 11/12)</td>
+<td>OD-008, PD-007</td>
+<td>I-08 and outbox runtime behavior (I-13); reliability/duplicate-processing safety (at-least-once)</td>
+<td>Engineering/reliability/operations</td>
+<td>No exactly-once external delivery may be claimed.</td>
+</tr>
+<tr>
+<td>OD-010</td>
+<td>Deferred / pending governance approval</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan/final review</td>
+<td>What approved retention classes, legal-hold handling, deletion/archive rules apply to audit/evidence/events/telemetry?</td>
+<td>Retention matrix, partition/drop eligibility, purge/archival/offboarding, evidence lifecycle, audit controls (I-09/I-14)</td>
+<td>OD-011, OD-012, PD-010</td>
+<td>I-09 governance, I-14 automation, lifecycle operations and compliance posture</td>
+<td>Legal/compliance/privacy/security</td>
+<td>Deferred; blocks final lifecycle automation and retention durations.</td>
+</tr>
+<tr>
+<td>OD-011</td>
+<td>Deferred / pending policy and privacy approval</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What approved consent/classification/redaction/budget/provider-policy persistence and enforcement details apply?</td>
+<td>AI config/consent/budget/accounting/audit fields and enforcement hooks (I-09)</td>
+<td>OD-010</td>
+<td>I-09 AI governance structures and future enforcement behavior</td>
+<td>Product/privacy/legal/security/commercial</td>
+<td>Deferred; blocks final governance enforcement specifics. MELIRA constraints remain non-negotiable.</td>
+</tr>
+<tr>
+<td>OD-012</td>
+<td>Deferred / validation required</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What measured workload/query/index/partition thresholds and validation evidence justify physical optimization/partition adoption?</td>
+<td>Partition adoption, index refinement, autovacuum/maintenance/capacity assumptions (I-11/I-14)</td>
+<td>OD-010, PD-001/008/009/010</td>
+<td>I-11 hardening and I-14 partitioning/maintenance; performance/operability sign-off</td>
+<td>DBA/operations/engineering</td>
+<td>Deferred pending evidence; no performance claims.</td>
+</tr>
+<tr>
+<td>OD-013</td>
+<td>Proposed (open/partial)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What approved per-connector namespace and fallback dedup predicates apply when upstream IDs are missing/unreliable?</td>
+<td><code>ingest.event_receipt</code> namespace/fingerprint columns and uniqueness predicates, dedup behavior (I-07, Op 10)</td>
+<td>PD-008</td>
+<td>I-07 ingest correctness and dedup integrity; distinct from identity/licensing ledger</td>
+<td>Architecture/integration/operations/security</td>
+<td>Blocks final per-connector dedup predicates/fallback specification.</td>
+</tr>
+</tbody>
+</table>
+<h2>2. PD-001 through PD-012 (Round 2 physical-design decisions)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Current status (preserved)</th>
+<th>Source document(s)</th>
+<th>Unresolved question</th>
+<th>Affected components/increments</th>
+<th>Dependencies</th>
+<th>Implementation impact / blocking scope</th>
+<th>Approval/validation authority (source-backed where stated)</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PD-001</td>
+<td>Proposed</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>Which UUID generation/version/ordering strategy is approved for PKs/high-insert tables given tooling and workload?</td>
+<td>Index locality, bloat/write amplification, PK/id strategy across increments (esp. I-01, I-06, I-07, I-08)</td>
+<td>OD-012</td>
+<td>Cross-cutting physical convention; conditionally ready increments depend on convention approval</td>
+<td>Engineering + DBA/review; workload validation (OD-012)</td>
+<td>Options: UUIDv4, UUIDv7/time-ordered, app vs DB generation. Proposed direction recorded but not approved.</td>
+</tr>
+<tr>
+<td>PD-002</td>
+<td>Proposed</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>Which state/type representation pattern is approved for evolving states and governed catalogs?</td>
+<td>Migration flexibility, integrity clarity, convention consistency (I-01 and domain tables)</td>
+<td>I-01 conventions</td>
+<td>Cross-cutting schema convention</td>
+<td>Engineering/architecture review</td>
+<td>Proposed constrained text+CHECK for evolving states in initial design; not approved.</td>
+</tr>
+<tr>
+<td>PD-003</td>
+<td>Proposed</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What tenant-consistent FK/composite-key enforcement pattern is approved for critical tenant-owned relationships?</td>
+<td>Cross-tenant reference prevention, schema complexity, FK/index cost (I-03+ and I-11)</td>
+<td>Tenant isolation invariants, I-11</td>
+<td>Critical integrity/isolation control; conditionally ready with required review</td>
+<td>Security/DB design review; implementation validation</td>
+<td>Options include composite uniques/FKs vs alternatives; exceptions require compensating controls.</td>
+</tr>
+<tr>
+<td>PD-004</td>
+<td>Proposed (bounded)</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>Should <code>core.source_device_key</code> be materialized as a strict 1:1 non-authoritative projection or omitted in favor of binding-owned columns?</td>
+<td>Schema simplicity vs explicit projection; divergence risk if misimplemented (I-04)</td>
+<td>OD-002</td>
+<td>I-04 identity/binding structures</td>
+<td>Architecture/security review aligned with OD-002</td>
+<td>Must remain non-authoritative and consistent with authoritative binding if materialized.</td>
+</tr>
+<tr>
+<td>PD-005</td>
+<td>Proposed</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/final review</td>
+<td>What hardened, non-GUC, non-client-authoritative verified transaction-bound context mechanism is approved for DB enforcement?</td>
+<td>RLS correctness, pooling safety, helper/internal implementation (I-12)</td>
+<td>PD-006, tenant isolation invariants</td>
+<td><strong>Hard blocker for I-12 and tenant-runtime safety</strong></td>
+<td>Security/DBA/architecture approval and penetration/negative testing</td>
+<td>Must never use client-supplied tenant IDs or user-settable PostgreSQL GUC authorization.</td>
+</tr>
+<tr>
+<td>PD-006</td>
+<td>Deferred</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/final review</td>
+<td>What RLS enable/FORCE/ownership/role matrix is approved and compatible with controlled bypass/operations?</td>
+<td>Bypass risk, administrative operability, policy posture (I-12)</td>
+<td>PD-005</td>
+<td><strong>Hard blocker component for I-12 finalization/validation</strong></td>
+<td>Security/DBA review</td>
+<td>Exact applicability finalized in implementation review; deferred.</td>
+</tr>
+<tr>
+<td>PD-007</td>
+<td>Proposed</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What claim/lease/fencing mechanism is approved and validated for outbox processing?</td>
+<td>Throughput, contention, duplicate-processing safety (at-least-once) (I-08, Ops 11/12)</td>
+<td>OD-009, OD-012</td>
+<td>I-08 and outbox runtime behavior; validation required</td>
+<td>Engineering validation (OD-009/OD-012)</td>
+<td>DB-row claim/lease token/CAS and <code>SKIP LOCKED</code> patterns proposed but must be validated.</td>
+</tr>
+<tr>
+<td>PD-008</td>
+<td>Proposed</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What explicit uniqueness predicates (global/partial/conditional/generated keys) are approved per namespace/id basis and fallback?</td>
+<td>Correctness of dedup, index count/write cost (I-07, Op 10)</td>
+<td>OD-013</td>
+<td>I-07 ingest dedup correctness</td>
+<td>Engineering/architecture approval with OD-013</td>
+<td>Depends on OD-013 connector namespace/fallback semantics.</td>
+</tr>
+<tr>
+<td>PD-009</td>
+<td>Proposed</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What selective JSONB/expression/GIN indexing policy is approved based on proven query paths and sensitivity review?</td>
+<td>Query flexibility vs write/storage/maintenance cost and exposure (I-10/I-11)</td>
+<td>OD-012</td>
+<td>I-11 hardening and performance posture</td>
+<td>Engineering/DBA validation</td>
+<td>No default GIN indexes proposed; add only with evidence.</td>
+</tr>
+<tr>
+<td>PD-010</td>
+<td>Deferred</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>Under what measured thresholds and with which partition-key-inclusive uniqueness design should partitioning be adopted?</td>
+<td>Operability, migration complexity, query/index behavior (I-14)</td>
+<td>OD-010, OD-012</td>
+<td>I-14 deferred/blocked by evidence and governance</td>
+<td>DBA/operations with OD-010/OD-012</td>
+<td>Defer until thresholds/evidence and legal-hold compatibility are addressed.</td>
+</tr>
+<tr>
+<td>PD-011</td>
+<td>Proposed</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>What algorithm metadata and hash/derived-value representation (<code>text</code>/<code>bytea</code>/encoding) is approved for interoperability and verification?</td>
+<td>Verification tooling, storage/index behavior, evidence/fingerprint handling (I-04, I-09)</td>
+<td>OD-006, OD-010</td>
+<td>I-04/I-09 structural/governance details</td>
+<td>Security/engineering review (OD-006/OD-010)</td>
+<td>Must support integrity and controlled handling assumptions.</td>
+</tr>
+<tr>
+<td>PD-012</td>
+<td>Proposed</td>
+<td>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; Round 3 readiness matrix/plan</td>
+<td>How should global-vs-tenant scope be physically modeled to preserve isolation and controlled admin access?</td>
+<td>Isolation clarity, administrative flexibility, leakage risk (I-02, I-10)</td>
+<td>Tenant isolation invariants, OD-010 (admin/audit implications)</td>
+<td>I-02/I-10 scope modeling and access governance</td>
+<td>Security/architecture review</td>
+<td>Prefer explicit scope modeling/separate global catalogs where truly global; guarded access required.</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Cross-cutting governance notes</h2>
+<ul>
+<li><strong>No owner decisions recorded:</strong> all items above remain in their preserved statuses; no decision is made, approved, deferred-by-owner, or closed by this register.</li>
+<li><strong>No implementation authorized:</strong> identification of a conditionally ready increment does not authorize implementation. I-00–I-14 classifications remain as documented in <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a> and <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>.</li>
+<li><strong>Contradiction/source gap:</strong> absence of committed <code>POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> and committed ADR 0006 markdown source at baseline is reported for owner review; this package does not infer or replace missing source content.</li>
+<li><strong>Invariants preserved:</strong> tenant isolation (trusted verified transaction-bound context only; no client-supplied tenant IDs; no user-settable PostgreSQL GUC authorization), authoritative binding/immutable <code>source_device_key_id</code>, ledger/event-dedup separation, typed lineage, no exactly-once external delivery, licensing/identity invariants, MELIRA external SaaS constraints.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

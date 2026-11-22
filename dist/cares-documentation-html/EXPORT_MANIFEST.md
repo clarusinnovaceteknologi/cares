@@ -1,9 +1,9 @@
 # CARES Documentation Export Manifest
 
-- **Export timestamp (UTC):** 2026-11-22T12:23:32Z
-- **Repository revision/commit hash:** 2ded9f3425fc44cf2568e8f81636d39f588dcb3c
-- **Total discovered Markdown files:** 51
-- **Total successfully converted HTML files:** 51
+- **Export timestamp (UTC):** 2026-11-22T13:29:17Z
+- **Repository revision/commit hash:** ee6e005bc50ffa8f3cd376a83b01369044005c3b
+- **Total discovered Markdown files:** 59
+- **Total successfully converted HTML files:** 59
 - **Failed conversions:** 0
 - **Copied assets:** 2
 - **Missing referenced assets:** 0
@@ -40,6 +40,14 @@
 | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md.html | converted |
 | docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md | docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html | converted |
 | docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md | docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html | converted |
+| docs/POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md | docs/POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md.html | converted |
+| docs/POSTGRESQL_ROUND3_1_FINAL_REVIEW.md | docs/POSTGRESQL_ROUND3_1_FINAL_REVIEW.md.html | converted |
+| docs/POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_MATRIX.md | docs/POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html | converted |
+| docs/POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md | docs/POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md.html | converted |
+| docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md | docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md.html | converted |
+| docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_GATE.md | docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_GATE.md.html | converted |
+| docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_RECORD_TEMPLATE.md | docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_RECORD_TEMPLATE.md.html | converted |
+| docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md | docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md.html | converted |
 | docs/POSTGRESQL_ROUND3_CHANGELOG.md | docs/POSTGRESQL_ROUND3_CHANGELOG.md.html | converted |
 | docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md | docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html | converted |
 | docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md | docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md.html | converted |

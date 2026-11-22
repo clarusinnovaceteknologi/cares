@@ -1,49 +1,78 @@
-CARES — PostgreSQL Physical Schema Round 3 Implementation Planning (Publication Audit Verified)
-Status: ROUND 3 IMPLEMENTATION PLANNING PUBLISHED — BLOCKED BY OWNER DECISIONS (publication/audit verified)
-Execution timestamp (UTC context): 2026-11-22 (execution context recorded at run time; export manifest timestamps are authoritative for generated artifacts)
-Working directory: /home/ubuntu/cares
-Repository: https://github.com/clarusinnovaceteknologi/cares.git (origin, fetch/push)
-Planning branch: planning/postgresql-round3-implementation
-Required baseline (Round 2 synchronized): ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d (verified locally and on origin/design/postgresql-round2-physical-schema; branch base)
+# CARES Copilot Execution Log
 
-## 1. Scope and constraints (observed)
-- Round 3 implementation planning and administrative publication audit/verification only. No DDL, migration files, ORM models, database roles/policies, triggers/functions/procedures, database objects, application/database implementation code, or database provisioning/modification/execution performed.
-- No changes to Round 1.1/Round 2 physical schema definitions, OD-001–OD-013 statuses, PD-001–PD-012 statuses, ADR statuses (ADR 0006 remains Proposed), architecture, or roadmap. No technical inconsistencies in Round 2 baseline silently corrected; none identified requiring correction during planning/audit review.
-- Non-negotiable invariants preserved in planning artifacts: PostgreSQL primary system of record, modular monolith, core functional without MELIRA, MELIRA external SaaS only (explicit provider/model/region, no silent failover/automatic transfer/local inference/local GPU), one unique monitored device = one licensed asset per tenant (multi-source same-device no duplicate licensing; equal device-type weight), strict trusted-transaction-bound tenant isolation (never client-supplied tenant IDs, never user-settable PostgreSQL GUC authorization; RLS defense-in-depth), authoritative `core.asset_data_source` owning immutable `source_device_key_id` (OD-002 Proposed), identity/licensing idempotency ledger `(tenant_id, operation_type, idempotency_key)` distinct from event receipt namespace dedup/provenance (OD-008/OD-013 Proposed), typed lineage only, no exactly-once external delivery.
+## PostgreSQL Round 3.1 — Owner Decision & Authorization Gate (documentation/governance only)
 
-## 2. Mandatory pre-execution and branch verification (completed)
-- Inspected repository/remote: `git status --short --branch`, `git remote -v`, `git branch -a`, `git rev-parse HEAD`, `git log`, `git ls-remote` (fetch). Baseline `ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d` verified on `origin/design/postgresql-round2-physical-schema`.
-- Created/switched to planning branch from baseline: `planning/postgresql-round3-implementation` @ `ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d` (checkpoint verified). Round 2 and Round 1.1 branches not modified.
+**Execution timestamp (UTC):** 2026-04-22T13:25:00Z (session execution window)  
+**Task:** Execute CARES — PostgreSQL Round 3.1: Owner Decision & Authorization Gate.  
+**Scope:** Governance/documentation only. No PostgreSQL DDL, migrations, ORM models, application code, database provisioning/modification, roles/policies/triggers/functions, or runtime implementation performed. No Round 4 work. No owner decision or implementation authorization was made, fabricated, or recorded.
 
-## 3. Round 3 planning documents created (8 required Markdown deliverables)
-- `docs/POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md` (17857 bytes, `b5d662fc5f1274256a40f57b0abefe828dba1451c47036f8c6de6cfe45fb36be`)
-- `docs/POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md` (10239 bytes, `6c0f669dc8610f9288f080a16a4ce51b516b8eb30e7e4609661707da18938a50`)
-- `docs/POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md` (9914 bytes, `da422ce9b32b49a8199c9714ecdb44d3a52b3c86a369e8b778208393b26f5d07`)
-- `docs/POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md` (13539 bytes, `7372d37e6605590c710f73a9191b3b6da80cc387ea09c3886be11fe1ad73e842`)
-- `docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md` (10847 bytes, `bb32ac8e5aec5754a941948b6c6fd6e7fcf0cd10749730dd9fdae35f06078eba`)
-- `docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md` (7829 bytes, `e3e4a2d40b330dde951b1a788fb9f11488f64c2106da81997bfcf37ffd689a73`)
-- `docs/POSTGRESQL_ROUND3_CHANGELOG.md` (5199 bytes, `ff5e47981afe7627d7efce228b0e08b67d96515b6f76b0fcc00d412a0f54096e`)
-- `docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md` (8311 bytes, `c0913db7764cbdec81f68d4b82b2c826a10cceb33f190d5a008b7cf4a9c92fbe`)
-All cross-reference each other and authoritative Round 1.1/Round 2/architecture/ADR baselines. No test claimed passed; no implementation authorized.
+### 1) Verified baseline and isolation
+- **Repository:** https://github.com/clarusinnovaceteknologi/cares (remote `origin` verified).
+- **Verified source branch:** `planning/postgresql-round3-implementation` (remote/local inspected).
+- **Verified exact source HEAD (remote):** `ee6e005bc50ffa8f3cd376a83b01369044005c3b` (matches expected; verified via `git ls-remote --heads origin planning/postgresql-round3-implementation` before work).
+- **Baseline confirmation:** Round 2 synchronized baseline remains `ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d` (historical context; Round 3.1 source is Round 3 HEAD `ee6e005`, not `ea1eb79`).
+- **Target branch:** `governance/postgresql-round3-owner-decision-gate` (did not exist locally/remotely before creation).
+- **Starting point:** created from exact verified source commit `ee6e005bc50ffa8f3cd376a83b01369044005c3b`.
+- **Isolated worktree:** `/tmp/cares-postgresql-round3-1` (path confirmed absent before creation). Created with `git worktree add -b governance/postgresql-round3-owner-decision-gate /tmp/cares-postgresql-round3-1 ee6e005bc50ffa8f3cd376a83b01369044005c3b` from `/home/ubuntu/cares`; verified clean at correct branch/commit.
+- **Original Round 3 planning branch protection:** `planning/postgresql-round3-implementation` in `/home/ubuntu/cares` was not modified, committed, rebased, reset, or force-pushed by this task.
+- **Pre-existing untracked files in main working directory (`/home/ubuntu/cares`):** not deleted, cleaned, overwritten, or staged.
+- **Execution deviation (corrected):** an initial documentation export run used a script hardcoded to `/home/ubuntu/cares` and modified tracked `dist/` export artifacts in the main repository working tree; those tracked files were immediately restored with `git restore -- dist/CARES_DOCUMENTATION_HTML.zip dist/cares-documentation-html` (confirmed no tracked modifications remained in `/home/ubuntu/cares`). Export regeneration was then performed via a temporary build copy and copied into the isolated worktree only.
 
-## 4. Documentation export, validation, and packaging (verified evidence)
-- Export script: `/tmp/export_cares_docs.py` (Python 3.14.4, markdown-it-py, pygments). Regenerated `dist/cares-documentation-html/` and `dist/CARES_DOCUMENTATION_HTML.zip` for Round 3 planning artifacts.
-- Exporter result (planning publication): eligible markdown sources 50, generated doc HTML 50, generated HTML total 51, failed conversions 0, copied assets 2, missing referenced assets 0, broken internal links 0, empty/unfaithful HTML 0 (reported), Mermaid bundled true. Export revision reported as `ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d` (HEAD at export time, pre-planning commit).
-- Corresponding HTML pages verified present for all 8 Round 3 docs in export and ZIP (`cares-documentation-html/docs/POSTGRESQL_ROUND3_*.md.html`). Index/manifest updated.
-- Mermaid: structural presence validated for dependency map (2 fenced `mermaid` blocks in source; 4 mermaid markers in HTML). **Mermaid visual rendering NOT VERIFIED**.
-- ZIP integrity: `ZipFile.testzip()` OK, 56 entries, top-level `cares-documentation-html/`.
-- Verified hashes for planning-publication artifacts (as committed in `5991a09`): ZIP `79fa259ef5853d82bcac0d80d542bb552ae1afaadfeea94aba84e83c7ada8a5a` (23824515), `index.html` `aae8633f4f2d7b8d39ee0b2a50225f8c136d103b2fa5211f1911a2c023123f11` (22416), `EXPORT_MANIFEST.md` `f7c08f90c8e59ca27330d54dfb879b3667adc2ddab698e7df6cb4df199358245` (6348), `EXPORT_MANIFEST.json` `286a99eba65f50764c618828970d2cb2210d06ad9e9c9c7356b77feaaf995e95` (8979).
+### 2) Source documents examined and source gaps
+- **Round 3:** implementation plan, work breakdown, migration/deployment strategy, test/acceptance plan, readiness/blocker matrix, dependency map, changelog, final review, publication audit.
+- **Round 2:** physical schema design, physical ERD, index strategy, RLS/tenant isolation design, physical transaction design, data lifecycle/retention, physical schema open decisions, changelog, final review, publication audit.
+- **Round 1.1 / logical:** logical data model, logical ERD, transaction boundaries, logical model final audit.
+- **Architecture/security/project/ADR context:** architecture, security architecture, threat model, data architecture, technology selection, development roadmap, requirements traceability, project status, ADR context as available in repository sources.
+- **Source availability gaps (reported, not resolved):** `docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md` and a committed ADR 0006 markdown source (e.g. `docs/adr/0006-atomic-per-tenant-asset-licensing.md`) are not present as committed files at baseline `ee6e005` (ADR 0006 HTML exists in generated dist). OD-001–OD-013/PD-001–PD-012 traceability and preserved statuses were derived from committed carry-forward and review/planning records (notably `POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md`, Round 3 readiness/plan/final review/dependency map, Round 1.1/Round 2 audits/reviews). **ADR 0006 remains Proposed** (not promoted). No source content was invented.
 
-## 5. Git publication and remote verification (distinguished commits)
-- **Planning artifacts commit (published):** `5991a0945ad607499f56472f47e06de3957ea14b` — `docs: add PostgreSQL round 3 implementation plan` (8 Round 3 markdown docs, regenerated `dist/cares-documentation-html/` and `dist/CARES_DOCUMENTATION_HTML.zip`, and execution report update). Pushed normally to `origin/planning/postgresql-round3-implementation`.
-- **Verification-record commit (final prior synchronized state):** `df10d02f9e63cb38df2e7930dfa1951ae8eebca7` — `docs: record round 3 planning publication verification` (copilot.txt evidence correction/verification record only; no markdown source/export regeneration required).
-- **Post-push remote verification (verified):** `git ls-remote --heads origin planning/postgresql-round3-implementation` returned `df10d02f9e63cb38df2e7930dfa1951ae8eebca7 refs/heads/planning/postgresql-round3-implementation` matching local HEAD and remote-tracking ref. **Local and remote HEAD matched: Yes** (independently verified). No divergence/conflicts/permission issues observed.
-- **Publication audit correction commit (verified):** `2ded9f3425fc44cf2568e8f81636d39f588dcb3c` — `docs: audit and verify Round 3 publication state` (added `docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md`, clarified publication-evidence records in `copilot.txt`, and regenerated/synchronized exports/index/manifest/ZIP). Pushed normally to `origin/planning/postgresql-round3-implementation`.
-- **Final publication state (independently verified):** local HEAD = remote-tracking = `git ls-remote refs/heads/planning/postgresql-round3-implementation` = `2ded9f3425fc44cf2568e8f81636d39f588dcb3c` (**local/remote match: Yes**). No divergence, conflicts, or permission issues.
+### 3) Round 3.1 deliverables created (all 8)
+Created in `docs/` on `governance/postgresql-round3-owner-decision-gate` (worktree):
+1. `docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_GATE.md`
+2. `docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md`
+3. `docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md`
+4. `docs/POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_MATRIX.md`
+5. `docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_RECORD_TEMPLATE.md`
+6. `docs/POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md`
+7. `docs/POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md`
+8. `docs/POSTGRESQL_ROUND3_1_FINAL_REVIEW.md`
 
-## 6. Final planning status (documented, unchanged)
-- Final review status (`docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md`): **BLOCKED BY OWNER DECISIONS**
-- Rationale: planning sequence is coherent, but safe progression to tenant-scoped/runtime or correctness-critical implementation is blocked by unresolved/required approvals and validations (including PD-005/PD-006, OD-001/002/003/004/005/008/009/010/011/013 as applicable, ADR 0006 Proposed). No implementation authorization granted.
+### 4) Consistency checks and preserved baseline
+- **OD/PD checked:** OD-001–OD-013 and PD-001–PD-012 traced and preserved with recorded statuses from committed sources (no closures/approvals invented). Register/briefs/matrix/blocker map provide consolidated traceability.
+- **I-00–I-14 preserved:** baseline Round 3 classifications preserved (conditionally ready/preparatory: I-00, I-01, I-02, I-03, I-04, I-05, I-07, I-08, I-09, I-10, selected I-11; blocked/final-semantics: I-06; blocked/validation-critical: I-12; blocked/out-of-Round-3 scope: I-13; deferred/blocked by evidence & governance: I-14). No reclassification without explicit owner approval labeling.
+- **ADR 0006:** preserved as **Proposed** (no promotion).
+- **No fabricated owner decisions:** no selections, dates, signatures, approvals, or decision outcomes recorded; decision/authorization templates left unfilled.
+- **No fabricated implementation authorization:** authorization matrix records no explicit owner authorization record in repo; every increment remains **not authorized**. "Technically preparable" (where stated) is separated from authorization.
+- **No implementation performed:** no DDL, migrations, ORM models, application code, DB provisioning/modification, roles/policies/triggers/functions, RLS/licensing/idempotency/ingestion/outbox implementation, or runtime work.
 
-## 7. Stop condition
-- Do not begin database implementation, create SQL/migration files, provision infrastructure, or proceed to another development phase. Await explicit owner authorization.
+### 5) Outstanding owner decisions and authorization posture (summary)
+- **Outstanding/unresolved:** OD-001–OD-013 and PD-001–PD-012 remain in preserved statuses (see register/briefs/matrix/blocker map). Key blocking areas include identity/licensing/idempotency semantics and approvals (OD-001/002/003/004/008/013, ADR 0006 Proposed), tenant authorization/RLS runtime mechanism and validation (PD-005/PD-006, I-12), outbox/runtime semantics (OD-009), retention/legal-hold/AI governance (OD-010/OD-011), workload/partition/index validation (OD-012/PD-010 and related), and physical conventions/operations where specified.
+- **Implementation authorization matrix result:** all I-00–I-14 increments are **not authorized**; conditionally ready items remain bounded/preparatory only and require explicit owner authorization, prerequisites, and validations before any implementation. No increment is approved for implementation.
+
+### 6) Export and validation results
+- **Exporter:** worktree-scoped run via temporary build copy + build-scoped exporter (`/tmp/export_cares_docs_build.py`, based on `/tmp/export_cares_docs.py`) to include full source context and 8 new documents; resulting `dist/` copied into worktree.
+- **Source Markdown count (eligible):** 59
+- **Generated HTML pages (doc pages):** 59 (+ `index.html` = 60 generated HTML total)
+- **Index:** `dist/cares-documentation-html/index.html` generated/updated
+- **Manifest:** `dist/cares-documentation-html/EXPORT_MANIFEST.md` and `EXPORT_MANIFEST.json` updated
+- **Conversion failures:** 0
+- **Broken internal links (exporter):** 0
+- **Missing assets (exporter):** 0
+- **Copied assets:** 2
+- **Empty HTML:** none reported
+- **Mermaid:** bundled in export (`mermaid_bundled: true`); **Mermaid visual rendering not claimed as browser-tested** (structural/bundled evidence only).
+- **ZIP:** `dist/CARES_DOCUMENTATION_HTML.zip` rebuilt; `unzip -t` reported **No errors detected**; ZIP entries: **65 files**.
+- **Revision recorded by export manifest/run:** `ee6e005bc50ffa8f3cd376a83b01369044005c3b` (source baseline at export time).
+
+### 7) Publication (target branch only)
+- **Initial local commit (pre-amend):** `ce1194dfa7b044ba1a56a466766101a6e022d923`
+- **Amended commit SHA / local HEAD (to be pushed):** recorded below after amend
+- **Push target:** `origin/governance/postgresql-round3-owner-decision-gate` (normal push only; no force-push)
+- **Remote HEAD (`git ls-remote`):** pending push verification
+- **Local/remote match:** pending push verification
+- **Post-push verification:** to be recorded in a follow-up publication-evidence commit on the same target branch (normal push)
+
+### 8) Final confirmations and blockers
+- Confirmed: all eight Round 3.1 documents created; OD-001–OD-013 and PD-001–PD-012 checked and preserved; I-00–I-14 baseline classifications preserved; ADR 0006 remains Proposed.
+- Confirmed: **no owner decision fabricated or made on owner’s behalf**; **no implementation authorization fabricated or granted**; **no implementation performed**.
+- Confirmed: original Round 3 planning branch `planning/postgresql-round3-implementation` (`ee6e005bc50ffa8f3cd376a83b01369044005c3b`) not modified.
+- **Remaining blockers/limitations:** outstanding OD/PD decisions and required approvals/validations as documented (tenant authorization/RLS validation, licensing/idempotency final semantics/ADR 0006 decision, outbox/retention/AI/workload governance as applicable), plus committed source gaps noted above. Implementation remains unauthorized unless and until a separate explicit owner authorization record is completed and recorded for a narrowly defined increment with prerequisites satisfied.

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3.1 — Owner Decision &amp; Authorization Gate</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_GATE.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T13:29:17Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3.1 — Owner Decision &amp; Authorization Gate</h1>
+<p><strong>Status:</strong> Proposed governance and decision-preparation document only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION, NOT AN IMPLEMENTATION AUTHORIZATION</strong>. This document prepares an auditable owner decision and authorization gate based on the completed Round 3 implementation-planning baseline. It does <strong>not</strong> make owner decisions, does <strong>not</strong> authorize implementation, and does <strong>not</strong> resolve open decisions.</p>
+<p><strong>Source baseline (verified):</strong> branch <code>planning/postgresql-round3-implementation</code>, commit <code>ee6e005bc50ffa8f3cd376a83b01369044005c3b</code> (independently verified as remote HEAD before this Round 3.1 branch was created). <strong>Target branch:</strong> <code>governance/postgresql-round3-owner-decision-gate</code> (created from the exact verified source commit in an isolated worktree). The original Round 3 planning branch remains unchanged by this task.</p>
+<h2>1. Purpose and boundaries</h2>
+<h3>1.1 Purpose</h3>
+<p>This Round 3.1 package enables the project owner to:</p>
+<ol>
+<li>Understand which decisions remain unresolved (OD-001–OD-013, PD-001–PD-012, and related governance/approval dependencies).</li>
+<li>Understand why each decision matters, including technical, security, operational, compliance, and commercial consequences where source-backed.</li>
+<li>Review viable alternatives and implications as supported by source documents, with Copilot analysis clearly distinguished from source-backed material.</li>
+<li>Distinguish decisions that block specific implementation increments from conditional prerequisites and deferrable decisions.</li>
+<li>Record explicit owner decisions and, separately, explicit owner authorization for narrowly defined implementation increments using provided templates.</li>
+<li>Preserve all existing architectural constraints, exclusions, and unresolved statuses.</li>
+</ol>
+<h3>1.2 Boundaries (governance only)</h3>
+<ul>
+<li><strong>In scope:</strong> traceable decision/register/brief/authorization-matrix/template/dependency-map/final-review documentation derived from actual repository sources.</li>
+<li><strong>Out of scope:</strong> implementation, schema execution, runtime behavior changes, approval of decisions, promotion of ADR status, closure of OD/PD items, and any assumption that planning readiness or publication of this package authorizes development.</li>
+<li><strong>No fabrication:</strong> no owner decision, date, signature, approval, or authorization record is created or implied.</li>
+</ul>
+<h2>2. Authoritative sources inspected (repository truth)</h2>
+<p>Inspected from the verified source commit (non-exhaustive list of primary inputs):</p>
+<ul>
+<li>Round 3 planning: <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a>, <a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="POSTGRESQL_ROUND3_CHANGELOG.md.html">POSTGRESQL_ROUND3_CHANGELOG.md</a>, <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>, <a href="POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md.html">POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md</a>.</li>
+<li>Round 2: <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a>, <a href="POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a>, <a href="POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a>, <a href="POSTGRESQL_INDEX_STRATEGY.md.html">POSTGRESQL_INDEX_STRATEGY.md</a>, <a href="POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html">POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</a>.</li>
+<li>Round 1.1/logical: <a href="POSTGRESQL_LOGICAL_DATA_MODEL.md.html">POSTGRESQL_LOGICAL_DATA_MODEL.md</a>, <a href="POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html">POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md</a>.</li>
+<li>Architecture/security/project/ADR: <a href="ARCHITECTURE.md.html">ARCHITECTURE.md</a>, <a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a>, <a href="THREAT_MODEL.md.html">THREAT_MODEL.md</a>, <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>, <a href="DEVELOPMENT_ROADMAP.md.html">DEVELOPMENT_ROADMAP.md</a>, <a href="REQUIREMENTS_TRACEABILITY.md.html">REQUIREMENTS_TRACEABILITY.md</a>, <a href="PROJECT_STATUS.md.html">PROJECT_STATUS.md</a>.</li>
+</ul>
+<p><strong>Source availability/gap notes (factual):</strong></p>
+<ul>
+<li><a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a> (Round 1/1.1 logical open-decision register) is <strong>not present as a committed file at the verified source commit</strong> (<code>ee6e005</code>), although it is referenced by some baseline documents (e.g. Round 1.1 final audit and physical open decisions). OD-001–OD-013 are therefore traced from committed sources that carry them forward (notably <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>, and Round 1.1/Round 2 review/audit records) and marked where original-register detail is unavailable.</li>
+<li>A committed ADR markdown source for ADR 0006 (e.g. <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code>) is <strong>not present at the verified source commit</strong>; repository source documents consistently state <strong>ADR 0006 remains Proposed</strong>. This status is preserved and not promoted.</li>
+</ul>
+<h2>3. Current Round 3 readiness position (preserved baseline)</h2>
+<p>From <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a> and <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>:</p>
+<ul>
+<li>Round 3 implementation-planning artifacts are coherent and published, but <strong>safe progression to tenant-scoped/runtime or correctness-critical implementation is blocked</strong> by unresolved/required approvals and validations.</li>
+<li><strong>No component is unconditionally ready for runtime/production implementation.</strong></li>
+<li><strong>Conditionally ready (planning/bounded structural preparation, not authorization):</strong> I-00, I-01, I-02, I-03, I-04, I-05, I-07, I-08, I-09, I-10, and selected I-11 hardening activities, subject to stated approvals/validations/preconditions.</li>
+<li><strong>Blocked / blocked final semantics / out of scope:</strong> I-06 final semantics (OD-001/003/004/008, ADR 0006 Proposed); I-12 (PD-005/PD-006 verified tenant context/RLS and required validation); I-13 (blocked/out of Round 3 scope pending prerequisites and authorization); I-14 (deferred/blocked by evidence and governance).</li>
+<li><strong>Final Round 3 planning status:</strong> <code>BLOCKED BY OWNER DECISIONS</code> (planning complete; implementation not authorized).</li>
+</ul>
+<h2>4. Planning readiness, owner decision, implementation authorization, and implementation completion (distinguished)</h2>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Meaning</th>
+<th>What it does <strong>not</strong> mean</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Planning readiness</strong></td>
+<td>Design/planning artifacts are sufficiently coherent and traceable to support bounded, governed next steps subject to preconditions.</td>
+<td>Does not authorize implementation, execution, deployment, or exposure of runtime behavior.</td>
+</tr>
+<tr>
+<td><strong>Owner decision</strong></td>
+<td>An explicit, recorded selection/deferral/rejection by the authorized project owner for a specific decision item, with rationale/conditions/risks as applicable.</td>
+<td>Does not by itself authorize implementation unless a separate explicit authorization record states so for a defined increment/scope.</td>
+</tr>
+<tr>
+<td><strong>Implementation authorization</strong></td>
+<td>A separate, explicit, narrowly scoped owner authorization record identifying exact increment(s), baseline, branch, allowed/prohibited changes, acceptance criteria, and date.</td>
+<td>Does not authorize subsequent increments, does not resolve unrelated open decisions, and does not imply completion.</td>
+</tr>
+<tr>
+<td><strong>Implementation completion</strong></td>
+<td>Verified delivery of authorized scope meeting defined acceptance criteria with required evidence.</td>
+<td>Not applicable here; no implementation is performed or authorized in Round 3.1.</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Non-negotiable constraints preserved</h2>
+<ul>
+<li>PostgreSQL primary/system of record; modular monolith; core functional without MELIRA.</li>
+<li>MELIRA external SaaS only (explicit provider/model/region); no silent failover, no automatic transfer, no local inference, no local GPU.</li>
+<li>One unique monitored device = one licensed asset per tenant (multi-source same-device no duplicate licensing; equal device-type weight).</li>
+<li>Strict multi-tenancy: tenant authority only from trusted, verified, transaction-bound context; <strong>never</strong> client-supplied tenant IDs; <strong>never</strong> user-settable PostgreSQL GUC authorization; RLS defense-in-depth, not sufficient alone.</li>
+<li>Authoritative <code>core.asset_data_source</code> owning immutable <code>source_device_key_id</code>; aliases resolve to same binding (OD-002 Proposed). Identity/licensing idempotency ledger <code>(tenant_id, operation_type, idempotency_key)</code> distinct from <code>ingest.event_receipt</code> namespace dedup/provenance (OD-008/OD-013 Proposed). Typed lineage only. No exactly-once external delivery.</li>
+<li>OD-001–OD-013 and PD-001–PD-012 remain traceable and retain recorded statuses (no closure/approval invented). ADR 0006 remains <strong>Proposed</strong>. I-00–I-14 baseline classifications preserved.</li>
+</ul>
+<h2>6. Explicit statement — no implementation authorized</h2>
+<p><strong>No implementation is authorized by this document or by this Round 3.1 package.</strong> Publication of these governance artifacts, planning readiness, technical feasibility discussion, or prior general project approval must not be interpreted as authorization for any implementation increment. Any future implementation requires a separate, explicit, owner-signed/recorded authorization for a narrowly defined increment and baseline, satisfying all stated prerequisites and exclusions.</p>
+<h2>7. Related Round 3.1 deliverables</h2>
+<ul>
+<li><a href="POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md.html">POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md.html">POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html">POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_1_OWNER_DECISION_RECORD_TEMPLATE.md.html">POSTGRESQL_ROUND3_1_OWNER_DECISION_RECORD_TEMPLATE.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md.html">POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_1_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_1_FINAL_REVIEW.md</a></li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3.1 — Owner Decision Briefs</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T13:29:17Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3.1 — Owner Decision Briefs</h1>
+<p><strong>Status:</strong> Proposed governance briefs only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION, NOT OWNER DECISIONS</strong>. Prepared to support owner review of unresolved items. Source-backed alternatives are cited from committed repository documents; Copilot analysis is explicitly labeled advisory and non-authoritative. No new alternative is presented as approved.</p>
+<p><strong>Traceability:</strong> OD-001–OD-013 and PD-001–PD-012 preserved with recorded statuses from committed sources. <strong>Source gaps noted:</strong> committed <code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> and committed ADR 0006 markdown source are not present at baseline <code>ee6e005</code>; briefs rely on committed carry-forward/review/planning sources and identify where information is insufficient.</p>
+<h2>1. Logical/open decision briefs (OD-001–OD-013)</h2>
+<h3>OD-001 — ADR 0006 acceptance and unresolved concurrency/quota/timeout ambiguity</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed / pending ADR acceptance (ADR 0006 remains Proposed)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md; docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md; docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</li>
+<li><strong>Problem / unresolved question:</strong> Licensing accounting/enforcement semantics and schema-level interpretations (including concurrency/quota/timeout ambiguity) remain unaccepted/unfinalized in the context of ADR 0006.</li>
+<li><strong>Why a decision is needed:</strong> Licensing counters, reservation/timeout behavior, reconciliation semantics, and correctness-critical transaction behavior depend on accepted semantics; I-06 final semantics and I-13 are constrained.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Sources record the open/proposed decision and dependency but do not provide a committed, fully enumerated approved option set in available files at this baseline.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory, not approved): owner review should compare (a) accepting ADR 0006 with explicitly bounded schema/runtime interpretations, (b) revising ADR 0006 before acceptance, or (c) formally deferring with explicit non-implementation constraints; each must preserve one-device-one-licensed-asset and no-finalized-accounting-without-approval invariants.</li>
+<li><strong>Consequences / implications:</strong> Affects licensing/entitlement/ledger/reservation design finalization, operational reconciliation, and safe authorization of runtime licensing behavior.</li>
+<li><strong>Dependencies and affected increments:</strong> Depends on/interacts with OD-003, OD-004, OD-008, ADR 0006 (Proposed). Affects I-06, I-13.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Risk of incorrect licensing accounting/enforcement, tenant-commercial disputes, and invariant violations if assumed final.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Committed logical open-decision register and ADR 0006 markdown source not present at baseline; authoritative option details/rationale text may be incomplete. <strong>Requires owner clarification and formal governance review.</strong></li>
+<li><strong>Blocking characterization:</strong> <strong>Hard blocker</strong> for I-06 final semantics and licensing/runtime correctness (I-13).</li>
+</ul>
+<h3>OD-002 — Authoritative stable binding ownership and optional dependent <code>source_device_key</code> projection</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed (open approval)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md; docs/POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</li>
+<li><strong>Problem / unresolved question:</strong> Final approval of <code>core.asset_data_source</code> as authoritative stable binding owning immutable <code>source_device_key_id</code>, and posture for optional dependent <code>core.source_device_key</code>, remains open.</li>
+<li><strong>Why a decision is needed:</strong> Binding authority/uniqueness underpins identity resolution, licensing association, and prevention of competing/mutable identity sources.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Source-backed direction: authoritative binding owned by <code>core.asset_data_source</code> with immutable <code>source_device_key_id</code>; optional dependent <code>source_device_key</code> projection may be materialized as strict 1:1 non-authoritative or omitted (PD-004 proposed).</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): prefer the source-recommended authoritative model and avoid separate mutable authority; if projection is materialized, enforce strict parity/immutability constraints and review divergence risks.</li>
+<li><strong>Consequences / implications:</strong> Impacts schema constraints, transaction checks, alias/claim workflows, and downstream licensing/lineage integrity.</li>
+<li><strong>Dependencies and affected increments:</strong> Dependencies/interactions: OD-006, OD-007, PD-004. Affects I-04 and downstream increments.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Competing identity authority or mutable stable keys could break dedup/licensing/lineage correctness and tenant trust.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Original logical register details unavailable in committed baseline; final sign-off criteria require owner/architecture/security confirmation.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite / blocker for final sign-off</strong> of identity-binding structures and operations (I-04+).</li>
+</ul>
+<h3>OD-003 — Pending reservation behavior, timeout/release, and committed/reserved counter semantics</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed (open approval)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Reservation lifecycle (pending/timeout/release) and committed vs reserved counter semantics are not finalized.</li>
+<li><strong>Why a decision is needed:</strong> Correct quota allocation, release on failure/timeout, reconciliation, and user-visible licensing behavior depend on these semantics.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Sources identify the unresolved areas and affected structures (<code>asset_license_reservation</code>, <code>tenant_license_usage_state</code>, Ops 1/9) but do not document a committed approved option set at baseline.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): evaluate bounded timeout/expiry with deterministic reconciliation and auditable state transitions; avoid implicit finalization; align with OD-001/004/008 and concurrency/idempotency requirements.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-06 structures/semantics and future transaction behavior (I-13).</li>
+<li><strong>Dependencies and affected increments:</strong> OD-001, OD-004, OD-008. Affects I-06, Ops 1/9.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Risk of leaked reservations, double counting, denial of service, or incorrect entitlement enforcement.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Detailed alternatives/thresholds require owner/commercial/ops input; <strong>information gap</strong> at committed baseline.</li>
+<li><strong>Blocking characterization:</strong> <strong>Hard blocker</strong> for final licensing accounting/enforcement semantics in affected scope.</li>
+</ul>
+<h3>OD-004 — Tenant-level authoritative counter scope and recomputation/reconciliation semantics</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed (open approval)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Authoritative tenant-level counter scope and recomputation/reconciliation formulas/semantics are unresolved.</li>
+<li><strong>Why a decision is needed:</strong> Consistent, auditable license usage accounting and recovery from partial/failed operations require defined counter authority and reconciliation rules.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Sources identify affected usage-state/reconciliation structures and planning impact; no committed approved formula set recorded at baseline.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): define a single authoritative accounting source per tenant/scope with deterministic recomputation from immutable/auditable events where feasible, reconciled against ledger outcomes under approved OD-008 semantics.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-06, reconciliation operations, reporting correctness, and commercial trust.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-001, OD-003, OD-008. Affects I-06 and related operations.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Inconsistent counters can cause over/under-licensing and audit/compliance issues.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Requires commercial/product/finance/governance input and explicit formulas; <strong>information gap</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Hard blocker</strong> for final counter formulas and reconciliation implementation rules.</li>
+</ul>
+<h3>OD-005 — Merge/split authorization, evidence, and licensing effects</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed (open approval)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Authorization, evidentiary requirements, and licensing effects for merge/split operations remain unapproved.</li>
+<li><strong>Why a decision is needed:</strong> Merge/split changes canonical identity relationships and can affect licensing counts, lineage, and auditability.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Source-backed invariants: typed lineage only, tombstones/lifecycle operations modeled, no canonical ID reuse; operational policy/effects pending.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): require explicit authorized actor/evidence, atomic transactional coupling with ledger/licensing effects per approved OD-001/003/004/008, and irreversible/auditable lineage records; reject implicit merges.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-05, I-06, Ops 6/7, lineage/tombstone correctness.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-007, OD-008 and licensing dependencies as applicable. Affects I-05 and licensing semantics.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Unauthorized or incorrect merges/splits can corrupt identity history and licensing state.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Policy/evidence/licensing-effect specifics not fully documented in committed baseline; <strong>owner clarification required</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite/blocker</strong> for final operational merge/split policy and edge-case enforcement.</li>
+</ul>
+<h3>OD-006 — Fingerprint hashing/protection, key custody, rotation overlap, and reassignment safeguards</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed (open approval)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Approved fingerprint protection representation, custody, rotation overlap, and reassignment safeguards are unresolved.</li>
+<li><strong>Why a decision is needed:</strong> Fingerprints/aliases are security-sensitive identity inputs; weak protection or unsafe rotation can enable reassignment/collision or leakage.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Source-backed elements: fingerprint/alias uniqueness and rotation procedures are impacted; PD-011 proposes algorithm metadata plus consistent representation pending review.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): use approved cryptographic protections and custody boundaries, define overlap windows and revocation/reassignment controls, and validate uniqueness predicates under rotation scenarios.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-04, Ops 3/4, storage/representation choices (PD-011), and security posture.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-002, OD-007, PD-011.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Risk of identity spoofing/reassignment, privacy exposure, or operational lockout during rotation.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Cryptographic/custody specifics and overlap policy require security/ops approval; <strong>information gap</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite</strong> for secure identity-binding/fingerprint handling.</li>
+</ul>
+<h3>OD-007 — Reinstall/re-enrollment and controlled identity-reset handling</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed (open approval)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Lifecycle rules for reinstall/re-enrollment and controlled identity reset/rebinding are unresolved.</li>
+<li><strong>Why a decision is needed:</strong> These events are common operational cases and can affect whether activity maps to the same licensed asset or requires governed resolution.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Sources identify impact on resolution/claim/binding workflows and alias rotation/rebinding rules (I-04/I-05).</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): preserve one-device-one-licensed-asset-per-tenant semantics, require auditable controlled reset paths, and prevent silent creation of duplicate licensed assets for the same monitored device.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-04/I-05 workflows, lifecycle/tombstone handling, and support operations.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-002, OD-005, OD-006.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Incorrect handling may duplicate licensing, lose continuity, or enable abuse.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Detailed workflow states/criteria require architecture/product/operations decisions; <strong>information gap</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite</strong> for lifecycle workflow finalization.</li>
+</ul>
+<h3>OD-008 — Formal idempotency contract and coupling mode</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed (open approval)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md; docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md</li>
+<li><strong>Problem / unresolved question:</strong> Formal contract for identity/licensing idempotency (scope, canonical hash, states, replay/conflict, timeout/unknown-commit, retention) and coupling mode remains unapproved.</li>
+<li><strong>Why a decision is needed:</strong> Ledger-backed operations (Ops 1–9) require deterministic, auditable behavior under retries/concurrency and must remain distinct from event receipt dedup.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Source-backed baseline: ledger scope <code>(tenant_id, operation_type, idempotency_key)</code>, documented proposed state/coupling shape in physical design; must remain distinct from <code>ingest.event_receipt</code> namespace dedup/provenance.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): formalize deterministic canonicalization/hash inputs, explicit state transitions for in-progress/committed/failed-terminal/timeout-unknown-commit, replay/conflict responses, retention/reconciliation hooks, and atomic coupling boundaries as approved.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-06 and all ledger-coupled runtime operations (I-13), correctness under retries/failures.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-001/003/004/005/009 interactions as applicable. Affects I-06, Ops 1–9.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Ambiguous idempotency can cause duplicate effects, lost effects, or irreconcilable unknown outcomes.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Formal approval text/complete contract details require owner/architecture sign-off; <strong>information gap</strong> relative to committed logical register.</li>
+<li><strong>Blocking characterization:</strong> <strong>Hard blocker</strong> for finalized ledger semantics and runtime correctness in coupled operations.</li>
+</ul>
+<h3>OD-009 — Outbox leasing/fencing, dispatch ownership, retry/claim semantics, and unknown-delivery handling</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed (open approval)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Approved outbox claim/lease/fencing/retry and unknown-delivery handling semantics remain unresolved.</li>
+<li><strong>Why a decision is needed:</strong> Reliable at-least-once processing with idempotent consumers requires explicit claim ownership, fencing, retries, and visibility of unknown outcomes.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Source-backed constraints: no exactly-once external delivery; <code>processing.outbox_message</code>/<code>outbox_attempt</code> and claim/index patterns proposed; PD-007 proposes mechanism options pending validation.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): combine lease tokens/expiry with atomic state transitions and fencing to prevent concurrent double-processing claims; define bounded retry/backoff and explicit unknown-delivery reconciliation states.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-08 and outbox runtime behavior (Ops 11/12, I-13).</li>
+<li><strong>Dependencies and affected increments:</strong> OD-008, PD-007, OD-012 for validation.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Risk of duplicate side effects, stuck messages, or lost visibility of delivery uncertainty.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Operational SLO targets and final mechanics require engineering/reliability approval and validation; <strong>information gap</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite / hard blocker for runtime</strong> outbox processing semantics.</li>
+</ul>
+<h3>OD-010 — Retention/legal-hold/deletion classes for audit, evidence, events, and telemetry</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Deferred / pending governance approval</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Approved retention classes, legal-hold handling, deletion/archive rules, and automation eligibility are not finalized.</li>
+<li><strong>Why a decision is needed:</strong> Compliance, privacy, evidentiary integrity, storage cost, and partition/drop eligibility depend on governed lifecycle rules.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Sources mark deferred/pending governance approval and identify impacts on retention matrix, lifecycle automation, evidence handling (I-09/I-14).</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): classify data by purpose/sensitivity/legal basis, define hold precedence over deletion, and gate automation behind approved policies and tested runbooks; do not infer durations.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-09, I-14, operational/compliance posture.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-011, OD-012, PD-010.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Premature deletion/retention can violate legal/compliance obligations or destroy evidence; indefinite retention increases risk/cost.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Specific classes/durations/hold procedures require legal/compliance/privacy/security decisions; <strong>information gap</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Deferrable governance prerequisite</strong> (hard for automation/final lifecycle enforcement).</li>
+</ul>
+<h3>OD-011 — AI consent, data-classification/redaction, budget/quota, and provider-policy persistence details</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Deferred / pending policy and privacy approval</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Approved consent, classification/redaction, budget/quota, and provider-policy persistence/enforcement details for AI governance remain unresolved.</li>
+<li><strong>Why a decision is needed:</strong> AI interactions must satisfy privacy/policy controls and MELIRA external SaaS constraints; persistence must support governance and auditability.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Source-backed constraints: MELIRA external SaaS only (explicit provider/model/region), no silent failover/automatic transfer/local inference/local GPU; governance structures impacted in I-09.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): define data-classification and redaction/consent gates before transmission, persist auditable policy/budget decisions and provider/model/region selections, and prohibit implicit provider changes.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-09 and future AI-governed behaviors.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-010; product/privacy/legal/security/commercial governance.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Risk of unauthorized data transfer, policy violations, or uncontrolled cost/usage.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Policy specifics and enforcement rules require owner/privacy/legal approval; <strong>information gap</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Deferrable governance prerequisite</strong> (blocks final enforcement specifics).</li>
+</ul>
+<h3>OD-012 — Retention, partitioning, and workload/index validation</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Deferred / validation required</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Measured workload/query/index/partition thresholds and validation evidence are not yet established.</li>
+<li><strong>Why a decision is needed:</strong> Optimization/partitioning decisions without evidence can harm performance, operability, or correctness (e.g. uniqueness/key design).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Sources defer partitioning/index refinement until measured thresholds; PD-010 and index strategy require validation (I-11/I-14).</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): collect representative workload and growth profiles, validate query plans/index trade-offs (including write amplification), and require partition-key-inclusive uniqueness design if adopted.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-11 hardening and I-14 partitioning/maintenance; performance/operability sign-off.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-010, PD-001/008/009/010.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Premature partitioning or indexing can increase complexity, maintenance burden, and regression risk.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Requires DBA/operations evidence and thresholds; <strong>validation gap</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Deferrable validation prerequisite</strong> (blocks optimization/automation sign-off).</li>
+</ul>
+<h3>OD-013 — Connector-specific event identity namespace and fallback behavior for missing/unreliable upstream IDs</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed (open/partial)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Approved per-connector namespace and fallback dedup predicates for missing/unreliable upstream IDs remain open/partial.</li>
+<li><strong>Why a decision is needed:</strong> Ingestion dedup correctness depends on explicit namespace/provenance and safe fallback semantics, distinct from identity/licensing idempotency.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Source-backed constraints: <code>ingest.event_receipt</code> must carry explicit namespace/provenance; device-scoped upstream IDs must include stable source-device binding namespace in multi-device contexts; fallback fingerprint when missing/unreliable (as recorded in baselines). PD-008 proposes predicate implementation patterns pending approval.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): define per-connector canonical namespace keys and deterministic fallback fingerprint inputs/provenance markers; validate uniqueness predicates to avoid false merges/drops across sources.</li>
+<li><strong>Consequences / implications:</strong> Impacts I-07 (Op 10), dedup integrity, downstream processing reliability.</li>
+<li><strong>Dependencies and affected increments:</strong> PD-008; architecture/integration/operations/security.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Incorrect dedup can drop legitimate events or admit duplicates, affecting detection/case timelines.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Connector-specific specifications and approved predicates incomplete; <strong>information gap/partial decision</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite / partial hard blocker</strong> for finalized ingest dedup behavior.</li>
+</ul>
+<h2>2. Physical-design decision briefs (PD-001–PD-012)</h2>
+<h3>PD-001 — UUID generation/version and ordering strategy for PKs and high-insert tables</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</li>
+<li><strong>Problem / unresolved question:</strong> Select UUID strategy balancing locality/bloat/write amplification and tooling support.</li>
+<li><strong>Why a decision is needed:</strong> Impacts PK/index behavior across high-insert and related tables (I-01 conventions and dependent increments).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Options considered (source): UUIDv4, UUIDv7/time-ordered, application-generated vs DB-generated. Proposed direction favors time-ordered app-generated IDs if supported, else UUIDv4 with measured impact.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): validate PostgreSQL/tooling/ORM support and index behavior under expected workloads before committing; do not assume performance gains without evidence (OD-012).</li>
+<li><strong>Consequences / implications:</strong> Affects index locality, write amplification, operational characteristics.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-012; cross-cutting conventions (I-01).</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Poor fit can increase bloat/hotspots and maintenance cost.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Requires engineering/DBA decision and workload validation.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite</strong> (cross-cutting).</li>
+</ul>
+<h3>PD-002 — State/type representation (enum vs constrained text+CHECK vs lookup tables)</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</li>
+<li><strong>Problem / unresolved question:</strong> Choose representation for evolving states and governed catalogs.</li>
+<li><strong>Why a decision is needed:</strong> Affects migration flexibility, integrity clarity, and governance overhead (I-01+).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Options considered (source): native enum, text+CHECK, lookup/reference tables. Proposed: constrained text+CHECK for evolving states initially; lookup tables for governed catalogs where valuable.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): prefer representations that support controlled evolution and clear integrity constraints; document transition/migration implications for any chosen option.</li>
+<li><strong>Consequences / implications:</strong> Impacts schema evolution and validation logic.</li>
+<li><strong>Dependencies and affected increments:</strong> I-01 conventions; domain modeling.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Rigid choices can complicate migrations; loose choices can weaken integrity.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Requires engineering/architecture review; no approved final choice.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite</strong> (cross-cutting).</li>
+</ul>
+<h3>PD-003 — Tenant-consistent referential enforcement pattern for surrogate-key relationships</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Prevent cross-tenant references through robust relational enforcement patterns.</li>
+<li><strong>Why a decision is needed:</strong> Critical for tenant isolation integrity in data model (I-03+ and I-11).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Options considered (source): single-column FK only, composite unique <code>(tenant_id,id)</code> + composite FK, trigger-based validation, mixed. Proposed: composite uniques/FKs for critical tenant-owned relationships where feasible, with documented exceptions/compensating controls.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): favor declarative tenant-consistent constraints on critical paths; if exceptions are necessary, require explicit compensating controls and security review.</li>
+<li><strong>Consequences / implications:</strong> Directly impacts cross-tenant reference prevention and schema/index complexity.</li>
+<li><strong>Dependencies and affected increments:</strong> Tenant isolation invariants; PD-005/PD-006 runtime controls complementary but not substitutes.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Weak enforcement increases risk of cross-tenant data corruption/leakage.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Implementation validation and security/DB design review required.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite / integrity control</strong> (high impact).</li>
+</ul>
+<h3>PD-004 — Physical materialization of <code>core.source_device_key</code> dependent projection</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed (bounded)</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</li>
+<li><strong>Problem / unresolved question:</strong> Decide whether to materialize a dependent projection table without creating competing authority.</li>
+<li><strong>Why a decision is needed:</strong> Affects identity schema simplicity and divergence risk (I-04).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Options considered (source): materialized 1:1 table vs no separate table (binding-owned columns). Proposed: prefer binding-owned columns unless projection needed; if materialized enforce strict 1:1 non-authoritative parity.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): avoid redundant mutable state; any projection must be mechanically constrained to the authoritative binding (OD-002).</li>
+<li><strong>Consequences / implications:</strong> Impacts maintainability and correctness of identity model.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-002.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Projection divergence could undermine binding authority.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Bounded proposal pending architecture/security review.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite</strong> for I-04 finalization.</li>
+</ul>
+<h3>PD-005 — Verified tenant-context database mechanism (within invariants)</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md; docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md</li>
+<li><strong>Problem / unresolved question:</strong> Establish a safe, non-client-authoritative, non-GUC mechanism for verified transaction-bound tenant context usable by DB enforcement.</li>
+<li><strong>Why a decision is needed:</strong> Essential for RLS correctness, pooling safety, and tenant-runtime authorization posture (I-12).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Source-backed direction: trusted transaction-bound verified-context mechanism validated by hardened helpers/internal structures; never client-supplied tenant IDs or user-settable PostgreSQL GUC authorization. (Specific mechanism options not fully enumerated in committed baseline.)</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): require threat-modeled, security-reviewed mechanism with connection-pool reset guarantees and negative tests; treat as hard gate before tenant-runtime exposure.</li>
+<li><strong>Consequences / implications:</strong> Determines feasibility/safety of I-12 and any tenant-scoped runtime behavior.</li>
+<li><strong>Dependencies and affected increments:</strong> PD-006, tenant isolation invariants, I-12.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Bypass or context leakage can cause cross-tenant access.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Mechanism details/validation evidence not available; <strong>critical information/approval gap</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Hard blocker</strong> for I-12 and tenant-runtime safety.</li>
+</ul>
+<h3>PD-006 — RLS FORCE behavior and table ownership hardening details</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Deferred</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Finalize RLS enable/FORCE applicability and ownership/role hardening compatible with controlled operations.</li>
+<li><strong>Why a decision is needed:</strong> Affects bypass resistance and administrative operability (I-12).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Source indicates enable RLS on tenant-protected tables and apply FORCE where compatible; exact applicability deferred to implementation review.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): minimize bypass paths, document/justify any controlled exceptions, and validate with privileged-role negative tests; align with PD-005 mechanism.</li>
+<li><strong>Consequences / implications:</strong> Impacts defense-in-depth effectiveness and operations.</li>
+<li><strong>Dependencies and affected increments:</strong> PD-005; security/DBA governance.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Misconfiguration can permit unintended bypass or break controlled maintenance.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Deferred; requires security/DBA review and environment-specific validation.</li>
+<li><strong>Blocking characterization:</strong> <strong>Hard blocker/deferred prerequisite</strong> for I-12 finalization.</li>
+</ul>
+<h3>PD-007 — Outbox claim mechanism and lease/fencing implementation details</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Select and validate a safe outbox claim/lease/fencing approach under at-least-once semantics.</li>
+<li><strong>Why a decision is needed:</strong> Impacts throughput, contention, and duplicate-processing safety (I-08, Ops 11/12).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Options considered (source): <code>FOR UPDATE SKIP LOCKED</code> claim, advisory locks, lease-token CAS updates, hybrid. Proposed: DB-row claim with lease token/expiry/heartbeat and atomic transitions; <code>SKIP LOCKED</code> likely suitable but must be validated.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): validate under contention/failure/restart scenarios and ensure fencing prevents stale workers from committing conflicting state; preserve unknown-outcome handling (OD-009).</li>
+<li><strong>Consequences / implications:</strong> Affects reliability and operational behavior of outbox processing.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-009, OD-012.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Race conditions or weak fencing can duplicate or lose processing effects.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Requires engineering validation and approved semantics.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite</strong> for I-08/runtime behavior.</li>
+</ul>
+<h3>PD-008 — Event receipt dedup uniqueness predicate finalization per connector/namespace</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Define correct uniqueness predicates for event receipt dedup across namespaces/fallback cases.</li>
+<li><strong>Why a decision is needed:</strong> Impacts ingest correctness and write/index cost (I-07, Op 10).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Options considered (source): single global unique, multiple partial uniques by namespace/id basis, generated canonical key column. Proposed: multiple explicit partial/conditional unique indexes matching approved namespace semantics and fallback rules.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): align predicates exactly with approved OD-013 namespace/provenance rules and test collision/ambiguity cases; keep distinct from identity/licensing ledger.</li>
+<li><strong>Consequences / implications:</strong> Affects dedup correctness and downstream processing.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-013.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Overly broad/narrow predicates can drop or duplicate events.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Depends on OD-013 connector-specific decisions; <strong>information gap</strong>.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite</strong> for I-07 finalization.</li>
+</ul>
+<h3>PD-009 — JSONB indexing policy for operational/SOC/inventory attributes</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Control JSONB indexing to balance query needs with write/storage/maintenance and sensitivity concerns.</li>
+<li><strong>Why a decision is needed:</strong> Impacts I-10/I-11 performance and exposure posture.</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Options considered (source): no JSONB indexes, selective expression indexes, targeted GIN indexes. Proposed: no default GIN; add selective indexes only for proven query paths with sensitivity review.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): require measured query-path justification and review indexed paths for sensitive data exposure; prefer targeted expression indexes where sufficient.</li>
+<li><strong>Consequences / implications:</strong> Affects query flexibility, cost, and risk.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-012.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Unvalidated GIN/indexing can degrade writes and broaden exposure.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Requires workload evidence and security/DBA validation.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional/deferrable validation prerequisite</strong>.</li>
+</ul>
+<h3>PD-010 — Partitioning adoption triggers and initial partition keys</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Deferred</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Adopt partitioning only when justified by evidence and compatible with constraints/lifecycle governance.</li>
+<li><strong>Why a decision is needed:</strong> Impacts operability, migration complexity, and lifecycle automation (I-14).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Options considered (source): no partitioning now, immediate partitioning, threshold-based deferred adoption. Proposed: defer; adopt only after measured thresholds with partition-key-inclusive uniqueness design.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): validate retention/legal-hold behavior, uniqueness/FK implications, and maintenance tooling before adoption; avoid premature partitioning.</li>
+<li><strong>Consequences / implications:</strong> Affects long-term operations and performance.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-010, OD-012.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Premature or incompatible partitioning can break constraints/operations.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Deferred pending evidence and governance approvals.</li>
+<li><strong>Blocking characterization:</strong> <strong>Deferrable prerequisite</strong> (blocks I-14 adoption).</li>
+</ul>
+<h3>PD-011 — Cryptographic/hash representation for evidence and fingerprint-protection artifacts</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</li>
+<li><strong>Problem / unresolved question:</strong> Standardize representation for integrity/fingerprint artifacts to support verification and interoperability.</li>
+<li><strong>Why a decision is needed:</strong> Impacts evidence integrity tooling and fingerprint-related storage (I-04, I-09).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Options considered (source): <code>text</code> encoding, <code>bytea</code>, algorithm metadata columns. Proposed: store algorithm identifier plus hash/derived value in consistent encoded form; exact type chosen for interoperability/indexing needs.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): include algorithm/version metadata and ensure constant, verifiable encoding/handling practices aligned with OD-006/OD-010 requirements.</li>
+<li><strong>Consequences / implications:</strong> Affects verification, storage, and future migrations.</li>
+<li><strong>Dependencies and affected increments:</strong> OD-006, OD-010.</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Inconsistent representation complicates verification and rotation/migration.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Requires security/engineering review and policy alignment.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite</strong>.</li>
+</ul>
+<h3>PD-012 — Physical handling of global-vs-tenant detection rules and platform-level audit rows</h3>
+<ul>
+<li><strong>Recorded status (preserved):</strong> Proposed</li>
+<li><strong>Primary sources (committed):</strong> docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md; docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</li>
+<li><strong>Problem / unresolved question:</strong> Model global vs tenant scope explicitly to prevent leakage while supporting governed platform/admin needs.</li>
+<li><strong>Why a decision is needed:</strong> Impacts isolation clarity and access governance (I-02, I-10).</li>
+<li><strong>Viable alternatives/options supported by source documents:</strong> Options considered (source): strict tenant-only tables, nullable-scope tables with guarded access, separate global tables. Proposed: prefer explicit scope modeling and separate global catalog tables where truly global; guarded access for any admin/global rows.</li>
+<li><strong>Copilot analysis (not a source-backed decision or approval):</strong> Copilot analysis (advisory): minimize nullable-scope ambiguity, enforce strict access paths/policies, and test cross-tenant leakage cases; align with support-access/audit governance constraints.</li>
+<li><strong>Consequences / implications:</strong> Affects leakage risk and administrative flexibility.</li>
+<li><strong>Dependencies and affected increments:</strong> Tenant isolation invariants; OD-010 (controlled admin implications).</li>
+<li><strong>Risks if unresolved or incorrectly assumed:</strong> Ambiguous scope modeling can create privilege or data-leakage paths.</li>
+<li><strong>Information gaps / owner clarification needed:</strong> Requires security/architecture review and validation.</li>
+<li><strong>Blocking characterization:</strong> <strong>Conditional prerequisite</strong> for scope-sensitive structures.</li>
+</ul>
+
+</article>
+</div>
+
+</body>
+</html>
