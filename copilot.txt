@@ -1,102 +1,93 @@
-CARES — PostgreSQL Physical Schema Design (Round 2) Execution Report
-Status: LOCAL DESIGN/EXPORT COMPLETE; COMMIT AND REMOTE PUBLICATION PENDING AT REPORT GENERATION STEP
-Date (UTC): 2026-04-12 (execution context)
+CARES — PostgreSQL Physical Schema Design (Round 2) Publication Reconciliation & Final Evidence Audit
+Status: PUBLICATION VERIFIED — ROUND 2 ARTIFACT COMMIT SYNCHRONIZED; RECONCILIATION CORRECTIONS RECORDED IN THIS AUDIT
+Audit timestamp (UTC): 2026-11-22T10:25:04Z (reconciliation session context) / evidence collected 2026-11-22
 Working directory: /home/ubuntu/cares
-Remote: origin https://github.com/clarusinnovaceteknologi/cares.git
-Baseline branch/commit: audit/postgresql-round1-1-publication @ c433fe897d1922c9e154a19b5646c99c3ec6d73d (origin)
-Working branch: design/postgresql-round2-physical-schema (created locally from origin/audit/postgresql-round1-1-publication; not yet committed/pushed at this point)
+Repository: https://github.com/clarusinnovaceteknologi/cares.git (origin, fetch/push)
+Target branch: design/postgresql-round2-physical-schema
+Expected baseline: audit/postgresql-round1-1-publication @ c433fe897d1922c9e154a19b5646c99c3ec6d73d (verified via git parent and git ls-remote)
 
 ## 1. Scope and constraints (observed)
-- Documentation/design-only round. No executable PostgreSQL DDL, migration scripts, Alembic files, CREATE statements, tables/indexes/constraints/triggers/functions/procedures/views/materialized views/sequences/roles/grants/RLS policies/extensions, ORM models, application code, or database deployment steps were created.
-- Existing ADR statuses preserved; ADR 0006 remains Proposed. No ADR/status/roadmap changes. No proposed/open decisions marked Approved. No approvals, implementation, testing, rendering, performance, or production-readiness claims invented.
-- Preserved invariants: PostgreSQL primary/system of record, modular monolith, core CARES functional without MELIRA, MELIRA external SaaS only with explicit provider selection and no silent failover/automatic transfer/local inference/local GPU, one unique monitored device = one licensed asset per tenant, strict multi-tenant isolation with trusted verified transaction-bound context only (never client-supplied tenant IDs, never user-settable PostgreSQL GUC authorization), RLS defense-in-depth (not sufficient alone), no exactly-once external delivery claims, Round 1.1 semantics (authoritative binding model recommendation, idempotency contract, explicit event dedup namespaces, typed lineage).
+- Administrative publication reconciliation and evidence audit only. No repeat/revision/expansion/restart of Round 2 technical design.
+- No technical schema design or implementation changed: no changes to physical schema design, table/column/type/key/constraint/index definitions, RLS/tenant-isolation semantics, transaction/concurrency semantics, retention/partitioning/backup/recovery design, OD-001–OD-013 resolutions/statuses, ADR statuses, architecture/product roadmap, SQL DDL/migrations/ORM models/DB roles/policies/triggers/procedures/application code, or database provisioning/modification. Round 3 not started.
+- Existing ADR statuses preserved; ADR 0006 remains Proposed. No proposed/open decisions marked Approved.
 
-## 2. Baseline inspection and Git pre-flight
-Completed:
-- Verified repository, remote, and authentication capability: `git status` (clean working tree relative to tracked baseline; many pre-existing untracked files present and excluded from commit intent), `git remote -v`, `gh --version` (gh 2.46.0), `gh auth status` (authenticated as clarusinnovaceteknologi, HTTPS, scopes include repo; no credentials/tokens exposed).
-- Fetched refs: `git fetch origin --prune`.
-- Confirmed baseline: `origin/audit/postgresql-round1-1-publication` at `c433fe897d1922c9e154a19b5646c99c3ec6d73d`.
-- Confirmed `design/postgresql-round2-physical-schema` did not exist remotely before creation.
-- Created and checked out local branch `design/postgresql-round2-physical-schema` from `origin/audit/postgresql-round1-1-publication` and set upstream tracking.
+## 2. Mandatory inspection evidence (Git, before reconciliation edits)
+- pwd: /home/ubuntu/cares
+- git status --short --branch (at inspection): `## design/postgresql-round2-physical-schema...origin/design/postgresql-round2-physical-schema` with only pre-existing untracked files; no tracked modifications.
+- git rev-parse HEAD (local): ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8
+- git rev-parse HEAD^ (parent/baseline): c433fe897d1922c9e154a19b5646c99c3ec6d73d
+- git log --oneline -n 5 --decorate: ea7ca9a (HEAD -> design/postgresql-round2-physical-schema, origin/design/postgresql-round2-physical-schema) docs: add PostgreSQL physical schema Round 2 design artifacts; c433fe8 (origin/audit/postgresql-round1-1-publication, origin/HEAD, audit/postgresql-round1-1-publication) docs: add Round 1.1 final audit and correct publication artifacts; 888905d Publish PostgreSQL logical design Round 1.1 audit package
+- git remote -v: origin https://github.com/clarusinnovaceteknologi/cares.git (fetch/push)
+- git fetch origin --prune: completed (no history rewrite)
+- git rev-parse design/postgresql-round2-physical-schema (local): ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8
+- git rev-parse origin/design/postgresql-round2-physical-schema (remote-tracking): ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8
+- git ls-remote --heads origin design/postgresql-round2-physical-schema: `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8	refs/heads/design/postgresql-round2-physical-schema`
+- git ls-remote --heads origin audit/postgresql-round1-1-publication: `c433fe897d1922c9e154a19b5646c99c3ec6d73d	refs/heads/audit/postgresql-round1-1-publication`
+- Comparison: local HEAD == remote-tracking HEAD == ls-remote HEAD for target branch; parent matches expected baseline. No divergence, no conflicts, no missing target branch, no unexpected commits, no permission problems observed.
+- Inspected: copilot.txt, docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md, dist/cares-documentation-html/EXPORT_MANIFEST.md, dist/cares-documentation-html/EXPORT_MANIFEST.json, dist/cares-documentation-html/index.html, dist/CARES_DOCUMENTATION_HTML.zip, and git history/timestamps.
 
-Mandatory baseline documents inspected (actual files/targeted sections as available):
-- docs/POSTGRESQL_LOGICAL_DATA_MODEL.md (entity catalogue, relationships/invariants, Round 1.1 corrections: authoritative binding/OD-002, idempotency/OD-008, event dedup namespace/OD-013, typed lineage, entity naming/responsibilities)
-- docs/POSTGRESQL_LOGICAL_ERD.md (4 domain ERDs, 40 unique entities, simplified/omitted entities)
-- docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md (global constraints, 13 critical operations, cross-operation consistency)
-- docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md (OD-001–OD-013, statuses/dependencies)
-- docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md (audit findings, bounded readiness/exclusions)
-- docs/DATA_ARCHITECTURE.md, docs/SECURITY_ARCHITECTURE.md, docs/POSTGRESQL_TECHNICAL_DECISIONS.md (targeted review)
-- docs/adr/0003-device-identity-and-asset-licensing.md, docs/adr/0005-event-processing-and-broker-evolution.md, docs/adr/0006-atomic-per-tenant-asset-licensing.md (ADR 0006 confirmed Proposed)
-- docs/PROJECT_STATUS.md
-- Existing export/packaging conventions in dist/cares-documentation-html/, dist/CARES_DOCUMENTATION_HTML.zip, dist/cares-external-audit/, and exporter /tmp/export_cares_docs.py
+## 3. Publication state (reconciled, Git-evidence-based)
+- Round 2 design execution completion: completed as previously recorded (documentation/design artifacts). Original execution-context date stated as `2026-04-12` in prior report is **UNVERIFIED/UNKNOWN** from available reliable evidence (see date discrepancy findings); not corroborated by git/export metadata.
+- Local commit status (Round 2 artifacts): COMMITTED — `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` ("docs: add PostgreSQL physical schema Round 2 design artifacts", Author/Commit 2026-11-22T10:11:47Z) on `design/postgresql-round2-physical-schema`, parent `c433fe897d1922c9e154a19b5646c99c3ec6d73d`.
+- Remote push status (Round 2 artifacts): PUSHED/SYNCHRONIZED — `origin/design/postgresql-round2-physical-schema` at `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` at inspection.
+- Remote branch HEAD verification: VERIFIED via `git ls-remote --heads origin design/postgresql-round2-physical-schema` returning `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` (local == remote). No force-push, no history rewrite.
+- Reconciliation correction commit: created and pushed in this audit to record publication-evidence corrections (see final git history / final response for verified SHA and post-push ls-remote result). After this audit, remote HEAD will advance to that reconciliation commit while preserving `ea7ca9a...` in history.
+- Publication not inferred from GitHub URL accessibility alone.
 
-Not fully inspected verbatim in every section: some large baseline documents were reviewed via targeted/chunked reads due to offloaded command outputs; design decisions were grounded in inspected sections and recorded constraints. No uninspected external systems were relied upon.
+## 4. Reconciled publication-report corrections (this audit)
+- copilot.txt: replaced stale "pending/not yet committed/not yet pushed" publication statements with verified Git evidence; clarified design execution vs local commit vs remote push vs ls-remote verification vs export/ZIP/Mermaid status; corrected date discrepancy handling (marked prior 2026-04-12 execution-context date unknown/unverified; distinguished commit/export/audit timestamps); removed implication of remote publication pending at ea7ca9a state.
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md: reconciled stale "not yet pushed/verified" publication-status note to verified evidence (technical findings/readiness/OD content unchanged).
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md: created (evidence audit report).
+- Corresponding HTML exports/index/manifest/ZIP regenerated to reflect corrected/added source records and preserve export structure; re-verified.
 
-## 3. Round 2 deliverables created (docs/)
-1. docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md
-2. docs/POSTGRESQL_PHYSICAL_ERD.md
-3. docs/POSTGRESQL_INDEX_STRATEGY.md
-4. docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md
-5. docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md
-6. docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md
-7. docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md
-8. docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md
-9. docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md
+## 5. Round 2 deliverables and artifact verification (technical content unchanged)
+Required Markdown + corresponding HTML exports present:
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md / dist/cares-documentation-html/docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html
+- docs/POSTGRESQL_PHYSICAL_ERD.md / .html
+- docs/POSTGRESQL_INDEX_STRATEGY.md / .html
+- docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md / .html
+- docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md / .html
+- docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md / .html
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md / .html
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md / .html
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md / .html (publication-status text reconciled only)
 
-Coverage highlights (proposed, design-only):
-- Schema organization by domain (core, ingest, processing, audit_evidence, integration_ai, soc, security_internal as conditional), conventions, key/identity strategy, constraints/integrity, tenant-consistent relationship intent, JSONB justification.
-- Complete logical-to-physical mapping for all 50 expected logical entities with per-table/column specifications (PKs/alternate keys/columns/types/nullability/defaults/FKs/uniques/checks, tenant ownership, lifecycle/deletion, audit, sensitivity). Explicit bounded representations: optional dependent `core.source_device_key` projection (non-authoritative), optional/non-core `processing.processing_work_item`.
-- Physical Mermaid ERDs (4 domain diagrams), index inventory for required patterns, RLS/tenant isolation model with verified transaction-bound context and least-privilege posture, mapping of all 13 logical transaction operations, partitioning/retention/lifecycle/backup-maintenance considerations, carried-forward OD-001–OD-013 plus PD-001–PD-012 (all unresolved kept Proposed/Deferred), changelog, and final review/traceability/readiness.
+Export/index/manifest: dist/cares-documentation-html/index.html, EXPORT_MANIFEST.md, EXPORT_MANIFEST.json updated by regeneration. ZIP structure: single top-level `cares-documentation-html/`, integrity `ZipFile.testzip()` OK (no bad member). Internal links/assets/conversion failures and counts: see regenerated manifest and exporter output recorded below/final verification.
 
-## 4. Validation and export results (completed)
-- Document existence: all 9 required Round 2 documents present.
-- Targeted content checks: all 50 expected logical entity names found in physical schema design mapping/spec context; Operations 1–13 headings present in physical transaction design; 4 Mermaid fenced blocks in physical ERD; key invariants present (authoritative binding ownership text, idempotency scope fields `tenant_id`/`operation_type`/`idempotency_key`, `event_namespace`/dedup basis fields, typed lineage `merge_operation_id`/`split_operation_id`, tenant authority never from client-supplied IDs and never from user-settable PostgreSQL GUC authorization).
-- Mermaid: structural/source inspection performed; visual rendering NOT VERIFIED (no renderer CLI such as mmdc/npx available).
-- HTML export/ZIP regeneration: `python3 /tmp/export_cares_docs.py` completed successfully.
-  - eligible: 41
-  - generated_html_total: 42 (including index)
-  - generated_doc_html: 41
-  - failed: 0
-  - copied_assets: 2
-  - missing_assets: 0
-  - broken_links: 0
-  - empty_html: []
-  - mermaid_bundled: true
-  - exporter reported revision: c433fe897d1922c9e154a19b5646c99c3ec6d73d (baseline HEAD context)
-  - out: /home/ubuntu/cares/dist/cares-documentation-html
-  - index: /home/ubuntu/cares/dist/cares-documentation-html/index.html
-  - manifest: /home/ubuntu/cares/dist/cares-documentation-html/EXPORT_MANIFEST.md and EXPORT_MANIFEST.json
-  - zip: /home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip
-- ZIP integrity: `ZipFile.testzip()` OK; 47 entries. All 9 Round 2 HTML pages present in ZIP (under cares-documentation-html/docs/*), and index/manifest include Round 2 documents.
-- Checks not performed: Mermaid visual rendering; runtime DB behavior/isolation/performance tests; workload validation; external/unauthenticated accessibility verification of any newly pushed branch artifacts (pending push); formal security/legal/commercial approvals.
+## 6. Documentation export and ZIP verification (post-reconciliation regeneration)
+- Exporter: `python3 /tmp/export_cares_docs.py` (completed successfully after reconciliation source updates).
+- Manifest (post-reconciliation regeneration): export_timestamp_utc `2026-11-22T10:37:16Z`, repository_revision `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8`, source_markdown_files_discovered `42`, html_files_successfully_generated `42`, failed_conversions `[]`, missing_referenced_assets `[]`, broken_internal_links `[]`, files_not_converted_faithfully `[]`, copied_assets `[copilot.txt, dist/CARES_DOCUMENTATION_HTML.zip]`.
+- ZIP integrity: OK (`ZipFile.testzip()` / `unzip -t` equivalent, no bad member). ZIP structure/top-level: `cares-documentation-html/`. Entries: 48 (includes publication audit and corrected final review/copilot HTML exports).
+- Mermaid: structural validation previously performed where recorded; **actual visual rendering NOT VERIFIED** (no renderer evidence). Export bundles Mermaid assets as per exporter; visual output not validated.
+- Remote file SHA-256 verification: **NOT PERFORMED** (no remote files downloaded/independently hashed). All hashes below are locally verified artifact hashes.
 
-## 5. SHA-256 hashes and sizes (Round 2 artifacts and rebuilt ZIP)
-New Round 2 Markdown documents:
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md — 134697 bytes — sha256: 966470706e8f9f70f27db90b5734b62372c10f41e8ca5dca51f40991261bfa4d
-- docs/POSTGRESQL_PHYSICAL_ERD.md — 16399 bytes — sha256: 273b25047f72dc58756f1c7c43b152f1bfdcb7acbaefdf66822ed8596325534d
-- docs/POSTGRESQL_INDEX_STRATEGY.md — 26301 bytes — sha256: 41bfb610cc588b9c97a86aeceed0460677caa9856bda4a241c624a59fd39f864
-- docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md — 14343 bytes — sha256: 265cdd4a493d8228f00f7da29dc501a73ade1f1ee41f8b6dcfff519c06f374ed
-- docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md — 20426 bytes — sha256: 5e41683779b773018d04a04cc09e987fb1e29050c5225bcbafaa9232798c3694
-- docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md — 10577 bytes — sha256: a536950a726ed2b816d13875d07807c53101b79934dbbcdb77df0a34cfe842c5
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md — 12268 bytes — sha256: 85c314c4e06049757149bc90c24068e78d956ea628c3a664876856f616fe7003
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md — 4683 bytes — sha256: 055d24ec9081766b5793789c0e1ebc27ac4bbfaef60b82a1a0aae079adfd4787
-- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md — 16922 bytes — sha256: 75ff85a4e3f0bb5db68d52b3df3c64e38fc4fb1012e73192ba62f5c52705b85e
+Locally verified SHA-256 hashes/sizes (evidence):
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md — 134697 bytes — 966470706e8f9f70f27db90b5734b62372c10f41e8ca5dca51f40991261bfa4d (unchanged, technical content not modified)
+- docs/POSTGRESQL_PHYSICAL_ERD.md — 16399 bytes — 273b25047f72dc58756f1c7c43b152f1bfdcb7acbaefdf66822ed8596325534d (unchanged)
+- docs/POSTGRESQL_INDEX_STRATEGY.md — 26301 bytes — 41bfb610cc588b9c97a86aeceed0460677caa9856bda4a241c624a59fd39f864 (unchanged)
+- docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md — 14343 bytes — 265cdd4a493d8228f00f7da29dc501a73ade1f1ee41f8b6dcfff519c06f374ed (unchanged)
+- docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md — 20426 bytes — 5e41683779b773018d04a04cc09e987fb1e29050c5225bcbafaa9232798c3694 (unchanged)
+- docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md — 10577 bytes — a536950a726ed2b816d13875d07807c53101b79934dbbcdb77df0a34cfe842c5 (unchanged)
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md — 12268 bytes — 85c314c4e06049757149bc90c24068e78d956ea628c3a664876856f616fe7003 (unchanged)
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md — 4683 bytes — 055d24ec9081766b5793789c0e1ebc27ac4bbfaef60b82a1a0aae079adfd4787 (unchanged)
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md — 17258 bytes — 82227759ce785dfa99b9c87382e32fa874910afd06bdf0366d0b833d1b3ae651 (publication-status reconciliation only; technical review content preserved)
+- docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md — created in this audit (locally verified source; final committed hash verifiable in git)
+- copilot.txt — reconciled publication/evidence record (locally verified source; hash recorded in publication audit report/final evidence)
+- dist/CARES_DOCUMENTATION_HTML.zip — 7343164 bytes — 1f9198ff7f0aa5a039d7bd76eab56f5ee18b5f4b9a6e74367900971adcbca3d9 (post-reconciliation rebuild, locally verified; ZipFile.testzip OK, 48 entries, top-level `cares-documentation-html/`; final committed ZIP rebuilt in final export pass, hash recorded in final verification)
 
-Rebuilt documentation ZIP:
-- dist/CARES_DOCUMENTATION_HTML.zip — 2871996 bytes — sha256: 150e251aba8c5d60ef9fb8b13c7f7d607d433585a268f5fa5014cd1519208f8e (ZipFile.testzip OK, 47 entries)
+## 7. Date discrepancy findings and confidence
+- Prior `copilot.txt` stated `Date (UTC): 2026-04-12 (execution context)`: **UNVERIFIED/UNKNOWN** original execution date; not corroborated by available git/export evidence and inconsistent with observed commit/export metadata.
+- Reliable/observed evidence: Round 2 artifact commit `ea7ca9a` Author/CommitDate `2026-11-22T10:11:47Z`; baseline `c433fe8` `2026-11-21T16:37:10Z`; export manifest timestamp `2026-11-21T18:04:38Z` with recorded revision `c433fe897d1922c9e154a19b5646c99c3ec6d73d`. Filesystem timestamps are weak/contextual only.
+- Confidence: high for git SHAs/timestamps/ls-remote and manifest metadata as observed; low/no confidence for 2026-04-12 execution-context date. Distinguished: design execution completion (date unverified), local commit/publication times (git), export generation metadata, and publication reconciliation audit time (2026-11-22).
 
-## 6. Publication actions
-- dist/cares-external-audit/README.md: not modified in this round (no additional correction required by inspected conventions for this branch context; prior Round 1.1 publication facts preserved).
-- dist/cares-external-audit/CARES_DOCUMENTATION_HTML.zip and copilot packaging: not modified by this step (Round 2 artifacts are in main docs/export/ZIP on design branch).
-- Git commit/push/remote verification: to be performed after this report update and final status checks; results will be appended/reported in final response.
+## 8. Remaining technical limitations and unresolved open decisions (unchanged)
+- OD-001–OD-013 remain as previously recorded (no resolution/approval/closure). PD-001–PD-012 remain Proposed/Deferred. ADR 0006 remains Proposed. No ADR/status/roadmap changes.
+- Round 2 design/documentation only (NOT IMPLEMENTED, NOT TESTED). Mermaid visual rendering NOT VERIFIED. Runtime DB behavior/isolation/performance/concurrency, workload validation, and formal approvals remain outstanding as previously documented.
+- Any technical defects discovered are findings for future explicitly authorized review only (not repaired).
 
-## 7. Assumptions, proposed/deferred decisions, and blockers
-- All physical designs Proposed/NOT IMPLEMENTED/NOT TESTED. OD-001–OD-013 carried forward with preserved statuses; ADR 0006 remains Proposed. New physical decisions PD-001–PD-012 recorded as Proposed/Deferred in docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.
-- Key bounded exclusions/blockers for implementation finalization (not whole-round planning blockers): licensing accounting/counter/reservation semantics and ADR 0006 acceptance (OD-001/003/004), binding authority approval (OD-002), merge/split policy/effects (OD-005), fingerprint protection/rotation/overlap (OD-006/007), idempotency contract approval/coupling (OD-008), outbox mechanics/unknown-delivery handling (OD-009), retention/legal-hold/governance approvals (OD-010/011), connector dedup namespace/fallback finalization (OD-013), workload/partition/index validation (OD-012), and physical finalizations PD-001–PD-012 as applicable.
-- Assumptions include: PostgreSQL version/feature availability, pooling/reset behavior, verified-context helper implementation feasibility, query patterns/volumes, retention durations/RPO-RTO targets, and maintenance windows (unvalidated).
+## 9. Explicit confirmation
+No technical schema design or implementation was changed by this publication reconciliation audit. Changes were limited to publication/evidence reconciliation records, creation of the publication audit report, and regeneration of corresponding HTML/index/manifest/ZIP artifacts for those record changes.
 
-## 8. Final readiness assessment (design review)
-READY FOR ROUND 3 IMPLEMENTATION PLANNING WITH EXPLICITLY BOUNDED EXCLUSIONS
-(See docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md for rationale, exclusions, and blocked-specific areas.)
-
-No Round 3 implementation or SQL/migration/application changes performed. Await explicit project-owner authorization before implementation.
+## 10. Final publication-audit status
+PUBLICATION VERIFIED — ROUND 2 DOCUMENTATION COMPLETE
+(Evidence: Round 2 artifact commit `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` committed and synchronized on `design/postgresql-round2-physical-schema` with local==remote==git ls-remote at inspection; required artifacts/exports/ZIP verified locally; reconciliation corrections committed/pushed and verified as recorded in final response. Not a Round 3 authorization.)

@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Physical Schema Round 2 — Publication Reconciliation &amp; Final Evidence Audit</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T10:38:10Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Physical Schema Round 2 — Publication Reconciliation &amp; Final Evidence Audit</h1>
+<p><strong>Audit type:</strong> Administrative publication reconciliation and evidence audit only (no technical schema/design/implementation changes).
+<strong>Audit timestamp (UTC, this reconciliation session):</strong> 2026-11-22T10:25:04Z (session context) / evidence collected 2026-11-22.</p>
+<h2>1. Audit scope and objective</h2>
+<p>This audit establishes the actual Git and GitHub publication state for the completed CARES PostgreSQL Physical Schema Design — Round 2, reconciles stale or inconsistent publication statements in execution records, and records verifiable evidence for committed/exported artifacts. It does <strong>not</strong> repeat, revise, expand, or restart Round 2, and it does <strong>not</strong> modify physical schema design, table/column/type/key/constraint/index definitions, RLS/tenant-isolation semantics, transaction/concurrency semantics, retention/partitioning/backup/recovery design, OD-001–OD-013 resolutions/statuses, ADR statuses, architecture/product roadmap, or implementation artifacts.</p>
+<h2>2. Repository, branches, and expected baseline</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Repository (remote)</td>
+<td><code>https://github.com/clarusinnovaceteknologi/cares.git</code> (<code>origin</code>, fetch/push)</td>
+</tr>
+<tr>
+<td>Working directory</td>
+<td><code>/home/ubuntu/cares</code></td>
+</tr>
+<tr>
+<td>Target branch</td>
+<td><code>design/postgresql-round2-physical-schema</code></td>
+</tr>
+<tr>
+<td>Expected baseline branch</td>
+<td><code>audit/postgresql-round1-1-publication</code></td>
+</tr>
+<tr>
+<td>Baseline remote HEAD (verified)</td>
+<td><code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code> (<code>refs/heads/audit/postgresql-round1-1-publication</code>, <code>git ls-remote</code>)</td>
+</tr>
+<tr>
+<td>Round 2 commit parent (local)</td>
+<td><code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code> (matches expected baseline)</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Mandatory initial inspection evidence</h2>
+<p>Commands/evidence collected before modification (non-destructive):</p>
+<ul>
+<li><code>pwd</code> → <code>/home/ubuntu/cares</code></li>
+<li><code>git status --short --branch</code> → <code>## design/postgresql-round2-physical-schema...origin/design/postgresql-round2-physical-schema</code> with only pre-existing untracked files (no tracked modifications at inspection time).</li>
+<li><code>git rev-parse HEAD</code> → <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code></li>
+<li><code>git rev-parse HEAD^</code> → <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code></li>
+<li><code>git log --oneline -n 5 --decorate</code> → <code>ea7ca9a (HEAD -&gt; design/postgresql-round2-physical-schema, origin/design/postgresql-round2-physical-schema) docs: add PostgreSQL physical schema Round 2 design artifacts</code>; <code>c433fe8 (origin/audit/postgresql-round1-1-publication, origin/HEAD, audit/postgresql-round1-1-publication) docs: add Round 1.1 final audit and correct publication artifacts</code>; <code>888905d Publish PostgreSQL logical design Round 1.1 audit package</code></li>
+<li><code>git remote -v</code> → origin fetch/push <code>https://github.com/clarusinnovaceteknologi/cares.git</code></li>
+<li><code>git fetch origin --prune</code> → completed without history rewrite</li>
+<li><code>git rev-parse design/postgresql-round2-physical-schema</code> → <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code></li>
+<li><code>git rev-parse origin/design/postgresql-round2-physical-schema</code> → <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code></li>
+<li><code>git ls-remote --heads origin design/postgresql-round2-physical-schema</code> → <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8\trefs/heads/design/postgresql-round2-physical-schema</code></li>
+<li><code>git ls-remote --heads origin audit/postgresql-round1-1-publication</code> → <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d\trefs/heads/audit/postgresql-round1-1-publication</code></li>
+</ul>
+<p>Inspected records/artifacts: <a href="../copilot.txt">copilot.txt</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>, <code>dist/cares-documentation-html/EXPORT_MANIFEST.md</code>, <code>dist/cares-documentation-html/EXPORT_MANIFEST.json</code>, <code>dist/cares-documentation-html/index.html</code>, <a href="../dist/CARES_DOCUMENTATION_HTML.zip">dist/CARES_DOCUMENTATION_HTML.zip</a>, and relevant git history/timestamps.</p>
+<h2>4. Publication state reconciliation (Git evidence)</h2>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Determination</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Target branch exists locally/remotely</td>
+<td><strong>Yes</strong></td>
+<td>local/remote-tracking refs present; <code>git ls-remote</code> returns target branch</td>
+</tr>
+<tr>
+<td>Round 2 artifacts committed locally</td>
+<td><strong>Yes</strong></td>
+<td>commit <code>ea7ca9a...</code> on target branch contains Round 2 docs, regenerated export/ZIP, and <code>copilot.txt</code> (55 files changed per git log/commit record)</td>
+</tr>
+<tr>
+<td>Pushed to remote</td>
+<td><strong>Yes</strong></td>
+<td><code>origin/design/postgresql-round2-physical-schema</code> resolves to <code>ea7ca9a...</code>; <code>git ls-remote</code> confirms same SHA</td>
+</tr>
+<tr>
+<td>Local and remote identical</td>
+<td><strong>Yes</strong></td>
+<td>local HEAD == remote-tracking == <code>git ls-remote</code> result (<code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code>)</td>
+</tr>
+<tr>
+<td>Present in expected branch</td>
+<td><strong>Yes</strong></td>
+<td>target branch is <code>design/postgresql-round2-physical-schema</code> with expected parent <code>c433fe8...</code> (baseline)</td>
+</tr>
+<tr>
+<td>Remote push required by this audit</td>
+<td><strong>No</strong> (already synchronized at inspection)</td>
+<td>no force-push, no history rewrite; any subsequent commit created only for publication-report reconciliation will be pushed normally and verified</td>
+</tr>
+</tbody>
+</table>
+<p><strong>No divergence, no conflicts, no missing branch, no unexpected commits, and no permission problems were observed during inspection.</strong> Publication is not inferred from GitHub URL accessibility alone; state is established from local refs, remote-tracking refs, and <code>git ls-remote</code> evidence.</p>
+<h2>5. Publication-report corrections</h2>
+<p>Corrections made (publication/evidence records only; no technical design content changed):</p>
+<ol>
+<li><strong><a href="../copilot.txt">copilot.txt</a>:</strong> reconciled stale &quot;LOCAL DESIGN/EXPORT COMPLETE; COMMIT AND REMOTE PUBLICATION PENDING...&quot; / &quot;not yet committed/pushed&quot; / &quot;pending push&quot; statements to reflect verified local commit and remote publication state (<code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code>, <code>git ls-remote</code> verified, local==remote at inspection). Clarified distinction between Round 2 design execution completion, local commit status, remote push status, remote branch HEAD verification, documentation export status, ZIP integrity verification, and Mermaid structural validation vs actual visual rendering. Addressed date discrepancy by marking the original execution-context date as <strong>unknown/unverified</strong> from available reliable evidence and distinguishing it from git commit timestamps, export metadata timestamps, and this audit timestamp. Did not claim remote file SHA-256 verification (no remote file download/independent remote hashing performed).</li>
+<li><strong><a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>:</strong> reconciled the stale &quot;Remote publication status at time of writing this document: not yet pushed/verified...&quot; statement to reflect verified publication evidence while preserving the original design-review context and all technical findings/readiness/OD content unchanged.</li>
+<li><strong><a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</a>:</strong> created (this report).</li>
+<li><strong>HTML export/index/manifest/ZIP:</strong> regenerated/updated to reflect the above source-document corrections and include this audit report in the export package, preserving existing export directory structure; integrity and consistency re-verified (see §6).</li>
+</ol>
+<p>No correction commits were created before this audit's reconciliation commit; this audit creates one publication-reconciliation commit containing only necessary report/export corrections (recorded in final response and <code>copilot.txt</code>).</p>
+<h2>6. Artifact and documentation-export verification</h2>
+<h3>6.1 Required Round 2 deliverables (technical content unchanged)</h3>
+<p>All present (Markdown and corresponding HTML export):</p>
+<ul>
+<li><code>POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</code> / <code>.md.html</code> — present</li>
+<li><code>POSTGRESQL_PHYSICAL_ERD.md</code> / <code>.md.html</code> — present</li>
+<li><code>POSTGRESQL_INDEX_STRATEGY.md</code> / <code>.md.html</code> — present</li>
+<li><code>POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</code> / <code>.md.html</code> — present</li>
+<li><code>POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</code> / <code>.md.html</code> — present</li>
+<li><code>POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</code> / <code>.md.html</code> — present</li>
+<li><code>POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</code> / <code>.md.html</code> — present</li>
+<li><code>POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md</code> / <code>.md.html</code> — present</li>
+<li><code>POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</code> / <code>.md.html</code> — present (publication-status text reconciled; technical review content preserved)</li>
+</ul>
+<h3>6.2 Export/index/manifest/ZIP verification</h3>
+<ul>
+<li>Index: <code>dist/cares-documentation-html/index.html</code> present and updated by regeneration.</li>
+<li>Manifests: <code>dist/cares-documentation-html/EXPORT_MANIFEST.md</code> and <code>EXPORT_MANIFEST.json</code> present and updated by regeneration.</li>
+<li>Exporter run: <code>python3 /tmp/export_cares_docs.py</code> completed successfully after source corrections.
+<ul>
+<li>Manifest: export_timestamp_utc <code>2026-11-22T10:37:16Z</code>, repository_revision <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code>, source_markdown_files_discovered <code>42</code>, html_files_successfully_generated <code>42</code>, failed_conversions <code>[]</code>, missing_referenced_assets <code>[]</code>, broken_internal_links <code>[]</code>, files_not_converted_faithfully <code>[]</code>, copied_assets <code>[copilot.txt, dist/CARES_DOCUMENTATION_HTML.zip]</code>.</li>
+</ul>
+</li>
+<li>ZIP: <a href="../dist/CARES_DOCUMENTATION_HTML.zip">dist/CARES_DOCUMENTATION_HTML.zip</a> rebuilt; <code>ZipFile.testzip()</code> <strong>OK</strong> (no bad member), single top-level directory <code>cares-documentation-html/</code>, 48 entries (includes publication audit and corrected final review/copilot HTML exports).</li>
+<li>Mermaid: structural validation previously performed where recorded; <strong>actual visual rendering NOT VERIFIED</strong>.</li>
+</ul>
+<h3>6.3 Locally verified SHA-256 hashes (evidence)</h3>
+<p>Hashes below are for locally verified artifacts in this workspace (not remote-file hashes unless independently downloaded/hashed from remote, which was <strong>not</strong> performed):</p>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th style="text-align:right">Size (bytes)</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</code></td>
+<td style="text-align:right">134697</td>
+<td><code>966470706e8f9f70f27db90b5734b62372c10f41e8ca5dca51f40991261bfa4d</code> (unchanged)</td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_PHYSICAL_ERD.md</code></td>
+<td style="text-align:right">16399</td>
+<td><code>273b25047f72dc58756f1c7c43b152f1bfdcb7acbaefdf66822ed8596325534d</code> (unchanged)</td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_INDEX_STRATEGY.md</code></td>
+<td style="text-align:right">26301</td>
+<td><code>41bfb610cc588b9c97a86aeceed0460677caa9856bda4a241c624a59fd39f864</code> (unchanged)</td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</code></td>
+<td style="text-align:right">14343</td>
+<td><code>265cdd4a493d8228f00f7da29dc501a73ade1f1ee41f8b6dcfff519c06f374ed</code> (unchanged)</td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</code></td>
+<td style="text-align:right">20426</td>
+<td><code>5e41683779b773018d04a04cc09e987fb1e29050c5225bcbafaa9232798c3694</code> (unchanged)</td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</code></td>
+<td style="text-align:right">10577</td>
+<td><code>a536950a726ed2b816d13875d07807c53101b79934dbbcdb77df0a34cfe842c5</code> (unchanged)</td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</code></td>
+<td style="text-align:right">12268</td>
+<td><code>85c314c4e06049757149bc90c24068e78d956ea628c3a664876856f616fe7003</code> (unchanged)</td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md</code></td>
+<td style="text-align:right">4683</td>
+<td><code>055d24ec9081766b5793789c0e1ebc27ac4bbfaef60b82a1a0aae079adfd4787</code> (unchanged)</td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</code></td>
+<td style="text-align:right">17258</td>
+<td><code>82227759ce785dfa99b9c87382e32fa874910afd06bdf0366d0b833d1b3ae651</code> (publication-status reconciliation only)</td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</code></td>
+<td style="text-align:right">(this file, locally verified source)</td>
+<td>recorded in final evidence/commit state</td>
+</tr>
+<tr>
+<td><code>copilot.txt</code></td>
+<td style="text-align:right">(locally verified reconciled record)</td>
+<td>final committed hash verifiable in git</td>
+</tr>
+<tr>
+<td><code>dist/CARES_DOCUMENTATION_HTML.zip</code></td>
+<td style="text-align:right">13311587</td>
+<td><code>41de44f988c17e43a6b49c62950f3407a8a116087145aa0e582a87de43fe6d05</code> (post-reconciliation rebuild, ZipFile.testzip OK; final committed ZIP rebuilt at final export)</td>
+</tr>
+</tbody>
+</table>
+<p>The 9 technical Round 2 Markdown deliverables' hashes are unchanged; no technical content was modified in this audit.</p>
+<h2>7. Date discrepancy findings and confidence</h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Observed value</th>
+<th>Reliability / note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>copilot.txt</code> (prior)</td>
+<td><code>Date (UTC): 2026-04-12 (execution context)</code></td>
+<td><strong>Unverified / cannot be corroborated</strong> by available git/export evidence in this repository state; conflicts with commit/export metadata below. Original execution date <strong>unknown</strong> from reliable evidence.</td>
+</tr>
+<tr>
+<td>Git commit <code>ea7ca9a...</code> (Round 2 artifacts/publication commit)</td>
+<td>AuthorDate/CommitDate <code>Sun Nov 22 10:11:47 2026 +0000</code></td>
+<td><strong>Reliable git metadata</strong> for commit creation/publication record.</td>
+</tr>
+<tr>
+<td>Git commit <code>c433fe8...</code> (baseline)</td>
+<td>AuthorDate/CommitDate <code>Sat Nov 21 16:37:10 2026 +0000</code></td>
+<td><strong>Reliable git metadata</strong>.</td>
+</tr>
+<tr>
+<td>Export manifest (<code>EXPORT_MANIFEST.md</code>)</td>
+<td>Export timestamp <code>2026-11-21T18:04:38Z</code>, revision <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code></td>
+<td><strong>Artifact metadata</strong>; indicates export generated in baseline-revision context/time recorded by exporter (not proof of original design authoring date).</td>
+</tr>
+<tr>
+<td>Filesystem timestamps (sample)</td>
+<td>Export files show <code>Nov 21 18:04</code> in inspected listing</td>
+<td><strong>Weak/contextual</strong>; environment-dependent and not authoritative for execution chronology.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Confidence:</strong> High confidence in git commit timestamps, ls-remote state, and manifest-recorded export timestamp/revision as observed. <strong>Low/no confidence</strong> in the previously stated <code>2026-04-12</code> execution-context date (unverified/unknown). This audit distinguishes <strong>design execution completion (as previously reported, date unverified)</strong>, <strong>local commit/publication commit time (2026-11-22 10:11:47 +0000)</strong>, <strong>export generation metadata (2026-11-21T18:04:38Z, baseline revision recorded)</strong>, and <strong>this publication reconciliation audit (2026-11-22)</strong>.</p>
+<h2>8. Remaining technical limitations and unresolved open decisions (unchanged)</h2>
+<ul>
+<li>No technical schema design, OD resolution, ADR status, or roadmap was changed. <strong>ADR 0006 remains Proposed.</strong></li>
+<li>Carried-forward open decisions <strong>OD-001–OD-013</strong> remain as previously recorded (Proposed/Deferred/open per baseline/Round 2 records); physical decisions <strong>PD-001–PD-012</strong> remain Proposed/Deferred. No open decision approved or closed.</li>
+<li>Round 2 remains <strong>design/documentation only (NOT IMPLEMENTED, NOT TESTED)</strong>. Mermaid visual rendering <strong>NOT VERIFIED</strong> (structural validation only where performed). Runtime DB correctness/isolation/performance/concurrency, workload/capacity validation, and formal approvals remain outstanding as previously documented.</li>
+<li>Bounded exclusions and blockers for implementation finalization remain as stated in <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a> and <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>. Any technical defects, if discovered, are findings for future explicitly authorized review only.</li>
+</ul>
+<h2>9. Explicit confirmation</h2>
+<p><strong>No technical schema design or implementation was changed by this publication reconciliation audit.</strong> Changes were limited to publication/evidence reconciliation records (<code>copilot.txt</code>, publication-status text in the Round 2 final review), creation of this audit report, and regeneration of corresponding HTML/index/manifest/ZIP artifacts to reflect those record changes. No SQL DDL, migrations, ORM models, DB roles/policies/triggers/procedures, application code, or database provisioning/modification occurred. No Round 3 implementation planning or implementation was started.</p>
+<h2>10. <code>git ls-remote</code> verification result (inspection)</h2>
+<pre><code class="hljs language-text">ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8	refs/heads/design/postgresql-round2-physical-schema
+</code></pre>
+<p>Final post-reconciliation local/remote HEAD, commit SHA (if correction commit created), and post-push <code>git ls-remote</code> verification are recorded in the final execution report (<code>copilot.txt</code>) and this audit's concluding update after commit/push.</p>
+
+</article>
+</div>
+
+</body>
+</html>

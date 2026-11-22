@@ -2,7 +2,7 @@
 
 **Status:** Proposed design review only; **NOT IMPLEMENTED, NOT TESTED**. This review evaluates the Round 2 PostgreSQL physical schema design documentation against the published Round 1.1 audited logical baseline. It does not authorize implementation, database object creation, ADR/status changes, or roadmap changes. **ADR 0006 remains Proposed.**
 
-**Branch:** `design/postgresql-round2-physical-schema` (created from `origin/audit/postgresql-round1-1-publication`, baseline commit `c433fe897d1922c9e154a19b5646c99c3ec6d73d`). **Remote publication status at time of writing this document:** not yet pushed/verified (see [copilot.txt](/home/ubuntu/cares/copilot.txt) for final execution and publication verification results).
+**Branch:** `design/postgresql-round2-physical-schema` (created from `origin/audit/postgresql-round1-1-publication`, baseline commit `c433fe897d1922c9e154a19b5646c99c3ec6d73d`). **Remote publication status (reconciled 2026-11-22, Git evidence):** Round 2 artifact commit `ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8` is present locally and on `origin/design/postgresql-round2-physical-schema` (local HEAD == remote-tracking == `git ls-remote` at reconciliation audit inspection). Publication-reconciliation record corrections are documented in [docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md](./POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md) and [copilot.txt](/home/ubuntu/cares/copilot.txt).
 
 ## 1. Executive summary
 

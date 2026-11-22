@@ -1,9 +1,9 @@
 # CARES Documentation Export Manifest
 
-- **Export timestamp (UTC):** 2026-11-21T18:04:38Z
-- **Repository revision/commit hash:** c433fe897d1922c9e154a19b5646c99c3ec6d73d
-- **Total discovered Markdown files:** 41
-- **Total successfully converted HTML files:** 41
+- **Export timestamp (UTC):** 2026-11-22T10:38:10Z
+- **Repository revision/commit hash:** ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8
+- **Total discovered Markdown files:** 42
+- **Total successfully converted HTML files:** 42
 - **Failed conversions:** 0
 - **Copied assets:** 2
 - **Missing referenced assets:** 0
@@ -37,6 +37,7 @@
 | docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md | docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html | converted |
 | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md.html | converted |
 | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html | converted |
+| docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md | docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md.html | converted |
 | docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md | docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html | converted |
 | docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md | docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html | converted |
 | docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md | docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html | converted |

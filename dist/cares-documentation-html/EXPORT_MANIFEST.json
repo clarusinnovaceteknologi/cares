@@ -1,8 +1,8 @@
 {
-  "export_timestamp_utc": "2026-11-21T18:04:38Z",
-  "repository_revision": "c433fe897d1922c9e154a19b5646c99c3ec6d73d",
-  "source_markdown_files_discovered": 41,
-  "html_files_successfully_generated": 41,
+  "export_timestamp_utc": "2026-11-22T10:38:10Z",
+  "repository_revision": "ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8",
+  "source_markdown_files_discovered": 42,
+  "html_files_successfully_generated": 42,
   "failed_conversions": [],
   "excluded_files_and_reasons": [],
   "missing_referenced_assets": [],
@@ -127,6 +127,11 @@
     {
       "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md",
       "output": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md",
+      "output": "docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md.html",
       "status": "converted"
     },
     {
