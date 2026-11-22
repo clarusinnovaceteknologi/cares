@@ -75,10 +75,12 @@
 
 No mismatched branch/commit SHAs in git state, no claims of publication before remote verification, no missing `git ls-remote` evidence, and no export/ZIP/hash mismatch were found for the pre-correction published planning artifacts themselves; corrections were limited to evidence-report clarity and inclusion/synchronization of the required audit artifact.
 
-## 6. Audit correction publication (to be finalized by this commit)
+## 6. Audit correction publication (finalized and verified)
 
-- **Audit correction commit:** adds/updates publication-evidence records (`docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md`, `copilot.txt`) and regenerated export/index/manifest/ZIP as required for Markdown source synchronization.
-- **Commit SHA / final local HEAD / final remote HEAD / post-push `git ls-remote` / local-remote match:** recorded after commit and push in the final execution report and, if needed, in a follow-up verification update; must be independently verified.
+- **Audit correction commit:** `2ded9f3425fc44cf2568e8f81636d39f588dcb3c` — `docs: audit and verify Round 3 publication state` (added publication audit record, clarified `copilot.txt`, regenerated/synchronized exports/index/manifest/ZIP for Markdown source changes).
+- **Commit SHA / final local HEAD / final remote HEAD:** `2ded9f3425fc44cf2568e8f81636d39f588dcb3c` (inspection/correction baseline at publication of audit artifacts). See Section 9/final execution record for the final verification-record commit published after recording this SHA.
+- **Post-push `git ls-remote` verification:** `2ded9f3425fc44cf2568e8f81636d39f588dcb3c	refs/heads/planning/postgresql-round3-implementation` (matched local HEAD at time of verification).
+- **Local/remote HEAD match:** **Yes** (independently verified at that commit).
 - **No force-push, no history rewrite, no changes to Round 1.1/Round 2 branches.**
 
 ## 7. Unresolved dependencies and technical limitations (unchanged)
@@ -92,6 +94,6 @@ No mismatched branch/commit SHAs in git state, no claims of publication before r
 
 No physical schema design, table/column/type/key/constraint/index definition, RLS or tenant-isolation semantic design, transaction/concurrency semantic design, retention/partitioning/backup/recovery design, OD/PD resolution or status, ADR status, architecture, roadmap, or implementation artifact was changed by this audit. Actions were limited to publication-state inspection, evidence-report correction, creation of this audit record, and export/index/manifest/ZIP synchronization required for added/updated Markdown documentation sources.
 
-## 9. Final audit status (pre-correction evidence)
+## 9. Final audit status
 
-Based on inspected pre-correction state: **`PUBLICATION VERIFIED — ROUND 3 PLANNING COMPLETE`** for the previously published planning artifacts (`5991a09`, `df10d02` synchronized locally/remotely), subject to successful commit/push/verification of this administrative audit correction and unchanged technical blockers/readiness (`BLOCKED BY OWNER DECISIONS` for implementation). Final status is confirmed after remote verification of the audit correction commit.
+**`ROUND 3 PUBLICATION VERIFIED`** — Administrative publication/evidence reconciliation completed for the Round 3 planning package on `planning/postgresql-round3-implementation`. Required planning artifacts and publication-evidence records are present, synchronized, and independently verified via Git/`git ls-remote` at audited commits; export/index/manifest/ZIP correspond to committed Markdown sources at generation/commit points with integrity/link/asset validation evidence recorded. Technical planning readiness remains **`BLOCKED BY OWNER DECISIONS`** and no implementation is authorized.

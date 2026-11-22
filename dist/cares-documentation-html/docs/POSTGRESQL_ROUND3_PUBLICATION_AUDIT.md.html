@@ -107,7 +107,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T12:22:17Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T12:23:32Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3 Publication Audit &amp; Verification</h1>
 <p><strong>Status:</strong> Administrative publication audit record; <strong>NOT A TECHNICAL DESIGN CHANGE, NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This document records verification of the published Round 3 implementation-planning artifacts and evidence consistency only. No physical schema, transaction, RLS, lifecycle/retention, OD/PD, ADR, architecture, or roadmap decisions were changed.</p>
@@ -275,10 +275,12 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </tbody>
 </table>
 <p>No mismatched branch/commit SHAs in git state, no claims of publication before remote verification, no missing <code>git ls-remote</code> evidence, and no export/ZIP/hash mismatch were found for the pre-correction published planning artifacts themselves; corrections were limited to evidence-report clarity and inclusion/synchronization of the required audit artifact.</p>
-<h2>6. Audit correction publication (to be finalized by this commit)</h2>
+<h2>6. Audit correction publication (finalized and verified)</h2>
 <ul>
-<li><strong>Audit correction commit:</strong> adds/updates publication-evidence records (<code>docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md</code>, <code>copilot.txt</code>) and regenerated export/index/manifest/ZIP as required for Markdown source synchronization.</li>
-<li><strong>Commit SHA / final local HEAD / final remote HEAD / post-push <code>git ls-remote</code> / local-remote match:</strong> recorded after commit and push in the final execution report and, if needed, in a follow-up verification update; must be independently verified.</li>
+<li><strong>Audit correction commit:</strong> <code>2ded9f3425fc44cf2568e8f81636d39f588dcb3c</code> — <code>docs: audit and verify Round 3 publication state</code> (added publication audit record, clarified <code>copilot.txt</code>, regenerated/synchronized exports/index/manifest/ZIP for Markdown source changes).</li>
+<li><strong>Commit SHA / final local HEAD / final remote HEAD:</strong> <code>2ded9f3425fc44cf2568e8f81636d39f588dcb3c</code> (inspection/correction baseline at publication of audit artifacts). See Section 9/final execution record for the final verification-record commit published after recording this SHA.</li>
+<li><strong>Post-push <code>git ls-remote</code> verification:</strong> <code>2ded9f3425fc44cf2568e8f81636d39f588dcb3c	refs/heads/planning/postgresql-round3-implementation</code> (matched local HEAD at time of verification).</li>
+<li><strong>Local/remote HEAD match:</strong> <strong>Yes</strong> (independently verified at that commit).</li>
 <li><strong>No force-push, no history rewrite, no changes to Round 1.1/Round 2 branches.</strong></li>
 </ul>
 <h2>7. Unresolved dependencies and technical limitations (unchanged)</h2>
@@ -290,8 +292,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </ul>
 <h2>8. Explicit confirmation</h2>
 <p>No physical schema design, table/column/type/key/constraint/index definition, RLS or tenant-isolation semantic design, transaction/concurrency semantic design, retention/partitioning/backup/recovery design, OD/PD resolution or status, ADR status, architecture, roadmap, or implementation artifact was changed by this audit. Actions were limited to publication-state inspection, evidence-report correction, creation of this audit record, and export/index/manifest/ZIP synchronization required for added/updated Markdown documentation sources.</p>
-<h2>9. Final audit status (pre-correction evidence)</h2>
-<p>Based on inspected pre-correction state: <strong><code>PUBLICATION VERIFIED — ROUND 3 PLANNING COMPLETE</code></strong> for the previously published planning artifacts (<code>5991a09</code>, <code>df10d02</code> synchronized locally/remotely), subject to successful commit/push/verification of this administrative audit correction and unchanged technical blockers/readiness (<code>BLOCKED BY OWNER DECISIONS</code> for implementation). Final status is confirmed after remote verification of the audit correction commit.</p>
+<h2>9. Final audit status</h2>
+<p><strong><code>ROUND 3 PUBLICATION VERIFIED</code></strong> — Administrative publication/evidence reconciliation completed for the Round 3 planning package on <code>planning/postgresql-round3-implementation</code>. Required planning artifacts and publication-evidence records are present, synchronized, and independently verified via Git/<code>git ls-remote</code> at audited commits; export/index/manifest/ZIP correspond to committed Markdown sources at generation/commit points with integrity/link/asset validation evidence recorded. Technical planning readiness remains <strong><code>BLOCKED BY OWNER DECISIONS</code></strong> and no implementation is authorized.</p>
 
 </article>
 </div>

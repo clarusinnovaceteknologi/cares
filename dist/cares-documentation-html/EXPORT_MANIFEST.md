@@ -1,7 +1,7 @@
 # CARES Documentation Export Manifest
 
-- **Export timestamp (UTC):** 2026-11-22T12:22:17Z
-- **Repository revision/commit hash:** df10d02f9e63cb38df2e7930dfa1951ae8eebca7
+- **Export timestamp (UTC):** 2026-11-22T12:23:32Z
+- **Repository revision/commit hash:** 2ded9f3425fc44cf2568e8f81636d39f588dcb3c
 - **Total discovered Markdown files:** 51
 - **Total successfully converted HTML files:** 51
 - **Failed conversions:** 0
