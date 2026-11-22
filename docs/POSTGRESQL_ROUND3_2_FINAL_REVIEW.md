@@ -1,66 +1,56 @@
-# CARES PostgreSQL Round 3.2 — Final Review (Owner Decision Consolidation and Governance Reconciliation)
+# CARES PostgreSQL Round 3.2 — Final Governance Review (Round 3.2.1 Fidelity-Corrected)
 
-**Status:** Proposed governance review record only; **NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION, NOT AN OWNER DECISION, NOT AN IMPLEMENTATION AUTHORIZATION**.  
-**Round:** Round 3.2 — Owner Decision Consolidation and Governance Reconciliation  
-**Branch:** `governance/postgresql-round3-2-owner-decision-consolidation`  
-**Verified source baseline:** `governance/postgresql-round3-owner-decision-gate` @ `7c58808157ab512c49abeed3efd0757b4c37824c` (local/remote verified; clean worktree at task start).  
-**Execution context:** documentation/governance only in isolated worktree `/tmp/cares-postgresql-round3-2`; no database/application implementation performed.
+**Status:** Proposed governance/final-review record only; **NOT IMPLEMENTED, NOT TESTED, NOT AN IMPLEMENTATION AUTHORIZATION**.  
+**Round:** Round 3.2 — Owner Decision Consolidation and Governance Reconciliation; **Round 3.2.1 — Owner Decision Fidelity Correction** (documentation/governance only).  
+**Verified source baseline:** `governance/postgresql-round3-2-owner-decision-consolidation` @ `cd950882b0ea0e58781d9ba8f10440bd383f9b58`.  
+**Working branch:** `governance/postgresql-round3-2-1-owner-decision-fidelity-correction`.  
+**Execution timestamp (UTC):** see [../copilot.txt](../copilot.txt) for authoritative Round 3.2.1 execution evidence (including exact final commit SHA after publication).
 
-## 1. Scope reviewed
+## 1. Scope and constraints
 
-- Consolidation of explicit owner approvals (principles and bounded conditions) for **OD-001–OD-013** using authoritative inputs supplied in the current project conversation, reconciled against Round 3/3.1 governance artifacts, committed Round 1.1/Round 2 records, recovered original decision sources (OD register and ADR 0006, provenance incomplete), and existing authorization/blocker baselines.
-- Reconciliation outputs: updated Owner Decision Register, reconciled ADR 0006 documentation, updated Implementation Authorization Matrix, updated Dependency and Blocker Map, Round 3.2 Changelog, and this Final Review.
-- Preservation of complete existing governance history (Round 3.1 artifacts retained), OD/PD identifiers and recorded statuses, ADR 0006 formal Proposed status (bounded in-principle acceptance documented separately), and I-00–I-14 baseline classifications with no implementation authorization.
+This round performs documentation-only governance consolidation and **fidelity correction** to accurately and completely reflect the owner’s explicitly approved principles and bounded conditions for **OD-001–OD-013**, without reinterpretation, weakening, expansion, invention of decisions/technical details, or implementation authorization.
 
-## 2. Required review questions
+No SQL DDL, migrations, ORM models, database roles/policies, triggers/stored procedures, provisioning scripts, application code, runtime configuration, or production infrastructure were created or modified. No database/application tests were executed. No runtime behavior is claimed proven.
 
-### 2.1 Are all thirteen owner decisions accurately represented?
-**Yes, with explicit bounded scope.** [POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md](./POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md) records OD-001–OD-013 with exact decision scope (source-backed), owner approval status reflecting **principles and bounded conditions approved** (Round 3.2 authoritative directive), bounded approved principles stated without inventing technical closures, explicitly deferred technical details, dependencies/cross-references, and explicit non-authorization. For OD-002–OD-013, per-parameter technical approvals were not separately enumerated in the conversation; the register therefore preserves unresolved technical specifics from source records and does not infer them as approved.
+## 2. Authoritative owner decisions accurately reflected
 
-### 2.2 Are all bounded exclusions preserved?
-**Yes.** Bounded exclusions are explicitly preserved in the register and in [docs/adr/0006-atomic-per-tenant-asset-licensing.md](./adr/0006-atomic-per-tenant-asset-licensing.md), including (non-exhaustive, as required): reservation policy details, counter transitions/authoritative scope/recomputation-reconciliation semantics, merge/split accounting edge cases, unresolved lifecycle details, formal idempotency contract/coupling/canonicalization details, schema-level interpretation/validation finalization, and other deferred OD/PD technical details. OD-001 acceptance of ADR 0006 in principle is kept distinct from unconditional formal ADR status transition.
-
-### 2.3 Are unresolved PD decisions still visible?
-**Yes.** PD-001–PD-012 remain visible with preserved recorded statuses (Proposed/Deferred) in the consolidated register and dependency/blocker map, and are explicitly stated as not resolved by principle-level OD approvals.
-
-### 2.4 Is ADR 0006 represented accurately?
-**Yes, as bounded reconciliation.** ADR 0006 is represented as **formally Proposed** in status, with **acceptance in principle with bounded exclusions** (OD-001) documented in the ADR and governance records. Required principles (one unique monitored device per tenant = one licensed asset; no duplicate licensing for multi-source same device; equal device-type weight; licensing separate from technical resource quotas; PostgreSQL transactional authority for licensing accounting/quota enforcement; no oversubscription/duplicate business effects under concurrency) are preserved. Deferred dependencies/exclusions are retained. No mechanical promotion to Accepted was performed.
-
-### 2.5 Does the authorization matrix prevent accidental implementation?
-**Yes.** [POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md](./POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md) distinguishes owner-approved principles, technically unresolved details, planning-ready increments, blocked increments, and explicitly authorized implementation increments (**none**). It states that OD approvals do not authorize I-06, I-07, I-09, I-12, I-13, I-14, or any other increment; no explicit owner authorization records exist; **no implementation is authorized**.
-
-### 2.6 What is the smallest next safe and useful step?
-The smallest next safe and useful step is **documentation/governance clarification work** (no implementation): prepare and record **separate, explicit owner decision/authorization records** for the highest-priority deferred technical details needed to reduce ambiguity—beginning with OD-001/ADR 0006 formal governance status handling (bounded acceptance record vs formal transition requirements) and the specific policy parameters still deferred (e.g. reservation/counter/merge-split-lifecycle/idempotency contract details as applicable)—while maintaining PD visibility and non-authorization. Any such record must be explicit, evidence-backed, and must not be inferred from this consolidation.
-
-### 2.7 What additional owner decisions or technical evidence are still required?
-Still required (non-exhaustive, consistent with registers/maps):
-- **Formal ADR governance:** evidence/completion of formal ADR acceptance/status-transition requirements if unconditional/formal transition is pursued; accurate bounded representation maintained.
-- **OD/technical details (separate decisions/approvals):** reservation policy details; counter transitions/authoritative scope/reconciliation semantics/formulas and policy-to-schema mapping; merge/split authority/evidence/licensing/accounting edge cases; unresolved lifecycle details (grace/removal/re-enrollment/reset interactions as governed); formal idempotency contract (scope/canonicalization/hash/states/retention/reconciliation/coupling/timeout-unknown-commit handling); OD-006 crypto/custody/rotation/overlap/migration specifics; OD-007 lifecycle mappings; OD-009 outbox runtime mechanics/reconciliation; OD-010 retention/legal-hold/deletion/authority/workflow/storage specifics; OD-011 consent/classification/redaction/provider-terms/budget/fail-closed enforcement specifics; OD-012 retention/workload/SLO/partition horizon targets; OD-013 connector capability classification/fallback predicates/conflict policies/pre-binding derivation.
-- **PD/validation evidence:** PD-001/002/003/004/007/008/009/011/012 design decisions and technical/security validation; **PD-005/PD-006** verified tenant-context mechanism, RLS/ownership hardening, and negative isolation/pooling-reset evidence (hard prerequisites for tenant-runtime safety); **PD-010** partition thresholds/constraint-lifecycle compatibility and governance approvals.
-- **Authorization:** separate explicit owner authorization records per increment/scope before any implementation (none exist).
-
-## 3. Consistency and preservation checks
-
-| Check | Result |
+| Question | Record |
 |---|---|
-| OD-001–OD-013 represented with bounded principle approvals and deferred technical details | **Pass** |
-| PD-001–PD-012 preserved and visible (unresolved) | **Pass** |
-| ADR 0006 formal status remains Proposed; in-principle bounded acceptance distinct from unconditional formal transition | **Pass** |
-| I-00–I-14 baseline classifications preserved; no implementation authorized | **Pass** |
-| No owner decision fabricated; no unresolved technical detail inferred as approved | **Pass** |
-| No technical blocker marked resolved solely due to principle approval | **Pass** |
-| Round 3.1 and prior governance artifacts preserved in history | **Pass** (3.1 files retained; 3.2 artifacts added) |
+| Are OD-001–OD-013 accurately and completely reflected with owner-approved principles, bounded conditions/prohibitions, deferred technical details, dependencies, implementation authorization status, related increments (where applicable), and unresolved-blocker status? | **Yes (for this fidelity-correction scope).** Recorded in [POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md](./POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md), reconciled in [POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md](./POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md) and [POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md](./POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md). No unresolved technical detail is marked approved/finalized; principle approval does not close technical blockers. |
+| Does OD-001 remain bounded (ADR 0006 in principle, not unconditional formal acceptance; monitored-device licensing/accounting, not software subscription license; dependencies on OD-003/OD-004/OD-008 preserved)? | **Yes.** [adr/0006-atomic-per-tenant-asset-licensing.md](./adr/0006-atomic-per-tenant-asset-licensing.md) updated with Round 3.2.1 fidelity-correction note; formal status remains **Proposed**. |
 
-## 4. Limitations
+## 3. Preserved unresolved/deferred governance and boundaries
 
-- Recovered logical OD register and ADR 0006 markdown sources used for reconciliation carry **`FOUND BUT PROVENANCE INCOMPLETE`** provenance labels from the read-only recovery investigation; untracked/hash-identical copies and recorded blobs were consulted without modifying repository state outside this branch’s documentation deliverables.
-- Per-OD technical approval parameters for OD-002–OD-013 were not individually enumerated in the Round 3.2 conversation beyond the general principle/bounded-condition approval directive; consolidation records this boundary explicitly and preserves source-deferred details.
-- Documentation export/index/manifest/ZIP regeneration and integrity/link/asset checks are reported in `copilot.txt` with actual execution evidence.
+| Item | Status |
+|---|---|
+| **PD-001–PD-012** | Preserved as unresolved/deferred wherever recorded in baseline; **not** automatically closed by OD principle approvals. See register/dependency map. |
+| **ADR 0006 formal status** | **Proposed** (unchanged). In-principle acceptance recorded with bounded exclusions/dependencies; no separate formal ADR governance action to change status was provided. |
+| **I-00–I-14 boundaries/dependencies** | Preserved and reconciled without scope widening. **I-06, I-07, I-09, I-12, I-13, and I-14 remain unauthorized; no implementation increment is authorized.** Conditional/planning readiness does not convert to implementation permission. |
 
-## 5. Final governance status and confirmations
+## 4. Authorization safety and implementation impact
 
-- **Governance consolidation status:** complete for Round 3.2 documentation-only reconciliation scope, subject to limitations above.
-- **Implementation authorization status:** **No implementation is authorized.**
-- **Confirmations:** no owner decision fabricated; no implementation authorization granted or fabricated; no PostgreSQL DDL, migrations, ORM models, database roles/policies/triggers/functions, database provisioning/modification, or runtime implementation performed; original Round 3 planning branch not modified by this task.
+- **Explicitly authorized implementation increments:** **None.**
+- **No accidental implementation:** OD approvals and this correction do **not** authorize I-06, I-07, I-09, I-12, I-13, I-14, or any other increment. No DDL/migrations/ORM/roles/policies/triggers/functions/provisioning/runtime code/config/infra created.
+- **Smallest safe next step:** owner may, in a separate governed step, review the corrected register/matrix/map and (if desired) issue explicit, increment-specific authorization records only for in-scope planning or approved increments whose prerequisites/technical details/validations are satisfied and evidenced; any formal ADR status transition requires a separate formal governance action.
 
-**No database implementation or runtime code was created or authorized by this task.**
+## 5. Cross-references and contradiction control
+
+- Corrected authoritative register, matrix, dependency/blocker map, changelog, ADR 0006 note, and this final review are reconciled for OD-001–OD-013 fidelity.
+- A **Round 3.2.1 fidelity-correction banner** was added to [POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md](./POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md) (historical Round 3.1 advisory briefs) to prevent contradiction with authoritative corrected records while preserving historical content.
+- If any additional contradiction or missing source prevents reliable correction, it must be reported rather than invented (see `copilot.txt`).
+
+## 6. Export, validation, and publication evidence
+
+- HTML export/index/manifest/ZIP regenerated and validated for changed markdown (counts, failures, missing assets, internal links, ZIP integrity) and compared against the reproduced Round 3.2 broken-link baseline (10 links). **Newly introduced broken links vs pre-existing links are reported separately** in [../copilot.txt](../copilot.txt).
+- Mermaid diagrams: bundled/structurally present as applicable; **no browser visual rendering validation claimed** unless explicitly executed and evidenced in `copilot.txt`.
+- Commit/push/remote-head/worktree-clean verification recorded in `copilot.txt`.
+
+## 7. Remaining decisions, evidence gaps, and blockers (summary)
+
+- **Technically unresolved (not approved):** all deferred OD details called out in the register (e.g. OD-003 mechanics, OD-004 mechanisms/scheduling/repair/numeric policies, OD-005 edge cases/transitions/accounting implementation, OD-006 algorithm/KMS/rotation/custody details, OD-007 enrollment/continuity/credential/replay/retirement mechanics, OD-008 covered-operation finalization/canonicalization/retention/reconciliation/coupling operational details and any staged exception requiring demonstrated need + separate approval, OD-009 lease/fencing/retry/dead-letter/reconciliation/operational policies, OD-010/OD-011/OD-012 governance-technical specifics, OD-013 connector-specific rules/fallback formulas/final predicates), plus PD-001–PD-012 as applicable.
+- **Governance/authorization blockers:** no explicit implementation authorization records; formal ADR 0006 status transition not performed; hard/structural blockers for I-06 final semantics, I-12, I-13, I-14 and prerequisites for others remain as mapped.
+- **Provenance limitation:** recovered `POSTGRESQL_SCHEMA_OPEN_DECISIONS.md` (`dc9a813...`, 61 lines) and ADR 0006 (`324a6eed...`, 274 lines, Proposed) remain **FOUND BUT PROVENANCE INCOMPLETE** (checkpoint/history lineage; not claimed in published Round 3/public branch lineage).
+
+## 8. Final determination
+
+Round 3.2.1 completes a **documentation-only owner-decision fidelity correction**: OD-001–OD-013 are reconciled to the authoritative approved principles/bounded conditions with preserved deferrals/dependencies/blockers, PD-001–PD-012 remain unresolved where applicable, ADR 0006 remains **Proposed**, I-00–I-14 boundaries are preserved, and **no implementation increment is authorized**.

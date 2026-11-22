@@ -105,9 +105,9 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 </head>
 <body>
-<div class="topbar"><a href="../../index.html">← Documentation index</a></div>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/adr/0006-atomic-per-tenant-asset-licensing.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T20:11:55Z</div>
 <article class="markdown-body">
 <h1>ADR 0006: Enforce per-tenant asset quota atomically in PostgreSQL</h1>
 <ul>
@@ -195,75 +195,23 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </ul>
 <p><strong>Proposed accounting equations (illustrative, subject to owner policy mapping):</strong></p>
 <ul>
-<li><code>available_capacity = entitled_quota - active_billable_usage - reserved_capacity - pending_identity_reservation_adjustment</code>
-<ul>
-<li>where <code>pending_identity_reservation_adjustment</code> is included only to the extent pending cases reserve capacity under approved policy (possibly equal to pending reservation count/slots, possibly zero).</li>
+<li><code>available_capacity = entitled_quota - active_billable_usage - reserved_capacity - pending_identity_reservation_adjustment</code></li>
 </ul>
-</li>
+<p>  - where <code>pending_identity_reservation_adjustment</code> is included only to the extent pending cases reserve capacity under approved policy (possibly equal to pending reservation count/slots, possibly zero).</p>
+<ul>
 <li><code>entitled_quota</code> is the effective tenant entitlement/quota at the time of the transaction (effective-dated/audited as designed).</li>
 <li>All counters are tenant-scoped, non-negative by invariant, and updated only by authorized atomic transactions with append-only licensing/lifecycle history.</li>
 </ul>
 <p><strong>Proposed state-to-counter mapping (technical support model; commercial meaning owner-approved):</strong></p>
 <table>
-<thead>
-<tr>
-<th>State / record</th>
-<th style="text-align:right">Active billable usage</th>
-<th style="text-align:right">Reserved capacity</th>
-<th style="text-align:right">Pending identity reservation</th>
-<th>Available capacity effect</th>
-<th>Historical/tombstone record</th>
-</tr>
-</thead>
+<thead><tr><th>State / record</th><th>Active billable usage</th><th>Reserved capacity</th><th>Pending identity reservation</th><th>Available capacity effect</th><th>Historical/tombstone record</th></tr></thead>
 <tbody>
-<tr>
-<td>Active canonical asset (billable)</td>
-<td style="text-align:right">+1 (if policy maps active as billable)</td>
-<td style="text-align:right">0 unless separately reserved</td>
-<td style="text-align:right">0</td>
-<td>Consumes available capacity</td>
-<td>Current active record plus history</td>
-</tr>
-<tr>
-<td>Deactivated with approved grace reservation</td>
-<td style="text-align:right">0 or policy-defined (owner decision)</td>
-<td style="text-align:right">+1 or policy-defined (owner decision)</td>
-<td style="text-align:right">0</td>
-<td>May consume/reserve capacity during grace</td>
-<td>Retained lifecycle history</td>
-</tr>
-<tr>
-<td>Pending identity reservation</td>
-<td style="text-align:right">0 (not a confirmed billable monitored device)</td>
-<td style="text-align:right">0 unless policy defines otherwise</td>
-<td style="text-align:right">+1 if owner approves reservation; else 0</td>
-<td>May consume capacity only if owner approves</td>
-<td>Pending-resolution history</td>
-</tr>
-<tr>
-<td>Merged losing asset (tombstone)</td>
-<td style="text-align:right">0</td>
-<td style="text-align:right">0</td>
-<td style="text-align:right">0</td>
-<td>Released only per approved merge accounting; survivor remains billable as applicable</td>
-<td>Retained tombstone/history (never reused ID)</td>
-</tr>
-<tr>
-<td>Removed/tombstone after approved removal</td>
-<td style="text-align:right">0</td>
-<td style="text-align:right">0 unless policy defines otherwise</td>
-<td style="text-align:right">0</td>
-<td>Released only per approved removal/grace policy</td>
-<td>Retained tombstone/history</td>
-</tr>
-<tr>
-<td>Reactivated to active</td>
-<td style="text-align:right">becomes +1 per policy</td>
-<td style="text-align:right">releases applicable reservation</td>
-<td style="text-align:right">0</td>
-<td>Recomputed atomically</td>
-<td>Append-only lifecycle history</td>
-</tr>
+<tr><td>Active canonical asset (billable)</td><td>+1 (if policy maps active as billable)</td><td>0 unless separately reserved</td><td>0</td><td>Consumes available capacity</td><td>Current active record plus history</td></tr>
+<tr><td>Deactivated with approved grace reservation</td><td>0 or policy-defined (owner decision)</td><td>+1 or policy-defined (owner decision)</td><td>0</td><td>May consume/reserve capacity during grace</td><td>Retained lifecycle history</td></tr>
+<tr><td>Pending identity reservation</td><td>0 (not a confirmed billable monitored device)</td><td>0 unless policy defines otherwise</td><td>+1 if owner approves reservation; else 0</td><td>May consume capacity only if owner approves</td><td>Pending-resolution history</td></tr>
+<tr><td>Merged losing asset (tombstone)</td><td>0</td><td>0</td><td>0</td><td>Released only per approved merge accounting; survivor remains billable as applicable</td><td>Retained tombstone/history (never reused ID)</td></tr>
+<tr><td>Removed/tombstone after approved removal</td><td>0</td><td>0 unless policy defines otherwise</td><td>0</td><td>Released only per approved removal/grace policy</td><td>Retained tombstone/history</td></tr>
+<tr><td>Reactivated to active</td><td>becomes +1 per policy</td><td>releases applicable reservation</td><td>0</td><td>Recomputed atomically</td><td>Append-only lifecycle history</td></tr>
 </tbody>
 </table>
 <p><strong>Owner decisions required (must be clearly labeled):</strong></p>
@@ -521,7 +469,17 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </ul>
 <h2>Revisit when</h2>
 <p>Measured per-tenant registration contention violates declared objectives, owner-approved lifecycle/commercial policy requires different state mapping, or formal schema/security review identifies required structural changes. Any revision must preserve the one-device-one-asset invariant, no-duplicate-licensed-asset rule, historical licensing evidence, and tenant isolation.</p>
-
+<h2>Round 3.2.1 owner decision fidelity correction (documentation-only)</h2>
+<p><strong>Record type:</strong> documentation-only governance fidelity correction (2026-11-22, UTC). <strong>No database implementation or runtime code was created or authorized.</strong> No DDL, migrations, ORM models, database roles/policies, triggers/stored procedures, provisioning scripts, application code, runtime configuration, or production infrastructure were created or modified.</p>
+<h3>OD-001 authoritative clarification (preserved without reinterpretation)</h3>
+<ul>
+<li>The owner approved <strong>ADR 0006 in principle</strong>, subject to the previously specified bounded conditions. <strong>ADR 0006 concerns atomic per-tenant asset licensing/accounting of monitored devices; it is not the CARES software subscription license.</strong></li>
+<li><strong>Bounded conditions/prohibitions preserved:</strong> one unique monitored device represents exactly one licensed asset per tenant; multiple reporting sources for the same device must not double-count it; all device types have equal licensing weight (no OS-/vendor-/device-type-/telemetry-volume-based weighting); asset licensing remains separate from technical resource quotas; dependencies on <strong>OD-003, OD-004, and OD-008</strong> are preserved.</li>
+<li><strong>Status/governance:</strong> do <strong>not</strong> represent the owner’s approval in principle as unconditional formal ADR acceptance. <strong>Formal ADR status remains Proposed</strong> unless a separate formal ADR governance action explicitly changes it (none provided). Approval in principle does <strong>not</strong> authorize implementation.</li>
+<li><strong>Deferred details remain deferred:</strong> reservation lifecycle/expiration/recovery/concurrency/accounting mechanics (OD-003), counter-maintenance/reconciliation scheduling/repair/locking/strategy/edge cases and numerical/operational policies (OD-004), merge/split edge cases/transition rules/accounting implementation (OD-005), formal idempotency contract/coupling/canonicalization/retention/reconciliation/unknown-commit details (OD-008), schema-level interpretation/finalization and required formal reviews/validations.</li>
+</ul>
+<h3>Provenance limitation (preserved)</h3>
+<p>Recovered ADR 0006 source material (blob <code>324a6eedcf7da9ced1294cc48a832e2c56bad99f</code>, 274 lines, <strong>Status: Proposed</strong>) was recovered from agent checkpoint history/commit <code>278daf4623404f573132cee57e1d6fbe33b0846d</code> (2026-11-21T16:11:58Z lineage context), not the published Round 3 branch lineage; full provenance is not claimed as part of public branch lineage. Cross-reference: <a href="../POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html">POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md</a> (Round 3.2.1 fidelity-corrected).</p>
 </article>
 </div>
 

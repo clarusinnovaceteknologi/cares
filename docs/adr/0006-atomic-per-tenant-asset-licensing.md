@@ -337,3 +337,16 @@ The following remain **not resolved, not finalized, and not authorized** by this
 ## Revisit when
 
 Measured per-tenant registration contention violates declared objectives, owner-approved lifecycle/commercial policy requires different state mapping, or formal schema/security review identifies required structural changes. Any revision must preserve the one-device-one-asset invariant, no-duplicate-licensed-asset rule, historical licensing evidence, and tenant isolation.
+
+## Round 3.2.1 owner decision fidelity correction (documentation-only)
+
+**Record type:** documentation-only governance fidelity correction (2026-11-22, UTC). **No database implementation or runtime code was created or authorized.** No DDL, migrations, ORM models, database roles/policies, triggers/stored procedures, provisioning scripts, application code, runtime configuration, or production infrastructure were created or modified.
+
+### OD-001 authoritative clarification (preserved without reinterpretation)
+- The owner approved **ADR 0006 in principle**, subject to the previously specified bounded conditions. **ADR 0006 concerns atomic per-tenant asset licensing/accounting of monitored devices; it is not the CARES software subscription license.**
+- **Bounded conditions/prohibitions preserved:** one unique monitored device represents exactly one licensed asset per tenant; multiple reporting sources for the same device must not double-count it; all device types have equal licensing weight (no OS-/vendor-/device-type-/telemetry-volume-based weighting); asset licensing remains separate from technical resource quotas; dependencies on **OD-003, OD-004, and OD-008** are preserved.
+- **Status/governance:** do **not** represent the owner’s approval in principle as unconditional formal ADR acceptance. **Formal ADR status remains Proposed** unless a separate formal ADR governance action explicitly changes it (none provided). Approval in principle does **not** authorize implementation.
+- **Deferred details remain deferred:** reservation lifecycle/expiration/recovery/concurrency/accounting mechanics (OD-003), counter-maintenance/reconciliation scheduling/repair/locking/strategy/edge cases and numerical/operational policies (OD-004), merge/split edge cases/transition rules/accounting implementation (OD-005), formal idempotency contract/coupling/canonicalization/retention/reconciliation/unknown-commit details (OD-008), schema-level interpretation/finalization and required formal reviews/validations.
+
+### Provenance limitation (preserved)
+Recovered ADR 0006 source material (blob `324a6eedcf7da9ced1294cc48a832e2c56bad99f`, 274 lines, **Status: Proposed**) was recovered from agent checkpoint history/commit `278daf4623404f573132cee57e1d6fbe33b0846d` (2026-11-21T16:11:58Z lineage context), not the published Round 3 branch lineage; full provenance is not claimed as part of public branch lineage. Cross-reference: [POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md](../POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md) (Round 3.2.1 fidelity-corrected).

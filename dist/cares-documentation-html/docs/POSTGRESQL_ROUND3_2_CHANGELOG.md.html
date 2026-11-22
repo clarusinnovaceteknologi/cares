@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CARES PostgreSQL Round 3.2 — Changelog</title>
+<title>CARES PostgreSQL Round 3.2 — Changelog (including Round 3.2.1 Fidelity Correction)</title>
 <style>
 :root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
 @media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
@@ -107,82 +107,51 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_2_CHANGELOG.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_2_CHANGELOG.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T20:11:55Z</div>
 <article class="markdown-body">
-<h1>CARES PostgreSQL Round 3.2 — Changelog</h1>
-<p><strong>Status:</strong> Documentation/governance changelog only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT AN IMPLEMENTATION AUTHORIZATION</strong>.<br />
-<strong>Round:</strong> Round 3.2 — Owner Decision Consolidation and Governance Reconciliation<br />
-<strong>Branch:</strong> <code>governance/postgresql-round3-2-owner-decision-consolidation</code><br />
-<strong>Source baseline:</strong> <code>governance/postgresql-round3-owner-decision-gate</code> @ <code>7c58808157ab512c49abeed3efd0757b4c37824c</code></p>
-<h2>Scope of this round</h2>
-<p>Documentation and governance consolidation only. No SQL DDL, database migrations, ORM models, database roles/policies, triggers/stored procedures, provisioning scripts, application code, runtime configuration, or production infrastructure were created or modified. No implementation was authorized.</p>
-<h2>Added / revised artifacts (Round 3.2)</h2>
+<h1>CARES PostgreSQL Round 3.2 — Changelog (including Round 3.2.1 Fidelity Correction)</h1>
+<p><strong>Status:</strong> Documentation/governance changelog only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT AN IMPLEMENTATION AUTHORIZATION</strong>.  <br />
+<strong>Rounds:</strong> Round 3.2 — Owner Decision Consolidation and Governance Reconciliation; <strong>Round 3.2.1 — Owner Decision Fidelity Correction</strong>.  <br />
+<strong>Source branch/baseline for Round 3.2:</strong> <code>governance/postgresql-round3-owner-decision-gate</code> @ <code>7c58808157ab512c49abeed3efd0757b4c37824c</code>  <br />
+<strong>Verified source branch/baseline for Round 3.2.1 correction:</strong> <code>governance/postgresql-round3-2-owner-decision-consolidation</code> @ <code>cd950882b0ea0e58781d9ba8f10440bd383f9b58</code> (local/remote verified; clean; expected deliverables present)  <br />
+<strong>Round 3.2.1 working branch:</strong> <code>governance/postgresql-round3-2-1-owner-decision-fidelity-correction</code> (from verified source commit)</p>
+<h2>Scope</h2>
+<p>Documentation and governance consolidation/correction only. No SQL DDL, database migrations, ORM models, database roles/policies, triggers/stored procedures, provisioning scripts, application code, runtime configuration, or production infrastructure were created or modified. No implementation was authorized.</p>
+<h2>Round 3.2 artifacts (preserved baseline on <code>cd950882...</code>)</h2>
 <table>
-<thead>
-<tr>
-<th>Artifact</th>
-<th>Type</th>
-<th>Summary</th>
-</tr>
-</thead>
+<thead><tr><th>Artifact</th><th>Type</th><th>Summary</th></tr></thead>
 <tbody>
-<tr>
-<td><a href="POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html">docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md</a></td>
-<td>Added</td>
-<td>Consolidated OD-001–OD-013 with decision scope, owner approval status (principles/bounded conditions approved per Round 3.2 authoritative directive), bounded approved principles, explicitly deferred technical details, dependencies/cross-references, and explicit non-authorization; preserved PD-001–PD-012 visibility and ADR 0006 formal-status distinction.</td>
-</tr>
-<tr>
-<td><a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a></td>
-<td>Added (reconciled markdown source on branch)</td>
-<td>Reconciled ADR 0006 content preserving Proposed baseline and adding Round 3.2 governance reconciliation: bounded in-principle acceptance (OD-001), preserved approved principles and explicit deferred exclusions/dependencies, and documented reason why unconditional formal ADR status transition remains pending (no mechanical promotion to Accepted).</td>
-</tr>
-<tr>
-<td><a href="POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html">docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</a></td>
-<td>Added</td>
-<td>Reconciled I-00–I-14 authorization posture distinguishing owner-approved principles, technically unresolved details, planning-ready increments, blocked increments, and explicitly authorized implementation increments (none); explicit non-authorization including I-06/I-07/I-09/I-12/I-13/I-14.</td>
-</tr>
-<tr>
-<td><a href="POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html">docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md</a></td>
-<td>Added</td>
-<td>Reconciled OD-001–OD-013, PD-001–PD-012, ADR 0006, and I-00–I-14 dependencies using required classifications; technical blockers not marked resolved by principle approval.</td>
-</tr>
-<tr>
-<td><a href="POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html">docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md</a></td>
-<td>Added</td>
-<td>Final governance review answering required representation, visibility, authorization-safety, next-step, and remaining-evidence/decision questions.</td>
-</tr>
-<tr>
-<td><a href="POSTGRESQL_ROUND3_2_CHANGELOG.md.html">docs/POSTGRESQL_ROUND3_2_CHANGELOG.md</a></td>
-<td>Added</td>
-<td>This changelog.</td>
-</tr>
-<tr>
-<td><a href="../copilot.txt">copilot.txt</a></td>
-<td>Revised</td>
-<td>Updated execution evidence/report for Round 3.2 (scope, sources, deliverables, validations, commit/remote state, limitations).</td>
-</tr>
+<tr><td><a href="./POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html">POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md</a></td><td>Added (Round 3.2), revised (Round 3.2.1)</td><td>Consolidated OD-001–OD-013; fidelity-corrected in 3.2.1 to explicitly and completely reflect authoritative owner-approved principles/bounded conditions/prohibitions, deferred technical details, dependencies, implementation authorization status, related increments, and blocker status per OD.</td></tr>
+<tr><td><a href="./adr/0006-atomic-per-tenant-asset-licensing.md.html">adr/0006-atomic-per-tenant-asset-licensing.md</a></td><td>Added/reconciled (Round 3.2), revised (Round 3.2.1)</td><td>Preserved Proposed status and bounded in-principle acceptance; added 3.2.1 fidelity-correction note clarifying OD-001 authoritative conditions (including non-software-subscription scope and OD-003/004/008 dependencies), preserved deferrals, and provenance limitation. No formal status transition.</td></tr>
+<tr><td><a href="./POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html">POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</a></td><td>Added (Round 3.2), revised (Round 3.2.1)</td><td>Reconciled I-00–I-14 against authoritative OD principles/bounded conditions; preserved PD-001–PD-012, ADR 0006 Proposed, and explicit non-authorization for all increments including I-06/I-07/I-09/I-12/I-13/I-14.</td></tr>
+<tr><td><a href="./POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html">POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md</a></td><td>Added (Round 3.2), revised (Round 3.2.1)</td><td>Reconciled OD/PD/ADR/I dependencies and blocker classifications to reflect authoritative approvals/deferred details without marking technical blockers resolved by principle approval.</td></tr>
+<tr><td><a href="./POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_2_FINAL_REVIEW.md</a></td><td>Added (Round 3.2), revised (Round 3.2.1)</td><td>Updated governance review for fidelity-corrected records, preservation of PD/ADR/boundaries, and remaining blockers/evidence/authorization requirements.</td></tr>
+<tr><td><a href="./POSTGRESQL_ROUND3_2_CHANGELOG.md.html">POSTGRESQL_ROUND3_2_CHANGELOG.md</a></td><td>Added (Round 3.2), revised (Round 3.2.1)</td><td>This changelog (includes 3.2.1 correction record).</td></tr>
+<tr><td><a href="../copilot.txt">copilot.txt</a></td><td>Revised (Round 3.2 and 3.2.1)</td><td>Updated execution evidence/report for Round 3.2.1 (scope, provenance, OD/PD/ADR/I reconciliation, files changed, export/validation, broken-link baseline comparison, commit/remote verification, limitations).</td></tr>
 </tbody>
 </table>
-<h2>Preserved / unchanged governance history</h2>
+<h2>Round 3.2.1 fidelity-correction changes (this branch)</h2>
 <ul>
-<li>Round 3.1 governance artifacts (<code>POSTGRESQL_ROUND3_1_*</code>) and prior Round 3/2/1.1 records remain in repository history and were not modified to erase prior governance state.</li>
-<li>OD-001–OD-013 and PD-001–PD-012 identifiers preserved; recorded statuses/history carried forward without fabricated closure.</li>
-<li>I-00–I-14 baseline classifications preserved (no implementation authorized).</li>
-<li>ADR 0006 formal status remains <strong>Proposed</strong>; bounded in-principle acceptance recorded distinctly from unconditional formal status transition.</li>
+<li><strong>Owner decision register:</strong> rewritten for complete fidelity to authoritative OD-001–OD-013 (explicit approved principle, bounded conditions/prohibitions, deferred technical details, dependencies, implementation authorization status, related increments, unresolved blocker status per OD; PD-001–PD-012 preserved unresolved/deferred).</li>
+<li><strong>ADR 0006:</strong> retained Proposed status; added 3.2.1 correction clarifying OD-001 bounded in-principle acceptance (including monitored-device licensing/accounting scope, not software subscription license) and preserved OD-003/004/008 dependencies and deferred items; provenance limitation preserved.</li>
+<li><strong>Authorization matrix / dependency-blocker map / final review:</strong> reconciled to authoritative OD details; no increment authorized (including I-06/I-07/I-09/I-12/I-13/I-14); no boundary widening; no technical blocker closed by principle approval.</li>
+<li><strong>Cross-reference governance note:</strong> added Round 3.2.1 fidelity-correction banner to <a href="./POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md.html">POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md</a> to prevent contradiction with authoritative corrected records while preserving historical brief content.</li>
+<li><strong>Documentation export/publication artifacts:</strong> regenerated relevant HTML exports, index, manifest, and ZIP for changed markdown; validated and compared broken links against the reproduced Round 3.2 baseline (see <code>copilot.txt</code>).</li>
 </ul>
-<h2>Authoritative inputs applied</h2>
+<h2>Preserved / unchanged governance history and boundaries</h2>
 <ul>
-<li>Explicit owner approvals supplied in the current project conversation (Round 3.2 directive): principles and bounded conditions approved for OD-001–OD-013; OD-001 acceptance of ADR 0006 in principle with bounded exclusions and preserved deferred dependencies.</li>
-<li>Recovered original sources consulted: <code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> (blob <code>dc9a813...</code>, provenance incomplete) and ADR 0006 (blob <code>324a6eed...</code>, provenance incomplete), plus committed Round 3/3.1/2/1.1 records.</li>
+<li>Round 3.1/3/2/1.1 governance artifacts preserved in history; source Round 3.2 branch not modified.</li>
+<li>OD-001–OD-013 and PD-001–PD-012 identifiers preserved; no fabricated closure.</li>
+<li>ADR 0006 formal status remains <strong>Proposed</strong>.</li>
+<li>I-00–I-14 boundaries/dependencies preserved; <strong>no implementation increment authorized</strong>.</li>
+<li>Provenance limitations preserved for recovered <code>POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> (<code>dc9a813...</code>) and ADR 0006 (<code>324a6eed...</code>) sources.</li>
 </ul>
-<h2>Non-changes / confirmations</h2>
+<h2>Confirmations</h2>
 <ul>
-<li>No DDL, migrations, ORM models, roles/policies, triggers/functions, provisioning, application/runtime code, or infrastructure changes.</li>
 <li>No owner decision fabricated; no unresolved technical detail inferred as approved.</li>
-<li>No implementation increment authorized (including I-06, I-07, I-09, I-12, I-13, I-14).</li>
-<li>No original product roadmap change and no new implementation scope introduced.</li>
+<li>No DDL, migrations, ORM models, roles/policies, triggers/functions, provisioning, application/runtime code, or infrastructure changes.</li>
+<li>No implementation increment authorized.</li>
 </ul>
-
 </article>
 </div>
 
