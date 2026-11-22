@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARES PostgreSQL Round 3 Publication Audit &amp; Verification</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2328;--muted:#59636e;--border:#d1d9e0;--link:#0969da;--code-bg:#f6f8fa;--pre-bg:#f6f8fa;--table-header:#f6f8fa;--nav-bg:#f6f8fa}
+@media (prefers-color-scheme: dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--border:#30363d;--link:#4493f8;--code-bg:#161b22;--pre-bg:#161b22;--table-header:#161b22;--nav-bg:#161b22}}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+.topbar{background:var(--nav-bg);border-bottom:1px solid var(--border);padding:10px 24px;position:sticky;top:0;z-index:5}
+.topbar a{color:var(--link);text-decoration:none;font-weight:600}
+.meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+article{padding-bottom:40px}
+h1,h2,h3,h4,h5,h6{line-height:1.25;margin-top:1.4em;margin-bottom:.6em}
+h1{font-size:2em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+h2{font-size:1.5em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+a{color:var(--link)} code{background:var(--code-bg);padding:.15em .35em;border-radius:6px;font-size:.9em}
+pre{background:var(--pre-bg);padding:16px;overflow:auto;border-radius:8px;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:.9em}
+table{border-collapse:collapse;width:100%;margin:1em 0;display:block;overflow:auto}
+th,td{border:1px solid var(--border);padding:8px 12px;vertical-align:top}
+th{background:var(--table-header)} blockquote{margin:0;padding:0 1em;color:var(--muted);border-left:4px solid var(--border)}
+img{max-width:100%;height:auto} hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+ul,ol{padding-left:2em}
+.mermaid{background:var(--pre-bg);border:1px solid var(--border);border-radius:8px;padding:12px}
+.hljs .k,.hljs .kd,.hljs .kn,.hljs .kr{font-weight:600}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.hljs .hll { background-color: #ffffcc }
+.hljs { background: #f8f8f8; }
+.hljs .c { color: #3D7B7B; font-style: italic } /* Comment */
+.hljs .err { border: 1px solid #F00 } /* Error */
+.hljs .k { color: #008000; font-weight: bold } /* Keyword */
+.hljs .o { color: #666 } /* Operator */
+.hljs .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.hljs .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.hljs .cp { color: #9C6500 } /* Comment.Preproc */
+.hljs .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.hljs .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.hljs .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.hljs .gd { color: #A00000 } /* Generic.Deleted */
+.hljs .ge { font-style: italic } /* Generic.Emph */
+.hljs .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.hljs .gr { color: #E40000 } /* Generic.Error */
+.hljs .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.hljs .gi { color: #008400 } /* Generic.Inserted */
+.hljs .go { color: #717171 } /* Generic.Output */
+.hljs .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.hljs .gs { font-weight: bold } /* Generic.Strong */
+.hljs .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.hljs .gt { color: #04D } /* Generic.Traceback */
+.hljs .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.hljs .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.hljs .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.hljs .kp { color: #008000 } /* Keyword.Pseudo */
+.hljs .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.hljs .kt { color: #B00040 } /* Keyword.Type */
+.hljs .m { color: #666 } /* Literal.Number */
+.hljs .s { color: #BA2121 } /* Literal.String */
+.hljs .na { color: #687822 } /* Name.Attribute */
+.hljs .nb { color: #008000 } /* Name.Builtin */
+.hljs .nc { color: #00F; font-weight: bold } /* Name.Class */
+.hljs .no { color: #800 } /* Name.Constant */
+.hljs .nd { color: #A2F } /* Name.Decorator */
+.hljs .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.hljs .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.hljs .nf { color: #00F } /* Name.Function */
+.hljs .nl { color: #767600 } /* Name.Label */
+.hljs .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.hljs .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.hljs .nv { color: #19177C } /* Name.Variable */
+.hljs .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.hljs .w { color: #BBB } /* Text.Whitespace */
+.hljs .mb { color: #666 } /* Literal.Number.Bin */
+.hljs .mf { color: #666 } /* Literal.Number.Float */
+.hljs .mh { color: #666 } /* Literal.Number.Hex */
+.hljs .mi { color: #666 } /* Literal.Number.Integer */
+.hljs .mo { color: #666 } /* Literal.Number.Oct */
+.hljs .sa { color: #BA2121 } /* Literal.String.Affix */
+.hljs .sb { color: #BA2121 } /* Literal.String.Backtick */
+.hljs .sc { color: #BA2121 } /* Literal.String.Char */
+.hljs .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.hljs .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.hljs .s2 { color: #BA2121 } /* Literal.String.Double */
+.hljs .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.hljs .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.hljs .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.hljs .sx { color: #008000 } /* Literal.String.Other */
+.hljs .sr { color: #A45A77 } /* Literal.String.Regex */
+.hljs .s1 { color: #BA2121 } /* Literal.String.Single */
+.hljs .ss { color: #19177C } /* Literal.String.Symbol */
+.hljs .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.hljs .fm { color: #00F } /* Name.Function.Magic */
+.hljs .vc { color: #19177C } /* Name.Variable.Class */
+.hljs .vg { color: #19177C } /* Name.Variable.Global */
+.hljs .vi { color: #19177C } /* Name.Variable.Instance */
+.hljs .vm { color: #19177C } /* Name.Variable.Magic */
+.hljs .il { color: #666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+<div class="topbar"><a href="../index.html">← Documentation index</a></div>
+<div class="wrap">
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T12:22:17Z</div>
+<article class="markdown-body">
+<h1>CARES PostgreSQL Round 3 Publication Audit &amp; Verification</h1>
+<p><strong>Status:</strong> Administrative publication audit record; <strong>NOT A TECHNICAL DESIGN CHANGE, NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This document records verification of the published Round 3 implementation-planning artifacts and evidence consistency only. No physical schema, transaction, RLS, lifecycle/retention, OD/PD, ADR, architecture, or roadmap decisions were changed.</p>
+<h2>1. Audit scope and timestamp</h2>
+<ul>
+<li><strong>Audit objective:</strong> verify actual Git/GitHub publication state for Round 3 implementation-planning artifacts, reconcile publication/evidence-report inconsistencies, and ensure published records accurately reflect verifiable evidence.</li>
+<li><strong>Target branch:</strong> <code>planning/postgresql-round3-implementation</code></li>
+<li><strong>Expected baseline (Round 2 synchronized):</strong> <code>ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d</code> (verified on <code>origin/design/postgresql-round2-physical-schema</code>)</li>
+<li><strong>Audit timestamp (UTC context):</strong> 2026-11-22 (evidence collected during this execution; export manifest timestamps are authoritative for generated artifacts)</li>
+<li><strong>Working directory / repository:</strong> <code>/home/ubuntu/cares</code>, <code>origin https://github.com/clarusinnovaceteknologi/cares.git</code></li>
+</ul>
+<h2>2. Inspections performed (mandatory)</h2>
+<ol>
+<li>Verified working directory and Git repository.</li>
+<li>Ran <code>git status --short --branch</code> (pre-correction): <code>## planning/postgresql-round3-implementation...origin/planning/postgresql-round3-implementation</code> with only pre-existing untracked files; no tracked modifications.</li>
+<li>Recorded local HEAD and parent at inspection: <code>df10d02f9e63cb38df2e7930dfa1951ae8eebca7</code> (parent <code>5991a0945ad607499f56472f47e06de3957ea14b</code>).</li>
+<li>Verified configured remote (<code>origin</code> fetch/push).</li>
+<li>Fetched remote references without modifying/rewriting history: <code>git fetch origin --prune</code> (exit 0).</li>
+<li>Inspected target branch local and remote-tracking state.</li>
+<li>Ran <code>git ls-remote --heads origin planning/postgresql-round3-implementation</code>.</li>
+<li>Compared local HEAD, remote-tracking HEAD, and ls-remote HEAD.</li>
+<li>Determined publication state (committed/pushed/identical/present in expected branch).</li>
+<li>Inspected <a href="../copilot.txt">copilot.txt</a>, Round 3 final review/changelog/readiness/matrix/plan/dependency/work breakdown/test plan/migration strategy, documentation export index/manifests, ZIP, and relevant Git history.</li>
+</ol>
+<h2>3. Git/publication state evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Current branch</td>
+<td><code>planning/postgresql-round3-implementation</code></td>
+</tr>
+<tr>
+<td>Baseline (verified)</td>
+<td><code>ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d</code> on local and <code>origin/design/postgresql-round2-physical-schema</code></td>
+</tr>
+<tr>
+<td>Planning artifacts commit</td>
+<td><code>5991a0945ad607499f56472f47e06de3957ea14b</code> — <code>docs: add PostgreSQL round 3 implementation plan</code></td>
+</tr>
+<tr>
+<td>Prior verification-record commit</td>
+<td><code>df10d02f9e63cb38df2e7930dfa1951ae8eebca7</code> — <code>docs: record round 3 planning publication verification</code></td>
+</tr>
+<tr>
+<td>Local HEAD at inspection (pre-correction)</td>
+<td><code>df10d02f9e63cb38df2e7930dfa1951ae8eebca7</code></td>
+</tr>
+<tr>
+<td>Remote-tracking HEAD at inspection</td>
+<td><code>origin/planning/postgresql-round3-implementation</code> = <code>df10d02f9e63cb38df2e7930dfa1951ae8eebca7</code></td>
+</tr>
+<tr>
+<td><code>git ls-remote</code> result at inspection</td>
+<td><code>df10d02f9e63cb38df2e7930dfa1951ae8eebca7	refs/heads/planning/postgresql-round3-implementation</code></td>
+</tr>
+<tr>
+<td>Local/remote/ls-remote match at inspection</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>Divergence/conflicts/unexpected commits</td>
+<td>None observed</td>
+</tr>
+<tr>
+<td>Round 1.1/Round 2 branches</td>
+<td>Unmodified by this audit (<code>origin/audit/postgresql-round1-1-publication</code> <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code>, <code>origin/design/postgresql-round2-physical-schema</code> <code>ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Assessment:</strong> Round 3 planning artifacts were committed locally and pushed to the remote target branch; pre-correction local and remote states were identical and verified by <code>git ls-remote</code> (not inferred from URL accessibility).</p>
+<h2>4. Required artifact and consistency checks</h2>
+<h3>4.1 Eight required Round 3 planning documents (present)</h3>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th style="text-align:right">Bytes</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</code></td>
+<td style="text-align:right">17857</td>
+<td><code>b5d662fc5f1274256a40f57b0abefe828dba1451c47036f8c6de6cfe45fb36be</code></td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</code></td>
+<td style="text-align:right">10239</td>
+<td><code>6c0f669dc8610f9288f080a16a4ce51b516b8eb30e7e4609661707da18938a50</code></td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</code></td>
+<td style="text-align:right">9914</td>
+<td><code>da422ce9b32b49a8199c9714ecdb44d3a52b3c86a369e8b778208393b26f5d07</code></td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</code></td>
+<td style="text-align:right">13539</td>
+<td><code>7372d37e6605590c710f73a9191b3b6da80cc387ea09c3886be11fe1ad73e842</code></td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</code></td>
+<td style="text-align:right">10847</td>
+<td><code>bb32ac8e5aec5754a941948b6c6fd6e7fcf0cd10749730dd9fdae35f06078eba</code></td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</code></td>
+<td style="text-align:right">7829</td>
+<td><code>e3e4a2d40b330dde951b1a788fb9f11488f64c2106da81997bfcf37ffd689a73</code></td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_ROUND3_CHANGELOG.md</code></td>
+<td style="text-align:right">5199</td>
+<td><code>ff5e47981afe7627d7efce228b0e08b67d96515b6f76b0fcc00d412a0f54096e</code></td>
+</tr>
+<tr>
+<td><code>docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md</code></td>
+<td style="text-align:right">8311</td>
+<td><code>c0913db7764cbdec81f68d4b82b2c826a10cceb33f190d5a008b7cf4a9c92fbe</code></td>
+</tr>
+</tbody>
+</table>
+<h3>4.2 Content/consistency checks (evidence-based)</h3>
+<ul>
+<li><strong>Cross-references:</strong> Round 3 documents cross-reference each other and authoritative Round 1.1/Round 2/architecture/ADR baselines (reviewed in source documents).</li>
+<li><strong>Final review status:</strong> <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a> records <strong><code>BLOCKED BY OWNER DECISIONS</code></strong> with required rationale and stop condition (no implementation authorization). Technical readiness content not changed by this audit.</li>
+<li><strong>No technical changes:</strong> planning artifacts remain planning-only; no DDL/migrations/ORM/DB objects/application code/DB execution introduced.</li>
+<li><strong>Export/index/manifest/ZIP (pre-correction verified artifacts):</strong> corresponding HTML pages for all 8 Round 3 docs present in <code>dist/cares-documentation-html/docs/</code> and in ZIP; index and manifests include Round 3 entries. Exporter report: 50 eligible markdown sources, 50 doc HTML generated (51 generated HTML total), 0 failed conversions, 0 broken internal links, 0 missing referenced assets, 0 empty/unfaithful HTML (reported), Mermaid bundled. Manifest revision at export time: <code>ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d</code>.</li>
+<li><strong>Mermaid:</strong> dependency map contains 2 fenced <code>mermaid</code> blocks in Markdown and 4 mermaid markers in generated HTML (structural presence validated). <strong>Mermaid visual rendering NOT VERIFIED</strong>.</li>
+<li><strong>ZIP integrity:</strong> <code>ZipFile.testzip()</code> returned <code>None</code> (OK), 56 entries, top-level <code>cares-documentation-html/</code>.</li>
+<li><strong>Hashes (locally verified, pre-correction planning-publication artifacts):</strong> <code>dist/CARES_DOCUMENTATION_HTML.zip</code> <code>79fa259ef5853d82bcac0d80d542bb552ae1afaadfeea94aba84e83c7ada8a5a</code> (23824515), <code>dist/cares-documentation-html/index.html</code> <code>aae8633f4f2d7b8d39ee0b2a50225f8c136d103b2fa5211f1911a2c023123f11</code> (22416), <code>EXPORT_MANIFEST.md</code> <code>f7c08f90c8e59ca27330d54dfb879b3667adc2ddab698e7df6cb4df199358245</code> (6348), <code>EXPORT_MANIFEST.json</code> <code>286a99eba65f50764c618828970d2cb2210d06ad9e9c9c7356b77feaaf995e95</code> (8979). <code>copilot.txt</code> at inspection: <code>edc081a0c735b82670614de8ac68f4a6e76819b3d81a76796d196301ada74dd4</code> (9443).</li>
+</ul>
+<h2>5. Inconsistencies found and corrections made</h2>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Evidence</th>
+<th>Correction (administrative)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>copilot.txt</code> did not explicitly distinguish the planning artifacts commit from the final verification-record commit as the branch's final synchronized HEAD</td>
+<td>Pre-correction report recorded <code>5991a09</code> as commit/local/remote verified state but did not name <code>df10d02</code> as final published HEAD</td>
+<td>Updated <code>copilot.txt</code> to distinguish <code>5991a09</code> (planning artifacts commit) and <code>df10d02</code> (verification-record commit, prior final synchronized HEAD verified by <code>git ls-remote</code>), and to document this audit correction publication state. No technical status changed.</td>
+</tr>
+<tr>
+<td>Missing required publication audit artifact for Round 3</td>
+<td><code>docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md</code> absent</td>
+<td>Created this publication audit document with required evidence sections.</td>
+</tr>
+<tr>
+<td>Export/index/manifest/ZIP require synchronization with added Markdown source(s)</td>
+<td>New audit Markdown source added; exporter regenerates from repository Markdown sources</td>
+<td>Regenerated HTML export, index, manifest, and ZIP; revalidated integrity/links/assets/structural Mermaid presence and recorded resulting hashes/evidence.</td>
+</tr>
+</tbody>
+</table>
+<p>No mismatched branch/commit SHAs in git state, no claims of publication before remote verification, no missing <code>git ls-remote</code> evidence, and no export/ZIP/hash mismatch were found for the pre-correction published planning artifacts themselves; corrections were limited to evidence-report clarity and inclusion/synchronization of the required audit artifact.</p>
+<h2>6. Audit correction publication (to be finalized by this commit)</h2>
+<ul>
+<li><strong>Audit correction commit:</strong> adds/updates publication-evidence records (<code>docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md</code>, <code>copilot.txt</code>) and regenerated export/index/manifest/ZIP as required for Markdown source synchronization.</li>
+<li><strong>Commit SHA / final local HEAD / final remote HEAD / post-push <code>git ls-remote</code> / local-remote match:</strong> recorded after commit and push in the final execution report and, if needed, in a follow-up verification update; must be independently verified.</li>
+<li><strong>No force-push, no history rewrite, no changes to Round 1.1/Round 2 branches.</strong></li>
+</ul>
+<h2>7. Unresolved dependencies and technical limitations (unchanged)</h2>
+<ul>
+<li><strong>Readiness:</strong> <code>BLOCKED BY OWNER DECISIONS</code> (planning coherent; implementation not authorized).</li>
+<li><strong>Open decisions:</strong> OD-001–OD-013 and PD-001–PD-012 remain as previously recorded; <strong>ADR 0006 remains Proposed</strong>. No OD/PD/ADR status changed.</li>
+<li><strong>Outstanding approvals/validations (examples):</strong> PD-005/PD-006 verified tenant-context/RLS mechanism and validation; OD-001/002/003/004/005/006/007/008 licensing/identity/binding/idempotency/merge-split/fingerprint semantics and approvals; OD-009/013 outbox/event-namespace semantics; OD-010/011/012 retention/legal-hold/AI-governance/workload validation; relevant PD mechanism selections and evidence.</li>
+<li><strong>Limitations:</strong> planning/export validation is documentation/integrity/structural evidence only; <strong>Mermaid visual rendering NOT VERIFIED</strong>; no runtime DB correctness/isolation/performance/concurrency/load, backup/restore execution, or migration execution claimed; no tests claimed passed.</li>
+</ul>
+<h2>8. Explicit confirmation</h2>
+<p>No physical schema design, table/column/type/key/constraint/index definition, RLS or tenant-isolation semantic design, transaction/concurrency semantic design, retention/partitioning/backup/recovery design, OD/PD resolution or status, ADR status, architecture, roadmap, or implementation artifact was changed by this audit. Actions were limited to publication-state inspection, evidence-report correction, creation of this audit record, and export/index/manifest/ZIP synchronization required for added/updated Markdown documentation sources.</p>
+<h2>9. Final audit status (pre-correction evidence)</h2>
+<p>Based on inspected pre-correction state: <strong><code>PUBLICATION VERIFIED — ROUND 3 PLANNING COMPLETE</code></strong> for the previously published planning artifacts (<code>5991a09</code>, <code>df10d02</code> synchronized locally/remotely), subject to successful commit/push/verification of this administrative audit correction and unchanged technical blockers/readiness (<code>BLOCKED BY OWNER DECISIONS</code> for implementation). Final status is confirmed after remote verification of the audit correction commit.</p>
+
+</article>
+</div>
+
+</body>
+</html>

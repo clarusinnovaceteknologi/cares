@@ -1,8 +1,8 @@
 {
-  "export_timestamp_utc": "2026-11-22T11:47:37Z",
-  "repository_revision": "ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d",
-  "source_markdown_files_discovered": 50,
-  "html_files_successfully_generated": 50,
+  "export_timestamp_utc": "2026-11-22T12:22:17Z",
+  "repository_revision": "df10d02f9e63cb38df2e7930dfa1951ae8eebca7",
+  "source_markdown_files_discovered": 51,
+  "html_files_successfully_generated": 51,
   "failed_conversions": [],
   "excluded_files_and_reasons": [],
   "missing_referenced_assets": [],
@@ -172,6 +172,11 @@
     {
       "source": "docs/POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md",
       "output": "docs/POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html",
+      "status": "converted"
+    },
+    {
+      "source": "docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md",
+      "output": "docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md.html",
       "status": "converted"
     },
     {
