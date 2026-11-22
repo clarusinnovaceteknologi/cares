@@ -65,11 +65,11 @@ Created in `docs/` on `governance/postgresql-round3-owner-decision-gate` (worktr
 
 ### 7) Publication (target branch only)
 - **Initial local commit (pre-amend):** `ce1194dfa7b044ba1a56a466766101a6e022d923`
-- **Amended commit SHA / local HEAD (to be pushed):** recorded below after amend
+- **Published governance/export commit:** `251efe598e393afc5a8bd967856185ffaf299439`
 - **Push target:** `origin/governance/postgresql-round3-owner-decision-gate` (normal push only; no force-push)
-- **Remote HEAD (`git ls-remote`):** pending push verification
-- **Local/remote match:** pending push verification
-- **Post-push verification:** to be recorded in a follow-up publication-evidence commit on the same target branch (normal push)
+- **Remote HEAD (`git ls-remote`) after push:** `251efe598e393afc5a8bd967856185ffaf299439` `refs/heads/governance/postgresql-round3-owner-decision-gate`
+- **Local/remote match (published governance/export commit):** Yes
+- **Final verification/report commit:** recorded as the final remote HEAD after this evidence update is pushed and verified (see final response evidence).
 
 ### 8) Final confirmations and blockers
 - Confirmed: all eight Round 3.1 documents created; OD-001–OD-013 and PD-001–PD-012 checked and preserved; I-00–I-14 baseline classifications preserved; ADR 0006 remains Proposed.
