@@ -1,69 +1,149 @@
-# CARES PostgreSQL Round 3.2 — Owner Decision Consolidation and Governance Reconciliation (Execution Report)
+# CARES PostgreSQL Round 3.2.2 — Publication Evidence & Export Fidelity Audit (Execution Report)
 
 ## 1. Task identity and scope
-- **Task:** CARES — PostgreSQL Round 3.2 Owner Decision Consolidation and Governance Reconciliation (documentation and governance only).
-- **Execution mode:** documentation/governance consolidation; no DDL, migrations, ORM models, database roles/policies, triggers/stored procedures, provisioning scripts, application code, runtime configuration, or production infrastructure created or modified. No implementation authorized.
-- **Owner decisions/authorization:** no owner decision fabricated; no unresolved technical detail inferred as approved from principle-level approvals; no implementation increment authorized.
+- **Task:** CARES — PostgreSQL Round 3.2.2 Publication Evidence & Export Fidelity Audit (documentation-publication audit and evidence correction only).
+- **Objective:** verify the actual published Round 3.2.1 result, correct inaccurate/incomplete/ambiguous publication evidence, verify HTML export fidelity against Markdown sources, clarify export counts/validation claims, and preserve all approved owner decisions and implementation boundaries.
+- **Scope performed:** documentation-publication audit and evidence correction only (TXT/JSON/HTML export artifacts as required by fidelity findings). No application/runtime/schema implementation work performed. No new architecture round opened.
+- **Implementation authorization:** **NOT AUTHORIZED.** No implementation increment (including I-00 through I-14) is authorized by this task or by any correction in this branch.
 
-## 2. Verified source baseline and repository state (pre-change)
-- **Main repository (`/home/ubuntu/cares`):** `planning/postgresql-round3-implementation` @ `ee6e005bc50ffa8f3cd376a83b01369044005c3b` (local==remote), tracked tree clean; pre-existing untracked files present and untouched.
-- **Governance source worktree (`/tmp/cares-postgresql-round3-1`):** `governance/postgresql-round3-owner-decision-gate` @ `7c58808157ab512c49abeed3efd0757b4c37824c` (local==remote), clean working tree (`## governance/postgresql-round3-owner-decision-gate... origin/governance/postgresql-round3-owner-decision-gate`).
-- **Remote verification (pre-change):**
-  - `origin/governance/postgresql-round3-owner-decision-gate` = `7c58808157ab512c49abeed3efd0757b4c37824c`
-  - `origin/planning/postgresql-round3-implementation` = `ee6e005bc50ffa8f3cd376a83b01369044005c3b` (unchanged baseline reference)
-  - `origin/governance/postgresql-round3-2-owner-decision-consolidation` did not exist prior to publication.
-- **Target branch/worktree:** `governance/postgresql-round3-2-owner-decision-consolidation` created in isolated worktree `/tmp/cares-postgresql-round3-2` from verified source baseline `7c58808157ab512c49abeed3efd0757b4c37824c`.
+## 2. Source baseline verification (preflight, read-only before branching)
 
-## 3. Sources consulted (authoritative/evidence inputs)
-- **Explicit owner approvals supplied in current project conversation (authoritative):** principles and bounded conditions approved for OD-001–OD-013 (Round 3.2 directive). For OD-001, owner approved acceptance of ADR 0006 in principle with agreed bounded exclusions and preserved deferred dependencies; distinct from unconditional formal ADR status transition. No per-OD technical-detail approvals inferred beyond explicit inputs.
-- **Round 3.1 governance artifacts:** `POSTGRESQL_ROUND3_1_OWNER_DECISION_GATE.md`, `POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md`, `POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md`, `POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_MATRIX.md`, `POSTGRESQL_ROUND3_1_OWNER_DECISION_RECORD_TEMPLATE.md`, `POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md`, `POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md`, `POSTGRESQL_ROUND3_1_FINAL_REVIEW.md`.
-- **Round 3 planning artifacts:** `POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md`, `POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md`, `POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md`, `POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md`, `POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md`, `POSTGRESQL_ROUND3_DEPENDENCY_MAP.md`, `POSTGRESQL_ROUND3_CHANGELOG.md`, `POSTGRESQL_ROUND3_FINAL_REVIEW.md`, `POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md`.
-- **Round 2 / physical / logical / audit artifacts:** `POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md` (PD-001–PD-012 preserved statuses), `POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md`, `POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md`, and related Round 1.1/Round 2 records.
-- **Recovered original decision sources (read-only evidence, provenance `FOUND BUT PROVENANCE INCOMPLETE`):**
-  - `docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md` — blob `dc9a813be82bfa6ba1384b404d3805b67f2be88c`, introduced in `278daf4623404f573132cee57e1d6fbe33b0846d` (2026-11-21T16:11:58Z), present in agent checkpoint refs `refs/agents/8c785fc7-340d-4bfa-b371-b9b81d67385b/checkpoints/turn/0..17`; hash-identical untracked copy consulted at `/home/ubuntu/cares/docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md`.
-  - ADR 0006 `docs/adr/0006-atomic-per-tenant-asset-licensing.md` — blob `324a6eedcf7da9ced1294cc48a832e2c56bad99f`, same provenance context; hash-identical untracked copy consulted at `/home/ubuntu/cares/docs/adr/0006-atomic-per-tenant-asset-licensing.md`. Verified as **Proposed**, PostgreSQL licensing/accounting/quota/reservation/concurrency/timeout/idempotency semantics (not software licensing).
+### 2.1 Git/network operations and safety
+- `git fetch origin` executed from `/home/ubuntu/cares` as ordinary fetch (no `--prune`). **No `git fetch --prune`, no `git remote prune`, no branch deletion, no history rewriting, and no force-push performed in this audit.**
+- If any prior `git fetch --prune` activity is visible in historical conversation/report context outside this audited command sequence, that must be described accurately: pruning remote-tracking references is not the same as deleting remote branches. This audit does **not** claim that no pruning command was ever used historically outside this verified 3.2.2 execution sequence; it records that pruning was not used by this audit.
+- No stale remote-tracking references were reconstructed/restored.
 
-## 4. Deliverables created/revised (Round 3.2)
+### 2.2 Verified source branch and SHA
+- **Verified source branch:** `governance/postgresql-round3-2-1-owner-decision-fidelity-correction`
+- **Expected/verified source commit SHA:** `86995661494205877f88ccf13c492f3d9d1d0a27`
+- **Local/remote verification:** `git ls-remote --heads origin governance/postgresql-round3-2-1-owner-decision-fidelity-correction` reported `86995661494205877f88ccf13c492f3d9d1d0a27` at audit start.
+- **Source worktree inspected:** `/tmp/cares-postgresql-round3-2-1` on `governance/postgresql-round3-2-1-owner-decision-fidelity-correction` at `86995661494205877f88ccf13c492f3d9d1d0a27`, clean (`git status --short --untracked-files=all` empty).
+- **Target branch pre-existence:** `governance/postgresql-round3-2-2-publication-evidence-audit` did not exist remotely before this audit.
+- **Source branch unchanged:** this audit did not modify `governance/postgresql-round3-2-1-owner-decision-fidelity-correction`, `/tmp/cares-postgresql-round3-2-1`, or any protected branch.
 
-### Created
-- `docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md` — consolidated OD-001–OD-013 (scope, owner approval status/principles-bounded, approved principles without invention, explicitly deferred technical details, dependencies/cross-references, no implementation authorization); PD-001–PD-012 visibility preserved; ADR 0006 formal-status distinction preserved.
-- `docs/adr/0006-atomic-per-tenant-asset-licensing.md` — reconciled ADR 0006 markdown preserving Proposed baseline and adding Round 3.2 governance reconciliation (bounded in-principle acceptance, approved principles, retained bounded exclusions/deferred dependencies, and explicit reason formal unconditional status transition remains pending; no mechanical promotion to Accepted).
-- `docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md` — I-00–I-14 reconciliation distinguishing owner-approved principles, technically unresolved details, planning-ready increments, blocked increments, and explicitly authorized implementation increments (none); explicit non-authorization including I-06/I-07/I-09/I-12/I-13/I-14.
-- `docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md` — OD-001–OD-013, PD-001–PD-012, ADR 0006, I-00–I-14 dependencies classified as owner decision resolved / principle approved-technical details deferred / partially resolved / still blocked / requires technical validation / requires separate owner authorization; no technical blocker marked resolved by principle approval alone.
-- `docs/POSTGRESQL_ROUND3_2_CHANGELOG.md` — Round 3.2 changelog.
-- `docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md` — final governance review answering all required questions.
+### 2.3 Required artifacts inspected (baseline present)
+- `copilot.txt`
+- `docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md`
+- `docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md`
+- `docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md`
+- `docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md`
+- `docs/adr/0006-atomic-per-tenant-asset-licensing.md`
+- `dist/cares-documentation-html/EXPORT_MANIFEST.json`
+- `dist/cares-documentation-html/EXPORT_MANIFEST.md`
+- `dist/cares-documentation-html/index.html`
+- `dist/CARES_DOCUMENTATION_HTML.zip`
 
-### Revised
-- `copilot.txt` — this execution/publication report.
+## 3. Round 3.2.1 publication evidence audit and corrections
 
-### Preserved (unchanged by this round)
-- All existing Round 3.1 `POSTGRESQL_ROUND3_1_*` documents and prior Round 1/1.1/2/3 governance/design records retained in history; OD/PD identifiers and I-00–I-14 baseline classifications preserved.
+### 3.1 Published Round 3.2.1 result (verified)
+- **Published Round 3.2.1 branch:** `governance/postgresql-round3-2-1-owner-decision-fidelity-correction`
+- **Published Round 3.2.1 commit (actual):** `86995661494205877f88ccf13c492f3d9d1d0a27`
+- **Commit message:** `Round 3.2.1: correct PostgreSQL owner-decision fidelity records`
+- **Recorded commit timestamp (git metadata):** `2026-11-22T20:09:51Z` (UTC, as recorded in prior execution evidence / commit context)
+- **Round 3.2.1 export generation timestamp recorded in manifest/pages:** `2026-11-22T20:11:55Z` UTC (manifest `export_timestamp_utc`)
+- **Published scope:** 7 changed governance Markdown documents, 7 corresponding regenerated HTML pages, updated `index.html`/export manifests, rebuilt `dist/CARES_DOCUMENTATION_HTML.zip`, and `copilot.txt` updated in commit `8699566...`.
 
-## 5. Key reconciliation outcomes
-- **OD-001–OD-013:** principles and bounded conditions recorded as owner-approved (authoritative conversation directive); technical details not inferred/closed; no implementation authorized.
-- **ADR 0006:** accepted in principle with bounded exclusions (OD-001) and documented accordingly; **formal ADR status remains Proposed**; unconditional formal status transition pending formal ADR governance/acceptance requirements and accurate bounded representation.
-- **Authorization posture:** no explicit owner authorization records exist; all increments I-00–I-14 remain **not authorized**. OD approvals do not authorize I-06, I-07, I-09, I-12, I-13, I-14, or any other increment.
-- **Dependencies/blockers:** unresolved PD decisions remain visible; technical blockers/validations/authorizations remain required where applicable; principle approval does not resolve technical blockers.
+### 3.2 `copilot.txt` inaccuracies/ambiguities corrected
+The committed Round 3.2.1 `copilot.txt` (in `8699566...`) was audited and contained publication-evidence ambiguities requiring correction in this audit record:
+- **Stale/ambiguous final-SHA wording:** Section 3.1 stated `Exact final commit SHA: (recorded as final published HEAD of this branch; see Section 3 verification results below and final execution report) (exact SHA captured at commit/push verification).` and `Remote HEAD verification: to be recorded after push...` as in-file placeholders. This was ambiguous/stale relative to the actual published result.
+  - **Correction:** this report explicitly records the actual published Round 3.2.1 final commit SHA as `86995661494205877f88ccf13c492f3d9d1d0a27` and records that it was the verified local/remote HEAD of the Round 3.2.1 source branch at 3.2.2 preflight.
+- **Export/count fidelity claims:** Round 3.2.1 reported counts consistent with manifest fields but did not sufficiently distinguish "HTML files successfully generated" (manifest field = total document HTML pages generated in the export process/output set) from "pages regenerated in Round 3.2.1" (7 changed documents). It also stated "Zero failed conversions" based on execution, but conversion **fidelity** for the custom build-scoped HTML regeneration was not fully verified by content inspection.
+  - **Correction:** this report clarifies actual counts and records the 3.2.2 fidelity audit findings/correction (Section 4).
+- **Timestamps:** historical 3.2.1 timestamps are preserved only where actually recorded (`2026-11-22T20:09:51Z` commit metadata context, `2026-11-22T20:11:55Z` export timestamp in manifest/pages). New 3.2.2 timestamps are recorded below with explicit timezone and were captured via `date --iso-8601=seconds` and `date -u --iso-8601=seconds` (never guessed).
 
-## 6. Documentation export/publication artifacts
-- Documentation export regenerated from a build-scoped copy of the Round 3.2 worktree state (to include created/revised Markdown while preserving directory structure and producing consistent index/manifest/ZIP). Aggregate export artifacts in `dist/cares-documentation-html/` and `dist/CARES_DOCUMENTATION_HTML.zip` were rebuilt as required for index/manifest/ZIP consistency and inclusion of Round 3.2 documents.
-- **Validation (see git/command evidence recorded during execution):** export completed for eligible Markdown files including Round 3.2 deliverables and ADR 0006; index and manifest regenerated; ZIP rebuilt and integrity-checked; internal links/assets reviewed via export process results. Mermaid bundling/visual browser rendering not claimed beyond exporter output.
-- **Note:** `copilot.txt` is not a Markdown (`.md`) file and is not discovered by the Markdown export script; it is included as a repository artifact and reported here.
+### 3.3 Git self-referential hash limitation (required)
+- **Limitation:** the exact final commit SHA of a Git commit cannot be embedded inside a file that is contained in that same commit, because changing the file content changes the commit/tree hash (self-referential hash problem).
+- **Application:** this `copilot.txt` (in the Round 3.2.2 commit) therefore does **not** and cannot truthfully embed the final Round 3.2.2 commit SHA inside this same committed file. The exact final Round 3.2.2 commit SHA is provided in the separate final execution report delivered to the user and must be verified against `git rev-parse HEAD` / remote HEAD after commit and push.
 
-## 7. Git/publication evidence
-- **Source branch/head (verified):** `governance/postgresql-round3-owner-decision-gate` @ `7c58808157ab512c49abeed3efd0757b4c37824c`.
-- **Target branch:** `governance/postgresql-round3-2-owner-decision-consolidation`.
-- **Commit/publication details:** recorded in final git verification outputs and final response (commit SHA(s), push result, local/remote HEAD comparison via `git rev-parse` and `git ls-remote`). Local and remote HEAD must match after push.
-- **Protected/other branches unchanged:** `planning/postgresql-round3-implementation` remained `ee6e005bc50ffa8f3cd376a83b01369044005c3b`; no modification to main/master/protected branches.
+## 4. HTML export fidelity audit and correction
 
-## 8. Limitations
-- Per-OD individually enumerated technical approval parameters for OD-002–OD-013 were not provided in the Round 3.2 conversation beyond the general principle/bounded-condition approval directive; consolidation preserves source-deferred technical details and avoids inference/invention.
-- Recovered logical OD register and ADR 0006 markdown sources have provenance labeled `FOUND BUT PROVENANCE INCOMPLETE` (present in agent checkpoint lineage/unmerged commit and as hash-identical untracked copies; not in tracked trees of evaluated published branch tips). Consulted read-only for reconciliation evidence.
-- Formal ADR status transition to Accepted not performed (formal governance/acceptance requirements not completed/verified as unconditionally satisfied); bounded in-principle acceptance documented.
-- No technical validation, security penetration/isolation testing, performance/workload measurement, or implementation verification performed.
+### 4.1 Export counts (clarified, evidence-backed)
+- **Total Markdown sources represented in the export:** 64 (`EXPORT_MANIFEST.json` `source_markdown_files_discovered` = 64; mapping entries = 64).
+- **Total existing document HTML pages:** 64 non-index `.html` pages under `dist/cares-documentation-html/` (one per mapped Markdown source).
+- **Index/auxiliary files:** `index.html` (1), `EXPORT_MANIFEST.json` (1), `EXPORT_MANIFEST.md` (1), copied assets `copilot.txt` in export assets as recorded by manifest (`copied_assets`: `["copilot.txt"]`) — auxiliary/export-supporting files in the export directory/package.
+- **Total HTML files in export directory:** 65 (`index.html` + 64 document HTML pages).
+- **HTML pages regenerated in Round 3.2.1:** 7 document HTML pages corresponding to the 7 changed Markdown documents (all carried generated timestamp `2026-11-22T20:11:55Z` in `8699566...` baseline):
+  - `dist/cares-documentation-html/docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html`
+  - `dist/cares-documentation-html/docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html`
+  - `dist/cares-documentation-html/docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html`
+  - `dist/cares-documentation-html/docs/POSTGRESQL_ROUND3_2_CHANGELOG.md.html`
+  - `dist/cares-documentation-html/docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html`
+  - `dist/cares-documentation-html/docs/adr/0006-atomic-per-tenant-asset-licensing.md.html`
+  - `dist/cares-documentation-html/docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md.html`
+- **Document HTML pages carried forward unchanged from prior export state (Round 3.2.1, excluding the 7 above):** 57 document HTML pages.
+- **Actual conversion failures (audited):** 0 failed conversions; 0 missing outputs; 0 missing referenced assets (`failed_conversions=[]`, `missing_referenced_assets=[]`, all mapped outputs present).
+- **Round 3.2.2 correction:** the same 7 document HTML pages were regenerated again in this audit solely to correct HTML rendering fidelity defects identified below. No additional Markdown documents were changed and no other document HTML pages were regenerated. `EXPORT_MANIFEST.json`, `EXPORT_MANIFEST.md`, and `dist/CARES_DOCUMENTATION_HTML.zip` were updated/rebuilt to reflect this fidelity correction; `index.html` content did not require source-document link/title changes for this correction.
 
-## 9. Explicit confirmations
-- Only documentation/governance artifacts and required export/report artifacts for this round were created or revised on the target branch.
-- No governance decision was fabricated.
-- No implementation increment was authorized.
-- **No database implementation or runtime code was created or authorized by this task.**
+### 4.2 Conversion fidelity audit (7 regenerated pages vs Markdown sources)
+
+**Method (performed):** inspected each of the 7 regenerated HTML pages and compared against their Markdown sources using structural/content checks (headings and section hierarchy, ordered/unordered/nested lists, tables, code blocks/inline code, links/anchors, blockquotes, checklists if present, special characters/Markdown formatting) and targeted source-vs-HTML spot checks.
+
+**Findings (Round 3.2.1 custom build-scoped converter output):** conversion fidelity was **not fully preserved** in the committed `8699566...` HTML for at least the owner-decision register, despite zero script-level conversion failures.
+- **Structural defect (confirmed):** many Markdown list items were not converted to `<li>` elements and were emitted as raw Markdown bullet text with `<br />` inside `<p>` blocks (example evidence in `POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html`: lines containing `  - Multiple reporting sources...` / `  - All device types...` etc. rendered as text rather than list items).
+- **Quantitative evidence (register):** Markdown source list-item markers ≈ 209 vs regenerated HTML `<li>` elements = 107 in `8699566...` output; raw markdown list artifacts detected in HTML body (`raw_md_artifacts_in_body` included `list_md`). Other affected pages showed closer structural counts but were subject to the same custom-converter limitations.
+- **Other element checks (baseline 3.2.1 pages):** headings present; tables/links/inline code present in part, but list fidelity and structure were not reliably preserved. No checklists were present in the audited sources; Mermaid fences were not present in the 7 changed Markdown documents.
+
+**Correction applied (Round 3.2.2):** regenerated the 7 affected HTML pages from the **unchanged** Markdown sources using `markdown-it-py` (`MarkdownIt('gfm-like')`, HTML pass-through disabled, linkify disabled) with preserved export page template/CSS/topbar/meta structure and internal `.md` link rewriting to existing exported `.md.html` targets (including anchors where applicable). No source governance Markdown content was silently rewritten.
+- **Post-correction structural evidence:** owner-decision register now renders 209 `<li>` elements (matching source list-item count), 21 headings, 18 `<tr>` table rows, 2 tables, 28 `<code>` elements, 18 links, no raw markdown list artifacts, no `<pre>`/blockquote/checklist elements (none in source). Implementation authorization matrix: 15 `<li>`, 16 `<tr>`, 2 tables. Dependency/blocker map: 12 `<li>`, 27 `<tr>`, 2 tables. Changelog: 13 `<li>`, 8 `<tr>`, 1 table. Final review: 12 `<li>`, 7 `<tr>`, 2 tables. ADR 0006: 174 `<li>`, 7 `<tr>`, 1 table, 32 headings. Round 3.1 briefs: 275 `<li>`, 1 blockquote, 0 tables (consistent with source). Spot checks confirmed correct rendering of headings/hierarchy, ordered/unordered/nested lists, tables, inline code, links, and blockquotes where present.
+- **Remaining fidelity notes:** markdown-it-py did not emit explicit heading `id` attributes in this configuration (no in-page anchor IDs generated for headings); the audited sources did not rely on Markdown checkboxes/task-list syntax. No browser/visual rendering validation was performed.
+
+## 5. Broken-link audit (baseline comparison)
+
+- **Round 3.2 baseline source:** committed `EXPORT_MANIFEST.json` in `governance/postgresql-round3-2-owner-decision-consolidation` @ `cd950882b0ea0e58781d9ba8f10440bd383f9b58` (`/tmp/cares-postgresql-round3-2/dist/cares-documentation-html/EXPORT_MANIFEST.json`), reproduced read-only.
+- **Baseline broken-link count:** 10.
+- **Current broken-link count:** 10.
+- **Comparison result:** identical to reproduced Round 3.2 baseline (same 10 entries, same source/link/reason values; element-by-element equality verified).
+- **Newly introduced links:** 0.
+- **Resolved links:** 0.
+- **Broken links in Round 3.2.1/Round 3.2.2 changed documents:** 0.
+- **All 10 baseline links (pre-existing, unchanged files):**
+  - `docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md` -> `/home/ubuntu/cares/docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md` (`target outside repository or unresolvable`)
+  - `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md` -> `/home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip` (`target outside repository or unresolvable`) [appears in baseline manifest]
+  - `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md` -> `/home/ubuntu/cares/copilot.txt` (`target outside repository or unresolvable`) [appears twice in baseline manifest]
+  - `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md` -> `/home/ubuntu/cares/copilot.txt` (`target outside repository or unresolvable`) [appears twice in baseline manifest]
+  - `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md` -> `/home/ubuntu/cares/copilot.txt` (`target outside repository or unresolvable`) [appears twice in baseline manifest]
+  - `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md` -> `/home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip` (`target outside repository or unresolvable`) [appears twice in baseline manifest]
+- **Note:** the list above reflects the exact 10 manifest entries reproduced/verified; counts by path reflect manifest occurrences.
+
+## 6. ZIP and publication validation
+
+- **ZIP file:** `dist/CARES_DOCUMENTATION_HTML.zip` exists and was rebuilt in 3.2.2 after fidelity correction.
+- **Archive integrity:** `zipfile.ZipFile(...).testzip()` returned `None` (OK).
+- **Contents (verified):** 69 ZIP entries total; includes `cares-documentation-html/index.html`, `cares-documentation-html/EXPORT_MANIFEST.json`, `cares-documentation-html/EXPORT_MANIFEST.md`, and expected exported document HTML pages/assets under `cares-documentation-html/`.
+- **Directory structure/nesting:** packaged under `cares-documentation-html/` root (no unexpected extra nesting observed in sampled/verified entries).
+- **Relative links/assets:** preserved by template/asset structure; internal `.md` links in regenerated pages rewritten to existing exported `.md.html` targets where applicable. No hosting server contents were independently checked; **this report does not claim that any hosting server contains the latest ZIP**.
+
+## 7. Preserved governance decisions and boundaries (unchanged)
+
+- **OD-001 through OD-013:** meanings, statuses, bounded conditions, prohibitions, dependencies, and authorization boundaries preserved; no changes made.
+- **PD-001 through PD-012:** preserved as recorded/unresolved-deferred where applicable; no closure/changes made.
+- **ADR 0006:** **formal status remains `Proposed`** (not changed to Accepted/Approved/final). Fidelity correction/publication evidence updates did not alter ADR governance meaning.
+- **I-00 through I-14:** boundaries preserved; **no implementation increment authorized** (including I-06, I-07, I-09, I-12, I-13, I-14).
+- **No implementation artifacts created/authorized:** no SQL DDL, migrations, ORM models, database roles, RLS policies, triggers, functions, application code, agent code, runtime configuration, or production infrastructure created or authorized.
+
+## 8. 3.2.2 execution timestamps and git provenance
+
+### 8.1 Actual execution timestamps (captured, explicit timezone)
+- **Audit preflight/inspection timestamps captured:** local `2026-11-23T03:27:36+07:00`, UTC `2026-11-22T20:27:36+00:00` (captured via `date --iso-8601=seconds` and `date -u --iso-8601=seconds`).
+- **Corrected export regeneration timestamp (7 fidelity-corrected HTML pages/manifests):** `2026-11-23T11:30:53Z` UTC (actual regeneration time recorded in updated page metadata/manifests).
+- No timestamps were guessed.
+
+### 8.2 Git provenance (this audit)
+- **Correction branch:** `governance/postgresql-round3-2-2-publication-evidence-audit` (created in isolated worktree `/tmp/cares-postgresql-round3-2-2` from verified source commit `86995661494205877f88ccf13c492f3d9d1d0a27`).
+- **Source branch state:** `governance/postgresql-round3-2-1-owner-decision-fidelity-correction` remained at `86995661494205877f88ccf13c492f3d9d1d0a27` (unchanged) during this audit.
+- **Final local/remote HEAD and clean worktree:** recorded after commit/push in the separate final execution report (see self-referential hash limitation above). This committed file does not embed the 3.2.2 final commit SHA.
+
+## 9. Checks performed and not performed
+- **Performed:** baseline git/source verification (`git fetch origin` without prune, remote/local SHA checks, branch/worktree status), artifact presence checks, `copilot.txt`/manifest/index/ZIP inspection, export count verification (64 sources, 64 doc HTML, 1 index, 65 total HTML files), structural/content fidelity comparison of 7 regenerated HTML pages vs Markdown sources, fidelity correction regeneration for those 7 pages from unchanged Markdown, manifest/index/ZIP updates and rebuild, broken-link comparison against reproduced Round 3.2 baseline manifest (`cd950882...`), ZIP integrity (`testzip()` OK) and contents checks, and governance-boundary preservation review.
+- **Not performed:** browser/visual rendering validation of HTML pages (including Mermaid rendering in unchanged pages), hosting server publication verification, runtime/application/schema validation (out of scope and not authorized), and any implementation work.
+
+## 10. Remaining limitations
+- Heading `id` anchor attributes were not emitted by the markdown-it-py regeneration configuration used for the 7 corrected pages; in-page heading anchor targets may differ from prior exporter behavior (no heading-anchor links were identified as part of the broken-link baseline).
+- No browser visual verification of exported HTML/Mermaid rendering was performed.
+- Hosting server contents were not independently checked; no claim is made that the hosting server contains the latest ZIP.
+- Historical provenance limitation remains preserved for recovered sources (`docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md` blob `dc9a813...`, ADR 0006 baseline blob `324a6ee...` recovered from checkpoint history, `FOUND BUT PROVENANCE INCOMPLETE`).
+- The exact final Round 3.2.2 commit SHA is intentionally not embedded in this committed file due to the self-referential hash limitation and must be taken from the separate final execution report / git verification.
+
+## 11. Explicit confirmation
+- **No implementation was authorized or performed.**
+- OD-001–OD-013, PD-001–PD-012, ADR 0006 (formal status `Proposed`), and I-00–I-14 boundaries remain preserved and unchanged in meaning.

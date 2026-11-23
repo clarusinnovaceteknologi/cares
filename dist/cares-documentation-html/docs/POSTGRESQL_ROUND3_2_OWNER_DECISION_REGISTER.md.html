@@ -107,32 +107,49 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T20:11:55Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md</code><br>P26-11-23T11:30:53Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3.2 — Owner Decision Register (Consolidated, Round 3.2.1 Fidelity-Corrected)</h1>
-<p><strong>Status:</strong> Proposed governance consolidation record only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT AN IMPLEMENTATION AUTHORIZATION</strong>.  <br />
-<strong>Round:</strong> Round 3.2 — Owner Decision Consolidation and Governance Reconciliation; <strong>Round 3.2.1 — Owner Decision Fidelity Correction</strong> (documentation/governance only).  <br />
-<strong>Verified source branch/baseline:</strong> <code>governance/postgresql-round3-2-owner-decision-consolidation</code> @ <code>cd950882b0ea0e58781d9ba8f10440bd383f9b58</code> (local and remote verified; clean source worktree; expected Round 3.2 deliverables present).  <br />
+<p><strong>Status:</strong> Proposed governance consolidation record only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT AN IMPLEMENTATION AUTHORIZATION</strong>.<br />
+<strong>Round:</strong> Round 3.2 — Owner Decision Consolidation and Governance Reconciliation; <strong>Round 3.2.1 — Owner Decision Fidelity Correction</strong> (documentation/governance only).<br />
+<strong>Verified source branch/baseline:</strong> <code>governance/postgresql-round3-2-owner-decision-consolidation</code> @ <code>cd950882b0ea0e58781d9ba8f10440bd383f9b58</code> (local and remote verified; clean source worktree; expected Round 3.2 deliverables present).<br />
 <strong>Working branch:</strong> <code>governance/postgresql-round3-2-1-owner-decision-fidelity-correction</code> (created from the verified source commit in isolated worktree <code>/tmp/cares-postgresql-round3-2-1</code>; source branch unchanged).</p>
 <h2>1. Purpose and authoritative input</h2>
 <p>This register is the authoritative Round 3.2 consolidated record for <strong>OD-001 through OD-013</strong>, corrected in <strong>Round 3.2.1</strong> to ensure the published governance documents accurately and completely reflect the owner’s <strong>explicitly approved principles and bounded conditions</strong> as provided in the Round 3.2.1 implementation prompt (authoritative owner decisions).</p>
 <p><strong>Authoritative sources consulted/reconciled (read-only evidence where applicable):</strong></p>
 <ul>
 <li>Explicit owner-approved principles and bounded conditions for OD-001–OD-013 (Round 3.2.1 prompt, authoritative decision input).</li>
-<li>Round 3.2 baseline artifacts on <code>cd950882...</code>: <a href="./POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html">POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md</a> (prior), <a href="./POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html">POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</a>, <a href="./POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html">POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md</a>, <a href="./POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_2_FINAL_REVIEW.md</a>, <a href="./POSTGRESQL_ROUND3_2_CHANGELOG.md.html">POSTGRESQL_ROUND3_2_CHANGELOG.md</a>, <a href="./adr/0006-atomic-per-tenant-asset-licensing.md.html">adr/0006-atomic-per-tenant-asset-licensing.md</a>.</li>
+<li>Round 3.2 baseline artifacts on <code>cd950882...</code>: <a href="POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html">POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md</a> (prior), <a href="POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html">POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</a>, <a href="POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html">POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md</a>, <a href="POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_2_FINAL_REVIEW.md</a>, <a href="POSTGRESQL_ROUND3_2_CHANGELOG.md.html">POSTGRESQL_ROUND3_2_CHANGELOG.md</a>, <a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">adr/0006-atomic-per-tenant-asset-licensing.md</a>.</li>
 <li>Round 3.1 governance artifacts (<code>POSTGRESQL_ROUND3_1_*</code>) and Round 3 planning/readiness/dependency/final-review/changelog/publication-audit records.</li>
-<li>Committed Round 1.1/Round 2 records, including <a href="./POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a> (PD-001–PD-012 preserved).</li>
-<li>Recovered original sources (provenance limitation preserved): <code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> (blob <code>dc9a813be82bfa6ba1384b404d3805b67f2be88c</code>, 61 lines, recovered from agent checkpoint commit <code>278daf4623404f573132cee57e1d6fbe33b0846d</code>; provenance <code>FOUND BUT PROVENANCE INCOMPLETE</code>, not claimed present in published Round 3 baseline/public lineage) and <a href="./adr/0006-atomic-per-tenant-asset-licensing.md.html">adr/0006-atomic-per-tenant-asset-licensing.md</a> baseline content (blob <code>324a6eedcf7da9ced1294cc48a832e2c56bad99f</code>, 274 lines, <strong>Status: Proposed</strong>, recovered from agent checkpoint history; same provenance limitation).</li>
+<li>Committed Round 1.1/Round 2 records, including <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a> (PD-001–PD-012 preserved).</li>
+<li>Recovered original sources (provenance limitation preserved): <code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> (blob <code>dc9a813be82bfa6ba1384b404d3805b67f2be88c</code>, 61 lines, recovered from agent checkpoint commit <code>278daf4623404f573132cee57e1d6fbe33b0846d</code>; provenance <code>FOUND BUT PROVENANCE INCOMPLETE</code>, not claimed present in published Round 3 baseline/public lineage) and <a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">adr/0006-atomic-per-tenant-asset-licensing.md</a> baseline content (blob <code>324a6eedcf7da9ced1294cc48a832e2c56bad99f</code>, 274 lines, <strong>Status: Proposed</strong>, recovered from agent checkpoint history; same provenance limitation).</li>
 </ul>
 <p><strong>No invention / no reinterpretation rule:</strong> this correction preserves the meaning and all bounded conditions of the owner’s explicitly approved principles. It does <strong>not</strong> reinterpret, weaken, expand, or replace owner decisions; does <strong>not</strong> invent decisions or technical details not approved; does <strong>not</strong> mark an OD fully technically specified merely because governing principles are approved; and does <strong>not</strong> convert principle approval, conditional readiness, or planning recommendations into implementation permission or authorization.</p>
 <h2>2. Preserved baselines and global constraints</h2>
 <table>
-<thead><tr><th>Baseline</th><th>Status preserved</th></tr></thead>
+<thead>
+<tr>
+<th>Baseline</th>
+<th>Status preserved</th>
+</tr>
+</thead>
 <tbody>
-<tr><td>OD-001–OD-013 identifiers</td><td>Preserved and traceable.</td></tr>
-<tr><td>PD-001–PD-012 identifiers/statuses</td><td>Preserved as recorded in <a href="./POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a> and Round 3/3.1 records (<strong>unresolved/deferred where applicable; not closed by OD-001–OD-013 principle approvals</strong>).</td></tr>
-<tr><td>ADR 0006</td><td><strong>Formal ADR status remains Proposed.</strong> OD-001 records <strong>acceptance in principle with bounded conditions/dependencies</strong>; this is <strong>not</strong> unconditional formal ADR acceptance. No status change to Accepted/Approved/final unless a separate formal ADR governance action explicitly provides it (none provided).</td></tr>
-<tr><td>I-00–I-14 boundaries</td><td>Preserved; dependencies reconciled without silently widening scope. <strong>No implementation increment authorized</strong> (including I-06, I-07, I-09, I-12, I-13, I-14).</td></tr>
+<tr>
+<td>OD-001–OD-013 identifiers</td>
+<td>Preserved and traceable.</td>
+</tr>
+<tr>
+<td>PD-001–PD-012 identifiers/statuses</td>
+<td>Preserved as recorded in <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a> and Round 3/3.1 records (<strong>unresolved/deferred where applicable; not closed by OD-001–OD-013 principle approvals</strong>).</td>
+</tr>
+<tr>
+<td>ADR 0006</td>
+<td><strong>Formal ADR status remains Proposed.</strong> OD-001 records <strong>acceptance in principle with bounded conditions/dependencies</strong>; this is <strong>not</strong> unconditional formal ADR acceptance. No status change to Accepted/Approved/final unless a separate formal ADR governance action explicitly provides it (none provided).</td>
+</tr>
+<tr>
+<td>I-00–I-14 boundaries</td>
+<td>Preserved; dependencies reconciled without silently widening scope. <strong>No implementation increment authorized</strong> (including I-06, I-07, I-09, I-12, I-13, I-14).</td>
+</tr>
 </tbody>
 </table>
 <p><strong>Mandatory invariants preserved:</strong> Python backend; PostgreSQL primary system of record; modular monolith; core functional without MELIRA; MELIRA external SaaS only (explicit provider/model/region, no silent failover, no automatic transfer, no local inference, no local GPU); one unique monitored device = one licensed asset per tenant (multi-source same-device no duplicate licensing; equal device-type weight); strict multi-tenancy with tenant authority only from trusted, verified, transaction-bound context (<strong>never</strong> client-supplied tenant IDs, <strong>never</strong> user-settable PostgreSQL GUC authorization), RLS defense-in-depth not sufficient alone. No DDL/migrations/ORM/DB provisioning/roles/policies/triggers/functions/runtime implementation or implementation authorization granted.</p>
@@ -141,17 +158,18 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-001 — ADR 0006 / per-tenant asset licensing (acceptance in principle, bounded)</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> The owner approved <strong>ADR 0006 in principle</strong>, subject to the previously specified bounded conditions. ADR 0006 concerns <strong>atomic per-tenant asset licensing/accounting of monitored devices</strong>; it is <strong>not</strong> the CARES software subscription license.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  - One unique monitored device represents exactly <strong>one licensed asset per tenant</strong>.<br />
-  - Multiple reporting sources for the same device must <strong>not</strong> double-count it.<br />
-  - All device types have <strong>equal licensing weight</strong>; do <strong>not</strong> introduce OS-, vendor-, device-type-, or telemetry-volume-based weighting.<br />
-  - Asset licensing remains <strong>separate</strong> from technical resource quotas.<br />
-  - Preserve dependencies on <strong>OD-003, OD-004, and OD-008</strong>.<br />
-  - Do <strong>not</strong> represent the owner’s approval in principle as unconditional formal ADR acceptance.<br />
-  - Keep <strong>ADR 0006 status Proposed</strong> unless a separate formal ADR governance action explicitly changes it.<br />
-  - Approval in principle does <strong>not</strong> authorize implementation.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
 <ul>
+<li>One unique monitored device represents exactly <strong>one licensed asset per tenant</strong>.</li>
+<li>Multiple reporting sources for the same device must <strong>not</strong> double-count it.</li>
+<li>All device types have <strong>equal licensing weight</strong>; do <strong>not</strong> introduce OS-, vendor-, device-type-, or telemetry-volume-based weighting.</li>
+<li>Asset licensing remains <strong>separate</strong> from technical resource quotas.</li>
+<li>Preserve dependencies on <strong>OD-003, OD-004, and OD-008</strong>.</li>
+<li>Do <strong>not</strong> represent the owner’s approval in principle as unconditional formal ADR acceptance.</li>
+<li>Keep <strong>ADR 0006 status Proposed</strong> unless a separate formal ADR governance action explicitly changes it.</li>
+<li>Approval in principle does <strong>not</strong> authorize implementation.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> reservation policy details (OD-003 linkage), accounting/counter/reconciliation mechanics and edge cases (OD-004 linkage), merge/split accounting edge cases and lifecycle details, formal idempotency contract/coupling/canonicalization details (OD-008), schema-level interpretation finalization, and any formal schema/security/architecture review/acceptance record required for unconditional status transition.</li>
 <li><strong>Dependencies on other decisions:</strong> ADR 0006 (Proposed), OD-003, OD-004, OD-008; related OD-002/OD-005 and PD-001/PD-003/PD-004/PD-005/PD-006 as applicable to licensing/accounting enforcement context.</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized by this approval.</li>
@@ -161,17 +179,18 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-002 — Authoritative asset binding</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> <code>core.asset_data_source</code> is the <strong>sole authoritative owner</strong> of the stable source-device binding. <code>source_device_key_id</code> is <strong>immutable</strong> throughout the binding lifecycle.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  - Do <strong>not</strong> create <code>core.source_device_key</code> in the initial implementation.<br />
-  - If a separate <code>source_device_key</code> representation is ever justified, it may only be a <strong>dependent, one-to-one, non-authoritative projection</strong> with the <strong>same lifecycle</strong>.<br />
-  - Raw source identifiers and fingerprint aliases <strong>cannot replace</strong> the authoritative binding.<br />
-  - Fingerprints are <strong>supporting evidence, not authoritative identity</strong>.<br />
-  - Fingerprint protection and rotation remain subject to <strong>OD-006</strong>.<br />
-  - Reinstall and re-enrollment lifecycle remains subject to <strong>OD-007</strong>.<br />
-  - Connector-specific uniqueness remains subject to <strong>OD-013</strong>.<br />
-  - Do <strong>not</strong> convert this approval into permission to implement the binding.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
 <ul>
+<li>Do <strong>not</strong> create <code>core.source_device_key</code> in the initial implementation.</li>
+<li>If a separate <code>source_device_key</code> representation is ever justified, it may only be a <strong>dependent, one-to-one, non-authoritative projection</strong> with the <strong>same lifecycle</strong>.</li>
+<li>Raw source identifiers and fingerprint aliases <strong>cannot replace</strong> the authoritative binding.</li>
+<li>Fingerprints are <strong>supporting evidence, not authoritative identity</strong>.</li>
+<li>Fingerprint protection and rotation remain subject to <strong>OD-006</strong>.</li>
+<li>Reinstall and re-enrollment lifecycle remains subject to <strong>OD-007</strong>.</li>
+<li>Connector-specific uniqueness remains subject to <strong>OD-013</strong>.</li>
+<li>Do <strong>not</strong> convert this approval into permission to implement the binding.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> final physical PK/FK/uniqueness/authority/join-path/materialization decisions and validations; dependent projection materialization details (PD-004 linkage); fingerprint protection/rotation/custody implementation (OD-006); reinstall/re-enrollment protocol/mechanics (OD-007); connector-specific uniqueness/predicate details (OD-013); schema/security validation evidence.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-006, OD-007, OD-013; related OD-001/OD-008 and PD-003/PD-004/PD-011.</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -181,14 +200,15 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-003 — Pending asset reservation</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> The owner approved the <strong>principle of pending asset reservation</strong>, subject to bounded conditions.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  - A pending reservation is <strong>not yet</strong> a committed licensed asset.<br />
-  - Reservation must <strong>not</strong> be confused with final asset activation or committed licensing accounting.<br />
-  - The design must prevent concurrent operations from creating <strong>oversubscription or double-counting</strong>.<br />
-  - Preserve dependencies on <strong>OD-004 and OD-001</strong>.<br />
-  - Do <strong>not</strong> invent reservation durations, state transitions, or implementation mechanics that have not been approved.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
 <ul>
+<li>A pending reservation is <strong>not yet</strong> a committed licensed asset.</li>
+<li>Reservation must <strong>not</strong> be confused with final asset activation or committed licensing accounting.</li>
+<li>The design must prevent concurrent operations from creating <strong>oversubscription or double-counting</strong>.</li>
+<li>Preserve dependencies on <strong>OD-004 and OD-001</strong>.</li>
+<li>Do <strong>not</strong> invent reservation durations, state transitions, or implementation mechanics that have not been approved.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> exact reservation lifecycle, expiration, recovery, concurrency, and accounting mechanics; duration/timeout/release/representation; policy-to-schema/state mapping and operational workflow details.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-001, OD-004 (and OD-008 as applicable for correctness/idempotency).</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -198,15 +218,16 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-004 — Accounting counter and reconciliation</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> The owner approved the <strong>principles of accounting counters and reconciliation</strong>, subject to bounded conditions.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  - <strong>Atomicity</strong> of licensing-related accounting.<br />
-  - Protection against <strong>double-counting and oversubscription</strong>.<br />
-  - Reconciliation as a way to <strong>detect and correct counter drift</strong>.<br />
-  - Clear distinction between <strong>committed licensed assets</strong> and <strong>pending reservations</strong>.<br />
-  - Preserve dependencies on <strong>OD-001, OD-003, and OD-008</strong>.<br />
-  - Do <strong>not</strong> invent numerical limits or operational policies.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
 <ul>
+<li><strong>Atomicity</strong> of licensing-related accounting.</li>
+<li>Protection against <strong>double-counting and oversubscription</strong>.</li>
+<li>Reconciliation as a way to <strong>detect and correct counter drift</strong>.</li>
+<li>Clear distinction between <strong>committed licensed assets</strong> and <strong>pending reservations</strong>.</li>
+<li>Preserve dependencies on <strong>OD-001, OD-003, and OD-008</strong>.</li>
+<li>Do <strong>not</strong> invent numerical limits or operational policies.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> exact counter-maintenance mechanisms, reconciliation scheduling, repair behavior, locking strategy, edge cases, authoritative counter scope, equations/formulas, and state-to-counter mapping details.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-001, OD-003, OD-008 (and related OD-005 as applicable).</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -216,15 +237,16 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-005 — Asset merge and split</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> The owner approved the <strong>principles of asset merge and split</strong>, subject to bounded conditions.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  - <strong>Asset lineage and historical relationships</strong> must be preserved.<br />
-  - <strong>Typed, relationally enforceable lineage relationships</strong> rather than an untyped polymorphic reference.<br />
-  - <strong>Explicit authorization and auditability</strong> for merge/split operations.<br />
-  - <strong>Licensing accounting consequences</strong> must be handled consistently.<br />
-  - <strong>Historical evidence and provenance</strong> must not silently disappear.<br />
-  - Do <strong>not</strong> imply that merge or split can be performed implicitly or without authorization.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
 <ul>
+<li><strong>Asset lineage and historical relationships</strong> must be preserved.</li>
+<li><strong>Typed, relationally enforceable lineage relationships</strong> rather than an untyped polymorphic reference.</li>
+<li><strong>Explicit authorization and auditability</strong> for merge/split operations.</li>
+<li><strong>Licensing accounting consequences</strong> must be handled consistently.</li>
+<li><strong>Historical evidence and provenance</strong> must not silently disappear.</li>
+<li>Do <strong>not</strong> imply that merge or split can be performed implicitly or without authorization.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> technical edge cases, detailed transition rules, accounting implementation, authority/evidence/workflow specifics, and execution semantics.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-001/OD-004/OD-006/OD-007/OD-008 (and PD-004/PD-011 as applicable).</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -234,12 +256,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-006 — Fingerprint protection and key custody</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> Fingerprints are <strong>supporting evidence, not authoritative identity</strong>. Use a <strong>keyed cryptographic construction</strong> for protected fingerprinting. The key must be managed <strong>outside the database</strong>. Key rotation must <strong>not</strong> break historical identity continuity or authoritative asset binding.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  - A fingerprint alone is <strong>insufficient</strong> to authorize an asset merge.<br />
-  - Raw identifiers and fingerprint aliases must <strong>not</strong> displace the authoritative source-device binding.<br />
-  - Do <strong>not</strong> select or claim owner approval for a specific algorithm or KMS.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
 <ul>
+<li>A fingerprint alone is <strong>insufficient</strong> to authorize an asset merge.</li>
+<li>Raw identifiers and fingerprint aliases must <strong>not</strong> displace the authoritative source-device binding.</li>
+<li>Do <strong>not</strong> select or claim owner approval for a specific algorithm or KMS.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> exact algorithm, key-management service, rotation procedure, versioning mechanics, operational key-custody implementation, overlap duration, and re-fingerprinting migration process.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-002 (authoritative binding), OD-007 (re-enrollment/lifecycle context), OD-001/OD-008 (identity/licensing correctness context); related PD-004/PD-011.</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -248,19 +271,20 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </ul>
 <h3>OD-007 — Agent reinstall and re-enrollment lifecycle</h3>
 <ul>
-<li><strong>Owner-approved principle:</strong> The owner approved all of the following (preserved in full):</li>
-</ul>
-<p>  1. Asset identity, source-device binding, agent installation identity, and agent credential are <strong>distinct concepts</strong>.<br />
-  2. Reinstalling an agent does <strong>not automatically</strong> create a new licensed asset.<br />
-  3. Rotating an agent credential does <strong>not automatically</strong> create a new licensed asset.<br />
-  4. Re-enrollment of the same physical/logical device requires <strong>continuity verification</strong>.<br />
-  5. Old credentials may be revoked and are <strong>not automatically inherited</strong> by a new installation.<br />
-  6. Cloned devices must <strong>not automatically</strong> be treated as the same device.<br />
-  7. An authoritative source-device binding <strong>cannot change implicitly</strong>.<br />
-  8. Enrollment must be <strong>authorized and auditable</strong>, with <strong>replay protection</strong>.<br />
-  9. Cross-tenant transfer requires an <strong>explicit lifecycle transition</strong>.<br />
-  10. Credential continuity must <strong>not</strong> be assumed merely because identifiers or fingerprints appear similar.</p>
-<ul>
+<li><strong>Owner-approved principle:</strong> The owner approved all of the following (preserved in full):
+<ol>
+<li>Asset identity, source-device binding, agent installation identity, and agent credential are <strong>distinct concepts</strong>.</li>
+<li>Reinstalling an agent does <strong>not automatically</strong> create a new licensed asset.</li>
+<li>Rotating an agent credential does <strong>not automatically</strong> create a new licensed asset.</li>
+<li>Re-enrollment of the same physical/logical device requires <strong>continuity verification</strong>.</li>
+<li>Old credentials may be revoked and are <strong>not automatically inherited</strong> by a new installation.</li>
+<li>Cloned devices must <strong>not automatically</strong> be treated as the same device.</li>
+<li>An authoritative source-device binding <strong>cannot change implicitly</strong>.</li>
+<li>Enrollment must be <strong>authorized and auditable</strong>, with <strong>replay protection</strong>.</li>
+<li>Cross-tenant transfer requires an <strong>explicit lifecycle transition</strong>.</li>
+<li>Credential continuity must <strong>not</strong> be assumed merely because identifiers or fingerprints appear similar.</li>
+</ol>
+</li>
 <li><strong>Bounded conditions and prohibitions (preserved):</strong> Do <strong>not</strong> simplify this decision to “reinstall preserves identity” without the required continuity verification and authorization controls.</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> enrollment protocol, continuity algorithms, credential issuance and revocation mechanics, replay-protection implementation, retirement policy, and operational conflict-handling procedures.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-002, OD-005, OD-006, OD-008; related PD-004.</li>
@@ -271,15 +295,16 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-008 — Idempotency contract</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> Idempotency for identity/licensing/correctness-critical operations must be durable and retry-safe with deterministic canonicalization and no duplicate business effects under approved semantics.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  - <strong>Scope and uniqueness:</strong> unique idempotency scope is <strong><code>(tenant_id, operation_type, idempotency_key)</code></strong>. The request must have a <strong>deterministic, versioned canonical representation</strong>. A <strong>deterministic request hash</strong> is derived from that canonical representation.<br />
-  - <strong>Replay and conflict behavior:</strong> same scope, same key, same request hash → <strong>replay the prior result without producing a duplicate business effect</strong>. Same scope and key but different request hash → <strong>return a terminal conflict and do not perform a second mutation</strong>. Idempotency must be <strong>durable enough</strong> to support the defined retry and reconciliation horizon.<br />
-  - <strong>Ledger states:</strong> durable ledger states are <strong><code>in_progress</code></strong>, <strong><code>committed</code></strong>, <strong><code>failed_terminal</code></strong>. <strong><code>timeout_unknown_commit</code> is a caller-side unknown-outcome condition in the default single-transaction model; it is not automatically a durable ledger state in that model.</strong><br />
-  - <strong>Transaction model:</strong> <strong>single-transaction coupling is the default</strong> for database-local operations. <strong>Staged or multi-transaction tracking is permitted only when a demonstrated need exists and separate approval is obtained.</strong> Do <strong>not</strong> introduce staged processing as an assumed default.<br />
-  - <strong>Retention and boundaries:</strong> retention must align with the retry horizon and reconciliation requirements; <strong>exact duration remains deferred</strong>. Event receipt deduplication is <strong>separate and governed by OD-013</strong>. External delivery is <strong>at-least-once</strong>; do <strong>not</strong> claim exactly-once external delivery.<br />
-  - This approval does <strong>not</strong> authorize <strong>I-06</strong>, <strong>I-13</strong>, or implementation generally.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
 <ul>
+<li><strong>Scope and uniqueness:</strong> unique idempotency scope is <strong><code>(tenant_id, operation_type, idempotency_key)</code></strong>. The request must have a <strong>deterministic, versioned canonical representation</strong>. A <strong>deterministic request hash</strong> is derived from that canonical representation.</li>
+<li><strong>Replay and conflict behavior:</strong> same scope, same key, same request hash → <strong>replay the prior result without producing a duplicate business effect</strong>. Same scope and key but different request hash → <strong>return a terminal conflict and do not perform a second mutation</strong>. Idempotency must be <strong>durable enough</strong> to support the defined retry and reconciliation horizon.</li>
+<li><strong>Ledger states:</strong> durable ledger states are <strong><code>in_progress</code></strong>, <strong><code>committed</code></strong>, <strong><code>failed_terminal</code></strong>. <strong><code>timeout_unknown_commit</code> is a caller-side unknown-outcome condition in the default single-transaction model; it is not automatically a durable ledger state in that model.</strong></li>
+<li><strong>Transaction model:</strong> <strong>single-transaction coupling is the default</strong> for database-local operations. <strong>Staged or multi-transaction tracking is permitted only when a demonstrated need exists and separate approval is obtained.</strong> Do <strong>not</strong> introduce staged processing as an assumed default.</li>
+<li><strong>Retention and boundaries:</strong> retention must align with the retry horizon and reconciliation requirements; <strong>exact duration remains deferred</strong>. Event receipt deduplication is <strong>separate and governed by OD-013</strong>. External delivery is <strong>at-least-once</strong>; do <strong>not</strong> claim exactly-once external delivery.</li>
+<li>This approval does <strong>not</strong> authorize <strong>I-06</strong>, <strong>I-13</strong>, or implementation generally.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> covered operation-scope finalization, canonicalization/hash standard details, state-machine/terminal-rule details beyond approved states/semantics, retention duration, reconciliation workflow specifics, staged-tracking exception approvals/implementation details (leases/fencing if applicable), and timeout/unknown-commit operational contract details.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-001, OD-002, OD-003, OD-004, OD-005, OD-009, OD-010, OD-011, OD-013 (as applicable by operation/domain); ADR 0006; related PD-007.</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -289,19 +314,22 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-009 — Outbox fencing, replay, and delivery uncertainty</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> Business-state/outbox consistency and safe at-least-once processing with explicit delivery uncertainty and replay/reconciliation separation.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  1. Business state changes and their corresponding outbox messages are created in the <strong>same PostgreSQL transaction</strong>.<br />
-  2. Outbox workers use <strong>leases and fencing</strong> for internal state transitions.<br />
-  3. A worker holding an <strong>obsolete fencing token must not</strong> be able to update internal outbox state.<br />
-  4. Lease expiry does <strong>not</strong> prove that external delivery failed.<br />
-  5. <strong><code>delivery_unknown</code></strong> must be represented as an <strong>explicit delivery-uncertainty condition</strong>.<br />
-  6. External delivery is <strong>at-least-once</strong> and may produce duplicates. Do <strong>not</strong> claim exactly-once delivery.<br />
-  7. Logical message identity remains <strong>stable</strong> across retries and replays.<br />
-  8. Each delivery attempt has its <strong>own identity, status, and audit trail</strong>.<br />
-  9. <strong>Retry, replay, and reconciliation are separate operations.</strong><br />
-  - This approval does <strong>not</strong> authorize <strong>I-09</strong>, <strong>I-13</strong>, or implementation.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
+<ol>
+<li>Business state changes and their corresponding outbox messages are created in the <strong>same PostgreSQL transaction</strong>.</li>
+<li>Outbox workers use <strong>leases and fencing</strong> for internal state transitions.</li>
+<li>A worker holding an <strong>obsolete fencing token must not</strong> be able to update internal outbox state.</li>
+<li>Lease expiry does <strong>not</strong> prove that external delivery failed.</li>
+<li><strong><code>delivery_unknown</code></strong> must be represented as an <strong>explicit delivery-uncertainty condition</strong>.</li>
+<li>External delivery is <strong>at-least-once</strong> and may produce duplicates. Do <strong>not</strong> claim exactly-once delivery.</li>
+<li>Logical message identity remains <strong>stable</strong> across retries and replays.</li>
+<li>Each delivery attempt has its <strong>own identity, status, and audit trail</strong>.</li>
+<li><strong>Retry, replay, and reconciliation are separate operations.</strong></li>
+</ol>
 <ul>
+<li>This approval does <strong>not</strong> authorize <strong>I-09</strong>, <strong>I-13</strong>, or implementation.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> lease duration and renewal, fencing implementation details, retry/backoff policy, dead-letter behavior, reconciliation procedure, connector-specific idempotency, manual replay authorization, payload retention and redaction, throughput/monitoring/operational thresholds.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-008, OD-012; related PD-007.</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -311,21 +339,22 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-010 — Evidence retention, legal hold, and deletion</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> Governed, auditable evidence lifecycle preserving integrity/provenance and preventing silent loss, with retention/legal-hold/deletion controls distinct from asset lifecycle.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  - Evidence <strong>integrity, provenance, and auditability</strong> must be preserved.<br />
-  - Corrections must <strong>not</strong> silently overwrite or erase historical evidence.<br />
-  - Retention must be based on <strong>data category, purpose, and operational need</strong>.<br />
-  - Legal hold must have a <strong>defined scope, reason, authorization, audit trail, and review process</strong>.<br />
-  - A legal hold <strong>prevents automated deletion</strong> within its applicable scope.<br />
-  - Deletion must check <strong>retention obligations, legal holds, dependencies, and ownership</strong>.<br />
-  - Deletion scope must include <strong>derived data and copies that remain under CARES control</strong>.<br />
-  - <strong>Backup and external-copy limitations must be transparent.</strong><br />
-  - Deletion must be <strong>idempotent, resumable, and verifiable</strong>.<br />
-  - <strong>Asset lifecycle and evidence lifecycle are separate.</strong><br />
-  - An <strong>asset tombstone is not a justification</strong> for retaining raw evidence indefinitely.<br />
-  - Do <strong>not</strong> invent retention periods or promise deletion from systems outside CARES control.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
 <ul>
+<li>Evidence <strong>integrity, provenance, and auditability</strong> must be preserved.</li>
+<li>Corrections must <strong>not</strong> silently overwrite or erase historical evidence.</li>
+<li>Retention must be based on <strong>data category, purpose, and operational need</strong>.</li>
+<li>Legal hold must have a <strong>defined scope, reason, authorization, audit trail, and review process</strong>.</li>
+<li>A legal hold <strong>prevents automated deletion</strong> within its applicable scope.</li>
+<li>Deletion must check <strong>retention obligations, legal holds, dependencies, and ownership</strong>.</li>
+<li>Deletion scope must include <strong>derived data and copies that remain under CARES control</strong>.</li>
+<li><strong>Backup and external-copy limitations must be transparent.</strong></li>
+<li>Deletion must be <strong>idempotent, resumable, and verifiable</strong>.</li>
+<li><strong>Asset lifecycle and evidence lifecycle are separate.</strong></li>
+<li>An <strong>asset tombstone is not a justification</strong> for retaining raw evidence indefinitely.</li>
+<li>Do <strong>not</strong> invent retention periods or promise deletion from systems outside CARES control.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> exact retention durations, approval matrix, backup expiry and deletion mechanics, cryptographic erasure, WORM requirements, external deletion guarantees, regulatory mapping, AI-provider retention details.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-011, OD-012 (and governance linkages to controlled admin/access as applicable).</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -335,15 +364,16 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-011 — AI consent, data classification, budget, and provider policy</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> MELIRA/AI is optional, explicitly governed, auditable, and isolated from core operation and asset licensing, with fail-safe/minimization controls.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  - <strong>Optional AI and consent:</strong> MELIRA is <strong>optional</strong>. MELIRA requires <strong>explicit tenant opt-in</strong>. CARES core functionality must work <strong>without MELIRA</strong>. Consent must be <strong>traceable and revocable</strong>.<br />
-  - <strong>Data eligibility and protection:</strong> data classification determines whether data is eligible for AI processing. <strong>Unclassified data must not</strong> be sent to an AI provider. <strong>Credentials, private keys, authentication secrets, and equivalent sensitive secrets are prohibited</strong> from being sent to AI providers. <strong>Data minimization and sanitization</strong> must occur before provider transmission.<br />
-  - <strong>Provider selection:</strong> provider, model, region, and endpoint are <strong>explicitly selected/configured per tenant</strong>. <strong>No silent failover</strong> to a different provider, model, region, or endpoint. Provider selection must remain <strong>transparent and auditable</strong>.<br />
-  - <strong>Budget and output:</strong> AI budget is <strong>separate from asset licensing</strong>. AI budget enforcement must be <strong>concurrency-safe</strong>. AI outputs carry <strong>provenance</strong> and must <strong>not</strong> be represented as independently verified facts. AI recommendations do <strong>not</strong> authorize SOAR execution.<br />
-  - <strong>Retention:</strong> AI retention and deletion must align with <strong>OD-010</strong>. Provider-side limitations must be <strong>transparent</strong>.<br />
-  - This approval does <strong>not</strong> authorize implementation.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
 <ul>
+<li><strong>Optional AI and consent:</strong> MELIRA is <strong>optional</strong>. MELIRA requires <strong>explicit tenant opt-in</strong>. CARES core functionality must work <strong>without MELIRA</strong>. Consent must be <strong>traceable and revocable</strong>.</li>
+<li><strong>Data eligibility and protection:</strong> data classification determines whether data is eligible for AI processing. <strong>Unclassified data must not</strong> be sent to an AI provider. <strong>Credentials, private keys, authentication secrets, and equivalent sensitive secrets are prohibited</strong> from being sent to AI providers. <strong>Data minimization and sanitization</strong> must occur before provider transmission.</li>
+<li><strong>Provider selection:</strong> provider, model, region, and endpoint are <strong>explicitly selected/configured per tenant</strong>. <strong>No silent failover</strong> to a different provider, model, region, or endpoint. Provider selection must remain <strong>transparent and auditable</strong>.</li>
+<li><strong>Budget and output:</strong> AI budget is <strong>separate from asset licensing</strong>. AI budget enforcement must be <strong>concurrency-safe</strong>. AI outputs carry <strong>provenance</strong> and must <strong>not</strong> be represented as independently verified facts. AI recommendations do <strong>not</strong> authorize SOAR execution.</li>
+<li><strong>Retention:</strong> AI retention and deletion must align with <strong>OD-010</strong>. Provider-side limitations must be <strong>transparent</strong>.</li>
+<li>This approval does <strong>not</strong> authorize implementation.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> consent schema, provider/model allowlist, region and endpoint controls, data-classification taxonomy, sanitization implementation, budget/pricing model, retention durations, DPA and contractual requirements, model-change process, evaluation and monitoring.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-010, OD-012.</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -353,18 +383,19 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-012 — Retention and workload validation</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> Evidence/governance-driven retention and workload validation preserving PostgreSQL/modular-monolith baseline and measurement-based decisions.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  - Retention must be based on <strong>data category, purpose, and operational need</strong>, consistent with <strong>OD-010</strong>.<br />
-  - Workload validation must cover <strong>normal operation, bursts, concurrency, noisy tenants, recovery, retention, and reporting</strong>.<br />
-  - <strong>PostgreSQL remains the initial transactional database.</strong> <strong>Modular monolith remains the initial architecture.</strong><br />
-  - Indexing, partitioning, and optimization decisions must be <strong>based on measurement</strong>.<br />
-  - Additional technologies must only be introduced when <strong>demonstrated necessary</strong>.<br />
-  - <strong>Asset licensing is separate from technical resource quotas.</strong><br />
-  - Overload and capacity exhaustion must be <strong>explicit and auditable</strong>.<br />
-  - Production readiness requires <strong>benchmark, tenant-isolation, recovery, and retention testing</strong>.<br />
-  - Do <strong>not</strong> turn this approval into authorization for implementation or a roadmap change.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
 <ul>
+<li>Retention must be based on <strong>data category, purpose, and operational need</strong>, consistent with <strong>OD-010</strong>.</li>
+<li>Workload validation must cover <strong>normal operation, bursts, concurrency, noisy tenants, recovery, retention, and reporting</strong>.</li>
+<li><strong>PostgreSQL remains the initial transactional database.</strong> <strong>Modular monolith remains the initial architecture.</strong></li>
+<li>Indexing, partitioning, and optimization decisions must be <strong>based on measurement</strong>.</li>
+<li>Additional technologies must only be introduced when <strong>demonstrated necessary</strong>.</li>
+<li><strong>Asset licensing is separate from technical resource quotas.</strong></li>
+<li>Overload and capacity exhaustion must be <strong>explicit and auditable</strong>.</li>
+<li>Production readiness requires <strong>benchmark, tenant-isolation, recovery, and retention testing</strong>.</li>
+<li>Do <strong>not</strong> turn this approval into authorization for implementation or a roadmap change.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> EPS targets, tenant and asset scale targets, retention duration, storage sizing, final partitioning and index strategy, SLO/SLA, RPO/RTO, quota thresholds, benchmark environment and datasets, scale-out decisions.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-010 (retention consistency), OD-009/OD-011/OD-013 (as applicable to workload/correctness/lifecycle contexts).</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -374,22 +405,25 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>OD-013 — Event receipt deduplication namespace</h3>
 <ul>
 <li><strong>Owner-approved principle:</strong> Explicit, provenance-aware, namespace-scoped event receipt deduplication distinct from OD-008 identity/licensing idempotency.</li>
-<li><strong>Bounded conditions and prohibitions (preserved):</strong></li>
-</ul>
-<p>  1. Every event receipt must carry <strong>explicit namespace and provenance</strong>.<br />
-  2. Namespace dimensions include <strong>tenant, namespace type, namespace ID, and event identity</strong>.<br />
-  3. Distinguish <strong>data-source-global</strong> upstream event IDs from <strong>device-scoped</strong> upstream event IDs.<br />
-  4. Device-scoped event IDs must use the <strong>stable source-device binding</strong> governed by <strong>OD-002</strong>.<br />
-  5. A data-source-global event ID may use <code>data_source_id</code> <strong>only when</strong> the connector guarantees uniqueness at that data-source level.<br />
-  6. Missing or unreliable upstream event IDs may use a <strong>deterministic fallback fingerprint defined per connector</strong>.<br />
-  7. Fallback fingerprints must be <strong>versioned, canonical, and record the identity basis used</strong>.<br />
-  8. There is <strong>no universal fingerprint formula</strong> for all connectors.<br />
-  9. If no reliable deduplication identity exists, <strong>accept the event with an internal receipt identity and make no upstream deduplication claim</strong>.<br />
-  10. Do <strong>not</strong> discard an event merely because its fingerprint is ambiguous or similar to another event. Duplicates may be handled by later correlation.<br />
-  11. <strong>PD-008</strong> unique predicates must follow these approved namespace semantics.<br />
-  12. Event receipt deduplication is <strong>separate from OD-008</strong> identity/licensing idempotency.<br />
-  - This approval does <strong>not</strong> authorize <strong>I-07</strong>.</p>
+<li><strong>Bounded conditions and prohibitions (preserved):</strong>
+<ol>
+<li>Every event receipt must carry <strong>explicit namespace and provenance</strong>.</li>
+<li>Namespace dimensions include <strong>tenant, namespace type, namespace ID, and event identity</strong>.</li>
+<li>Distinguish <strong>data-source-global</strong> upstream event IDs from <strong>device-scoped</strong> upstream event IDs.</li>
+<li>Device-scoped event IDs must use the <strong>stable source-device binding</strong> governed by <strong>OD-002</strong>.</li>
+<li>A data-source-global event ID may use <code>data_source_id</code> <strong>only when</strong> the connector guarantees uniqueness at that data-source level.</li>
+<li>Missing or unreliable upstream event IDs may use a <strong>deterministic fallback fingerprint defined per connector</strong>.</li>
+<li>Fallback fingerprints must be <strong>versioned, canonical, and record the identity basis used</strong>.</li>
+<li>There is <strong>no universal fingerprint formula</strong> for all connectors.</li>
+<li>If no reliable deduplication identity exists, <strong>accept the event with an internal receipt identity and make no upstream deduplication claim</strong>.</li>
+<li>Do <strong>not</strong> discard an event merely because its fingerprint is ambiguous or similar to another event. Duplicates may be handled by later correlation.</li>
+<li><strong>PD-008</strong> unique predicates must follow these approved namespace semantics.</li>
+<li>Event receipt deduplication is <strong>separate from OD-008</strong> identity/licensing idempotency.</li>
+</ol>
 <ul>
+<li>This approval does <strong>not</strong> authorize <strong>I-07</strong>.</li>
+</ul>
+</li>
 <li><strong>Deferred technical details (explicitly not approved/finalized):</strong> connector-specific identity rules, fallback formulas, final unique predicates, connector capability classification, payload-hash conflict policy details, and pre-binding/unresolved namespace derivation details.</li>
 <li><strong>Dependencies on other decisions:</strong> OD-002, OD-008, OD-012; PD-008.</li>
 <li><strong>Implementation authorization status:</strong> <strong>Not authorized.</strong> No implementation increment authorized.</li>
@@ -399,20 +433,74 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h2>4. PD-001–PD-012 visibility (preserved, unresolved/deferred)</h2>
 <p><strong>PD-001 through PD-012 remain unresolved/deferred wherever recorded as such in the baseline.</strong> Approval of OD-001–OD-013 principles/bounded conditions <strong>does not automatically close</strong> PD-001–PD-012. No PD is resolved by this consolidation.</p>
 <table>
-<thead><tr><th>PD</th><th>Recorded status (preserved)</th><th>Reconciliation note</th></tr></thead>
+<thead>
+<tr>
+<th>PD</th>
+<th>Recorded status (preserved)</th>
+<th>Reconciliation note</th>
+</tr>
+</thead>
 <tbody>
-<tr><td>PD-001</td><td>Proposed</td><td>UUID generation/ordering strategy remains technically unresolved pending approval/validation.</td></tr>
-<tr><td>PD-002</td><td>Proposed</td><td>State/type representation remains unresolved pending design review/migration considerations.</td></tr>
-<tr><td>PD-003</td><td>Proposed</td><td>Tenant-consistent referential enforcement pattern remains unresolved pending security/DB design validation.</td></tr>
-<tr><td>PD-004</td><td>Proposed (bounded)</td><td><code>source_device_key</code> dependent projection/materialization remains unresolved pending OD-002-aligned approval/validation; no <code>core.source_device_key</code> in initial implementation per OD-002.</td></tr>
-<tr><td>PD-005</td><td>Proposed</td><td>Verified tenant-context DB mechanism remains a hard prerequisite; requires security/DBA approval and negative/pooling-reset validation.</td></tr>
-<tr><td>PD-006</td><td>Deferred</td><td>RLS FORCE/ownership hardening applicability remains deferred to reviewed implementation validation.</td></tr>
-<tr><td>PD-007</td><td>Proposed</td><td>Outbox claim/lease/fencing mechanism remains unresolved pending OD-009 semantics and validation.</td></tr>
-<tr><td>PD-008</td><td>Proposed</td><td>Event receipt dedup uniqueness predicates remain unresolved pending OD-013 connector-specific decisions and approved namespace semantics.</td></tr>
-<tr><td>PD-009</td><td>Proposed</td><td>JSONB indexing policy remains unresolved pending workload evidence and sensitivity review.</td></tr>
-<tr><td>PD-010</td><td>Deferred</td><td>Partitioning adoption/keys remain deferred pending thresholds, governance approvals, and constraint/lifecycle validation.</td></tr>
-<tr><td>PD-011</td><td>Proposed</td><td>Cryptographic/hash representation remains unresolved pending security/engineering review.</td></tr>
-<tr><td>PD-012</td><td>Proposed</td><td>Global-vs-tenant/platform-scope physical handling remains unresolved pending security/architecture review and isolation validation.</td></tr>
+<tr>
+<td>PD-001</td>
+<td>Proposed</td>
+<td>UUID generation/ordering strategy remains technically unresolved pending approval/validation.</td>
+</tr>
+<tr>
+<td>PD-002</td>
+<td>Proposed</td>
+<td>State/type representation remains unresolved pending design review/migration considerations.</td>
+</tr>
+<tr>
+<td>PD-003</td>
+<td>Proposed</td>
+<td>Tenant-consistent referential enforcement pattern remains unresolved pending security/DB design validation.</td>
+</tr>
+<tr>
+<td>PD-004</td>
+<td>Proposed (bounded)</td>
+<td><code>source_device_key</code> dependent projection/materialization remains unresolved pending OD-002-aligned approval/validation; no <code>core.source_device_key</code> in initial implementation per OD-002.</td>
+</tr>
+<tr>
+<td>PD-005</td>
+<td>Proposed</td>
+<td>Verified tenant-context DB mechanism remains a hard prerequisite; requires security/DBA approval and negative/pooling-reset validation.</td>
+</tr>
+<tr>
+<td>PD-006</td>
+<td>Deferred</td>
+<td>RLS FORCE/ownership hardening applicability remains deferred to reviewed implementation validation.</td>
+</tr>
+<tr>
+<td>PD-007</td>
+<td>Proposed</td>
+<td>Outbox claim/lease/fencing mechanism remains unresolved pending OD-009 semantics and validation.</td>
+</tr>
+<tr>
+<td>PD-008</td>
+<td>Proposed</td>
+<td>Event receipt dedup uniqueness predicates remain unresolved pending OD-013 connector-specific decisions and approved namespace semantics.</td>
+</tr>
+<tr>
+<td>PD-009</td>
+<td>Proposed</td>
+<td>JSONB indexing policy remains unresolved pending workload evidence and sensitivity review.</td>
+</tr>
+<tr>
+<td>PD-010</td>
+<td>Deferred</td>
+<td>Partitioning adoption/keys remain deferred pending thresholds, governance approvals, and constraint/lifecycle validation.</td>
+</tr>
+<tr>
+<td>PD-011</td>
+<td>Proposed</td>
+<td>Cryptographic/hash representation remains unresolved pending security/engineering review.</td>
+</tr>
+<tr>
+<td>PD-012</td>
+<td>Proposed</td>
+<td>Global-vs-tenant/platform-scope physical handling remains unresolved pending security/architecture review and isolation validation.</td>
+</tr>
 </tbody>
 </table>
 <h2>5. Implementation boundary and governance conclusions</h2>
@@ -427,14 +515,15 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </ul>
 <h2>7. Traceability</h2>
 <ul>
-<li><a href="./POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html">POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</a></li>
-<li><a href="./POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html">POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md</a></li>
-<li><a href="./POSTGRESQL_ROUND3_2_CHANGELOG.md.html">POSTGRESQL_ROUND3_2_CHANGELOG.md</a></li>
-<li><a href="./POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_2_FINAL_REVIEW.md</a></li>
-<li><a href="./adr/0006-atomic-per-tenant-asset-licensing.md.html">adr/0006-atomic-per-tenant-asset-licensing.md</a></li>
-<li>Round 3.1: <a href="./POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md.html">POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md</a>, <a href="./POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md.html">POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md</a>, <a href="./POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md</a>, <a href="./POSTGRESQL_ROUND3_1_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_1_FINAL_REVIEW.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html">POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html">POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_2_CHANGELOG.md.html">POSTGRESQL_ROUND3_2_CHANGELOG.md</a></li>
+<li><a href="POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_2_FINAL_REVIEW.md</a></li>
+<li><a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">adr/0006-atomic-per-tenant-asset-licensing.md</a></li>
+<li>Round 3.1: <a href="POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md.html">POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md</a>, <a href="POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md.html">POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md</a>, <a href="POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md</a>, <a href="POSTGRESQL_ROUND3_1_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_1_FINAL_REVIEW.md</a></li>
 <li>Round 3/2/1.1 and physical/logical baselines as referenced in this branch.</li>
 </ul>
+
 </article>
 </div>
 

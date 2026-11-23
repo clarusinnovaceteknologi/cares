@@ -107,15 +107,15 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T20:11:55Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md</code><br>P26-11-23T11:30:53Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3.2 — Dependency and Blocker Map (Round 3.2.1 Fidelity-Corrected)</h1>
-<p><strong>Status:</strong> Proposed governance dependency/blocker record only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT AN IMPLEMENTATION AUTHORIZATION</strong>.  <br />
-<strong>Round:</strong> Round 3.2 — Owner Decision Consolidation and Governance Reconciliation; <strong>Round 3.2.1 — Owner Decision Fidelity Correction</strong> (documentation/governance only).  <br />
-<strong>Verified source baseline:</strong> <code>governance/postgresql-round3-2-owner-decision-consolidation</code> @ <code>cd950882b0ea0e58781d9ba8f10440bd383f9b58</code>.  <br />
+<p><strong>Status:</strong> Proposed governance dependency/blocker record only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT AN IMPLEMENTATION AUTHORIZATION</strong>.<br />
+<strong>Round:</strong> Round 3.2 — Owner Decision Consolidation and Governance Reconciliation; <strong>Round 3.2.1 — Owner Decision Fidelity Correction</strong> (documentation/governance only).<br />
+<strong>Verified source baseline:</strong> <code>governance/postgresql-round3-2-owner-decision-consolidation</code> @ <code>cd950882b0ea0e58781d9ba8f10440bd383f9b58</code>.<br />
 <strong>Working branch:</strong> <code>governance/postgresql-round3-2-1-owner-decision-fidelity-correction</code>.</p>
 <h2>1. Purpose and classification</h2>
-<p>This document reconciles dependencies and blocker classifications for <strong>OD-001–OD-013</strong>, preserved unresolved <strong>PD-001–PD-012</strong>, <strong>ADR 0006 (Proposed)</strong>, and <strong>I-00–I-14</strong> against the <strong>authoritative Round 3.2.1 fidelity-corrected owner-approved principles and bounded conditions</strong> (see <a href="./POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html">POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md</a>).</p>
+<p>This document reconciles dependencies and blocker classifications for <strong>OD-001–OD-013</strong>, preserved unresolved <strong>PD-001–PD-012</strong>, <strong>ADR 0006 (Proposed)</strong>, and <strong>I-00–I-14</strong> against the <strong>authoritative Round 3.2.1 fidelity-corrected owner-approved principles and bounded conditions</strong> (see <a href="POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html">POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md</a>).</p>
 <p><strong>Classification scheme (required):</strong></p>
 <ul>
 <li><strong>Owner-approved principle (bounded):</strong> authoritative governing principle and bounded conditions approved; not unconditional technical/implementation authorization.</li>
@@ -126,39 +126,206 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <p><strong>Critical rule:</strong> approval of a principle <strong>does not</strong> mark a technical blocker resolved. No item is closed/inferred as resolved unless explicitly evidenced and authorized within scope.</p>
 <h2>2. OD-001–OD-013 dependency and blocker reconciliation</h2>
 <table>
-<thead><tr><th>OD</th><th>Classification</th><th>Authoritative principle (bounded, summary)</th><th>Key dependencies</th><th>Technically unresolved / implementation-dependent / governance-dependent blockers (not closed by principle approval)</th><th>Related increments (planning context only)</th></tr></thead>
+<thead>
+<tr>
+<th>OD</th>
+<th>Classification</th>
+<th>Authoritative principle (bounded, summary)</th>
+<th>Key dependencies</th>
+<th>Technically unresolved / implementation-dependent / governance-dependent blockers (not closed by principle approval)</th>
+<th>Related increments (planning context only)</th>
+</tr>
+</thead>
 <tbody>
-<tr><td><strong>OD-001</strong></td><td>Owner-approved principle (bounded); technically/governance-dependent details remain</td><td>ADR 0006 accepted <strong>in principle</strong> with bounded conditions (atomic per-tenant monitored-device licensing/accounting, not software subscription license): one device/tenant=one asset, no multi-source double-count, equal device-type weight, licensing separate from quotas, PostgreSQL transactional authority, no oversubscription/duplicate business effects under concurrency. Formal ADR status remains <strong>Proposed</strong>; no implementation authorized.</td><td><strong>OD-003, OD-004, OD-008</strong> (preserved).</td><td>Reservation/counter/idempotency mechanics and all schema-level interpretation/final semantics/validations/approvals unresolved; formal ADR status transition governance-dependent if ever pursued separately.</td><td>I-00, I-05, <strong>I-06 (not authorized)</strong></td></tr>
-<tr><td><strong>OD-002</strong></td><td>Owner-approved principle (bounded); technically unresolved</td><td><code>core.asset_data_source</code> sole authoritative stable source-device binding owner; <code>source_device_key_id</code> immutable; do not create <code>core.source_device_key</code> initially; dependent one-to-one non-authoritative projection only if justified with same lifecycle; raw IDs/fingerprint aliases cannot replace authoritative binding; fingerprints supporting evidence only. No implementation authorized.</td><td><strong>OD-006, OD-007, OD-013</strong> (preserved).</td><td>Physical model/constraint/index/transaction validation, projection justification (if any), and connector/continuity/fingerprint technical specifics unresolved.</td><td>I-01, I-04, I-05, <strong>I-07 (not authorized)</strong></td></tr>
-<tr><td><strong>OD-003</strong></td><td>Owner-approved principle (bounded); technically unresolved</td><td>Pending reservation principle: not committed licensed asset, not activation/committed accounting; prevent oversubscription/double-counting under concurrency. No implementation authorized.</td><td><strong>OD-004, OD-001</strong> (preserved).</td><td>Lifecycle/expiration/recovery/concurrency/accounting mechanics, state transitions, policy/representation unresolved.</td><td><strong>I-06 (not authorized)</strong></td></tr>
-<tr><td><strong>OD-004</strong></td><td>Owner-approved principle (bounded); technically unresolved</td><td>Accounting counters/reconciliation principles: atomicity, no double-count/oversubscription, reconciliation detects/corrects drift, committed vs pending distinction. No implementation authorized.</td><td><strong>OD-001, OD-003, OD-008</strong> (preserved).</td><td>Counter-maintenance mechanisms, reconciliation scheduling/repair/locking/strategy/edge cases/equations/authoritative scope, numerical/operational policies unresolved.</td><td><strong>I-06 (not authorized)</strong></td></tr>
-<tr><td><strong>OD-005</strong></td><td>Owner-approved principle (bounded); technically unresolved</td><td>Merge/split principles: preserved lineage/history, typed relationally enforceable lineage (not untyped polymorphic), explicit authorization/auditability, consistent licensing accounting consequences, no silent loss of evidence/provenance, no implicit/unauthorized merge/split. No implementation authorized.</td><td>OD-001/OD-004/OD-007/OD-010 (where applicable).</td><td>Technical edge cases, transition rules, accounting implementation, authority/evidence/workflow specifics unresolved.</td><td>I-05, <strong>I-06 (not authorized)</strong>, I-09</td></tr>
-<tr><td><strong>OD-006</strong></td><td>Owner-approved principle (bounded); technically unresolved</td><td>Fingerprints supporting evidence (not authoritative identity); keyed cryptographic construction; key managed outside DB; rotation must not break historical identity continuity or authoritative binding; fingerprint alone insufficient to authorize merge; raw IDs/aliases must not displace authoritative binding. No implementation authorized.</td><td>OD-002, OD-005, OD-007.</td><td>Exact algorithm, KMS/custody, rotation/versioning/operational procedures unresolved (no specific algorithm/KMS approved).</td><td>I-04, I-09</td></tr>
-<tr><td><strong>OD-007</strong></td><td>Owner-approved principle (bounded); technically unresolved</td><td>Distinct identities; reinstall/credential rotation do not auto-create licensed asset; re-enrollment requires continuity verification; old credentials revocable/not auto-inherited; cloned devices not auto same; no implicit authoritative-binding change; enrollment authorized/auditable with replay protection; cross-tenant transfer explicit lifecycle transition; no continuity assumption from similar identifiers/fingerprints. No implementation authorized.</td><td>OD-002, OD-005, OD-006.</td><td>Enrollment protocol, continuity algorithms, credential issuance/revocation mechanics, replay-protection implementation, retirement policy unresolved.</td><td>I-04, I-05, <strong>I-06 (not authorized)</strong></td></tr>
-<tr><td><strong>OD-008</strong></td><td>Owner-approved principle (bounded); technically unresolved</td><td>Scope <code>(tenant_id, operation_type, idempotency_key)</code>; deterministic versioned canonical representation/hash; same scope/key/hash replay without duplicate business effect; same scope/key different hash terminal conflict/no second mutation; durable for retry/reconciliation horizon; durable states <code>in_progress</code>/<code>committed</code>/<code>failed_terminal</code>; <code>timeout_unknown_commit</code> caller-side unknown-outcome condition in default single-transaction model (not automatically a durable ledger state in that model); single-transaction coupling default for DB-local ops; staged/multi-transaction only with demonstrated need and separate approval (not assumed default); retention aligned to retry/reconciliation horizon (duration deferred); event receipt dedup separate (OD-013); external delivery at-least-once. No implementation authorized.</td><td>OD-001/OD-004/OD-009/OD-013; PD-008 separation.</td><td>Covered operations finalization, canonicalization/hash/state/retention/reconciliation/coupling/timeout operational details, any demonstrated-need staged exception + separate approval unresolved.</td><td><strong>I-06 (not authorized)</strong>, I-08, <strong>I-13 (not authorized)</strong></td></tr>
-<tr><td><strong>OD-009</strong></td><td>Owner-approved principle (bounded); technically unresolved</td><td>Same PostgreSQL transaction for business state + outbox; leases/fencing for internal transitions; obsolete fencing token cannot update internal outbox state; lease expiry does not prove external delivery failure; explicit <code>delivery_unknown</code>; at-least-once external delivery (duplicates possible), stable logical message identity, per-attempt identity/status/audit trail; retry/replay/reconciliation separate. No implementation authorized.</td><td>OD-008, PD-007.</td><td>Lease duration/renewal, fencing implementation, retry/backoff, dead-letter, reconciliation procedure, connector-specific idempotency, manual replay authorization, payload retention/redaction, throughput/monitoring/thresholds unresolved.</td><td>I-08, <strong>I-09 (not authorized)</strong>, <strong>I-13 (not authorized)</strong></td></tr>
-<tr><td><strong>OD-010</strong></td><td>Owner-approved principle (bounded); governance-dependent and technically unresolved</td><td>Evidence integrity/provenance/auditability preserved; no silent overwrite/erase; retention by category/purpose/need; legal hold with scope/reason/authorization/audit trail/review prevents automated deletion in scope; deletion checks obligations/holds/dependencies/ownership including derived data/copies under CARES control; transparent backup/external-copy limitations; idempotent/resumable/verifiable deletion; asset vs evidence lifecycle separate; tombstone not justification for indefinite raw retention. No implementation authorized.</td><td>OD-011/OD-012 alignment; PD-011; governance approvals.</td><td>Exact retention durations, approval matrix, backup expiry/deletion mechanics, cryptographic erasure, WORM, external deletion guarantees, regulatory mapping, AI-provider retention details unresolved.</td><td>I-09, I-10, <strong>I-14 (not authorized)</strong></td></tr>
-<tr><td><strong>OD-011</strong></td><td>Owner-approved principle (bounded); governance-dependent and technically unresolved</td><td>MELIRA optional/explicit tenant opt-in/core works without MELIRA; traceable revocable consent; classification determines eligibility (unclassified not sent); credentials/private keys/auth secrets prohibited; minimization/sanitization before transmission; explicit per-tenant provider/model/region/endpoint, no silent failover, transparent/auditable; AI budget separate/concurrency-safe; outputs with provenance (not independently verified facts); AI recommendations do not authorize SOAR; retention/deletion aligned with OD-010, provider-side limitations transparent. No implementation authorized.</td><td>OD-010, PD-011.</td><td>Consent schema, provider/model allowlist, region/endpoint controls, classification taxonomy, sanitization implementation, budget/pricing model, retention durations, DPA/contractual requirements, model-change process, evaluation/monitoring unresolved.</td><td><strong>I-09 (not authorized)</strong>, <strong>I-13 (not authorized)</strong></td></tr>
-<tr><td><strong>OD-012</strong></td><td>Owner-approved principle (bounded); implementation-dependent evidence unresolved</td><td>Retention by category/purpose/need consistent with OD-010; workload validation covers normal/bursts/concurrency/noisy tenants/recovery/retention/reporting; PostgreSQL initial transactional DB, modular monolith initial architecture; measurement-based optimization; additional tech only when demonstrated necessary; licensing separate from quotas; explicit/auditable overload/capacity exhaustion; production readiness requires benchmark/tenant-isolation/recovery/retention testing. No implementation/roadmap authorization.</td><td>OD-010, PD-009/PD-010/PD-012.</td><td>EPS/tenant/asset scale targets, retention duration, storage sizing, final partitioning/index strategy, SLO/SLA, RPO/RTO, quota thresholds, benchmark environment/datasets, scale-out decisions unresolved.</td><td>I-10, I-11, <strong>I-14 (not authorized)</strong></td></tr>
-<tr><td><strong>OD-013</strong></td><td>Owner-approved principle (bounded); technically unresolved</td><td>Explicit namespace/provenance per receipt (tenant/namespace type/namespace ID/event identity); distinguish data-source-global vs device-scoped IDs; device-scoped IDs use OD-002 stable binding; <code>data_source_id</code> only when connector guarantees data-source-level uniqueness; missing/unreliable IDs may use deterministic per-connector fallback fingerprint (versioned/canonical/records identity basis); no universal fingerprint formula; if no reliable identity accept with internal receipt identity and no upstream dedup claim; do not discard ambiguous/similar-fingerprint events; PD-008 predicates must follow namespace semantics; separate from OD-008. No implementation authorized.</td><td><strong>OD-002, OD-008, PD-008</strong> (preserved).</td><td>Connector-specific identity rules/fallback formulas/final unique predicates, capability classification, payload-hash conflict policy, pre-binding/unresolved namespace derivation unresolved.</td><td>I-04, <strong>I-07 (not authorized)</strong></td></tr>
+<tr>
+<td><strong>OD-001</strong></td>
+<td>Owner-approved principle (bounded); technically/governance-dependent details remain</td>
+<td>ADR 0006 accepted <strong>in principle</strong> with bounded conditions (atomic per-tenant monitored-device licensing/accounting, not software subscription license): one device/tenant=one asset, no multi-source double-count, equal device-type weight, licensing separate from quotas, PostgreSQL transactional authority, no oversubscription/duplicate business effects under concurrency. Formal ADR status remains <strong>Proposed</strong>; no implementation authorized.</td>
+<td><strong>OD-003, OD-004, OD-008</strong> (preserved).</td>
+<td>Reservation/counter/idempotency mechanics and all schema-level interpretation/final semantics/validations/approvals unresolved; formal ADR status transition governance-dependent if ever pursued separately.</td>
+<td>I-00, I-05, <strong>I-06 (not authorized)</strong></td>
+</tr>
+<tr>
+<td><strong>OD-002</strong></td>
+<td>Owner-approved principle (bounded); technically unresolved</td>
+<td><code>core.asset_data_source</code> sole authoritative stable source-device binding owner; <code>source_device_key_id</code> immutable; do not create <code>core.source_device_key</code> initially; dependent one-to-one non-authoritative projection only if justified with same lifecycle; raw IDs/fingerprint aliases cannot replace authoritative binding; fingerprints supporting evidence only. No implementation authorized.</td>
+<td><strong>OD-006, OD-007, OD-013</strong> (preserved).</td>
+<td>Physical model/constraint/index/transaction validation, projection justification (if any), and connector/continuity/fingerprint technical specifics unresolved.</td>
+<td>I-01, I-04, I-05, <strong>I-07 (not authorized)</strong></td>
+</tr>
+<tr>
+<td><strong>OD-003</strong></td>
+<td>Owner-approved principle (bounded); technically unresolved</td>
+<td>Pending reservation principle: not committed licensed asset, not activation/committed accounting; prevent oversubscription/double-counting under concurrency. No implementation authorized.</td>
+<td><strong>OD-004, OD-001</strong> (preserved).</td>
+<td>Lifecycle/expiration/recovery/concurrency/accounting mechanics, state transitions, policy/representation unresolved.</td>
+<td><strong>I-06 (not authorized)</strong></td>
+</tr>
+<tr>
+<td><strong>OD-004</strong></td>
+<td>Owner-approved principle (bounded); technically unresolved</td>
+<td>Accounting counters/reconciliation principles: atomicity, no double-count/oversubscription, reconciliation detects/corrects drift, committed vs pending distinction. No implementation authorized.</td>
+<td><strong>OD-001, OD-003, OD-008</strong> (preserved).</td>
+<td>Counter-maintenance mechanisms, reconciliation scheduling/repair/locking/strategy/edge cases/equations/authoritative scope, numerical/operational policies unresolved.</td>
+<td><strong>I-06 (not authorized)</strong></td>
+</tr>
+<tr>
+<td><strong>OD-005</strong></td>
+<td>Owner-approved principle (bounded); technically unresolved</td>
+<td>Merge/split principles: preserved lineage/history, typed relationally enforceable lineage (not untyped polymorphic), explicit authorization/auditability, consistent licensing accounting consequences, no silent loss of evidence/provenance, no implicit/unauthorized merge/split. No implementation authorized.</td>
+<td>OD-001/OD-004/OD-007/OD-010 (where applicable).</td>
+<td>Technical edge cases, transition rules, accounting implementation, authority/evidence/workflow specifics unresolved.</td>
+<td>I-05, <strong>I-06 (not authorized)</strong>, I-09</td>
+</tr>
+<tr>
+<td><strong>OD-006</strong></td>
+<td>Owner-approved principle (bounded); technically unresolved</td>
+<td>Fingerprints supporting evidence (not authoritative identity); keyed cryptographic construction; key managed outside DB; rotation must not break historical identity continuity or authoritative binding; fingerprint alone insufficient to authorize merge; raw IDs/aliases must not displace authoritative binding. No implementation authorized.</td>
+<td>OD-002, OD-005, OD-007.</td>
+<td>Exact algorithm, KMS/custody, rotation/versioning/operational procedures unresolved (no specific algorithm/KMS approved).</td>
+<td>I-04, I-09</td>
+</tr>
+<tr>
+<td><strong>OD-007</strong></td>
+<td>Owner-approved principle (bounded); technically unresolved</td>
+<td>Distinct identities; reinstall/credential rotation do not auto-create licensed asset; re-enrollment requires continuity verification; old credentials revocable/not auto-inherited; cloned devices not auto same; no implicit authoritative-binding change; enrollment authorized/auditable with replay protection; cross-tenant transfer explicit lifecycle transition; no continuity assumption from similar identifiers/fingerprints. No implementation authorized.</td>
+<td>OD-002, OD-005, OD-006.</td>
+<td>Enrollment protocol, continuity algorithms, credential issuance/revocation mechanics, replay-protection implementation, retirement policy unresolved.</td>
+<td>I-04, I-05, <strong>I-06 (not authorized)</strong></td>
+</tr>
+<tr>
+<td><strong>OD-008</strong></td>
+<td>Owner-approved principle (bounded); technically unresolved</td>
+<td>Scope <code>(tenant_id, operation_type, idempotency_key)</code>; deterministic versioned canonical representation/hash; same scope/key/hash replay without duplicate business effect; same scope/key different hash terminal conflict/no second mutation; durable for retry/reconciliation horizon; durable states <code>in_progress</code>/<code>committed</code>/<code>failed_terminal</code>; <code>timeout_unknown_commit</code> caller-side unknown-outcome condition in default single-transaction model (not automatically a durable ledger state in that model); single-transaction coupling default for DB-local ops; staged/multi-transaction only with demonstrated need and separate approval (not assumed default); retention aligned to retry/reconciliation horizon (duration deferred); event receipt dedup separate (OD-013); external delivery at-least-once. No implementation authorized.</td>
+<td>OD-001/OD-004/OD-009/OD-013; PD-008 separation.</td>
+<td>Covered operations finalization, canonicalization/hash/state/retention/reconciliation/coupling/timeout operational details, any demonstrated-need staged exception + separate approval unresolved.</td>
+<td><strong>I-06 (not authorized)</strong>, I-08, <strong>I-13 (not authorized)</strong></td>
+</tr>
+<tr>
+<td><strong>OD-009</strong></td>
+<td>Owner-approved principle (bounded); technically unresolved</td>
+<td>Same PostgreSQL transaction for business state + outbox; leases/fencing for internal transitions; obsolete fencing token cannot update internal outbox state; lease expiry does not prove external delivery failure; explicit <code>delivery_unknown</code>; at-least-once external delivery (duplicates possible), stable logical message identity, per-attempt identity/status/audit trail; retry/replay/reconciliation separate. No implementation authorized.</td>
+<td>OD-008, PD-007.</td>
+<td>Lease duration/renewal, fencing implementation, retry/backoff, dead-letter, reconciliation procedure, connector-specific idempotency, manual replay authorization, payload retention/redaction, throughput/monitoring/thresholds unresolved.</td>
+<td>I-08, <strong>I-09 (not authorized)</strong>, <strong>I-13 (not authorized)</strong></td>
+</tr>
+<tr>
+<td><strong>OD-010</strong></td>
+<td>Owner-approved principle (bounded); governance-dependent and technically unresolved</td>
+<td>Evidence integrity/provenance/auditability preserved; no silent overwrite/erase; retention by category/purpose/need; legal hold with scope/reason/authorization/audit trail/review prevents automated deletion in scope; deletion checks obligations/holds/dependencies/ownership including derived data/copies under CARES control; transparent backup/external-copy limitations; idempotent/resumable/verifiable deletion; asset vs evidence lifecycle separate; tombstone not justification for indefinite raw retention. No implementation authorized.</td>
+<td>OD-011/OD-012 alignment; PD-011; governance approvals.</td>
+<td>Exact retention durations, approval matrix, backup expiry/deletion mechanics, cryptographic erasure, WORM, external deletion guarantees, regulatory mapping, AI-provider retention details unresolved.</td>
+<td>I-09, I-10, <strong>I-14 (not authorized)</strong></td>
+</tr>
+<tr>
+<td><strong>OD-011</strong></td>
+<td>Owner-approved principle (bounded); governance-dependent and technically unresolved</td>
+<td>MELIRA optional/explicit tenant opt-in/core works without MELIRA; traceable revocable consent; classification determines eligibility (unclassified not sent); credentials/private keys/auth secrets prohibited; minimization/sanitization before transmission; explicit per-tenant provider/model/region/endpoint, no silent failover, transparent/auditable; AI budget separate/concurrency-safe; outputs with provenance (not independently verified facts); AI recommendations do not authorize SOAR; retention/deletion aligned with OD-010, provider-side limitations transparent. No implementation authorized.</td>
+<td>OD-010, PD-011.</td>
+<td>Consent schema, provider/model allowlist, region/endpoint controls, classification taxonomy, sanitization implementation, budget/pricing model, retention durations, DPA/contractual requirements, model-change process, evaluation/monitoring unresolved.</td>
+<td><strong>I-09 (not authorized)</strong>, <strong>I-13 (not authorized)</strong></td>
+</tr>
+<tr>
+<td><strong>OD-012</strong></td>
+<td>Owner-approved principle (bounded); implementation-dependent evidence unresolved</td>
+<td>Retention by category/purpose/need consistent with OD-010; workload validation covers normal/bursts/concurrency/noisy tenants/recovery/retention/reporting; PostgreSQL initial transactional DB, modular monolith initial architecture; measurement-based optimization; additional tech only when demonstrated necessary; licensing separate from quotas; explicit/auditable overload/capacity exhaustion; production readiness requires benchmark/tenant-isolation/recovery/retention testing. No implementation/roadmap authorization.</td>
+<td>OD-010, PD-009/PD-010/PD-012.</td>
+<td>EPS/tenant/asset scale targets, retention duration, storage sizing, final partitioning/index strategy, SLO/SLA, RPO/RTO, quota thresholds, benchmark environment/datasets, scale-out decisions unresolved.</td>
+<td>I-10, I-11, <strong>I-14 (not authorized)</strong></td>
+</tr>
+<tr>
+<td><strong>OD-013</strong></td>
+<td>Owner-approved principle (bounded); technically unresolved</td>
+<td>Explicit namespace/provenance per receipt (tenant/namespace type/namespace ID/event identity); distinguish data-source-global vs device-scoped IDs; device-scoped IDs use OD-002 stable binding; <code>data_source_id</code> only when connector guarantees data-source-level uniqueness; missing/unreliable IDs may use deterministic per-connector fallback fingerprint (versioned/canonical/records identity basis); no universal fingerprint formula; if no reliable identity accept with internal receipt identity and no upstream dedup claim; do not discard ambiguous/similar-fingerprint events; PD-008 predicates must follow namespace semantics; separate from OD-008. No implementation authorized.</td>
+<td><strong>OD-002, OD-008, PD-008</strong> (preserved).</td>
+<td>Connector-specific identity rules/fallback formulas/final unique predicates, capability classification, payload-hash conflict policy, pre-binding/unresolved namespace derivation unresolved.</td>
+<td>I-04, <strong>I-07 (not authorized)</strong></td>
+</tr>
 </tbody>
 </table>
 <h2>3. PD-001–PD-012 preserved unresolved/deferred visibility</h2>
 <table>
-<thead><tr><th>PD</th><th>Classification (preserved)</th><th>Status</th><th>Notes</th></tr></thead>
+<thead>
+<tr>
+<th>PD</th>
+<th>Classification (preserved)</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
 <tbody>
-<tr><td>PD-001 (naming/casing policy)</td><td>Technically unresolved</td><td>Open</td><td>Not closed by OD principle approvals.</td></tr>
-<tr><td>PD-002 (identifier strategy)</td><td>Technically unresolved</td><td>Open</td><td>Not closed by OD principle approvals.</td></tr>
-<tr><td>PD-003 (tenant-consistency enforcement pattern)</td><td>Technically unresolved</td><td>Open</td><td>Not closed by OD principle approvals.</td></tr>
-<tr><td>PD-004 (binding history/immutability)</td><td>Technically unresolved</td><td>Open</td><td>Constrained by OD-002/006/007 principles but not finalized.</td></tr>
-<tr><td>PD-005 (verified tenant context mechanism)</td><td>Technically unresolved; governance-dependent; implementation-dependent</td><td>Open (hard blocker)</td><td>Blocks I-12 execution authorization; not closed.</td></tr>
-<tr><td>PD-006 (FORCE RLS/ownership hardening)</td><td>Technically unresolved; implementation-dependent</td><td>Open (hard blocker)</td><td>Not closed.</td></tr>
-<tr><td>PD-007 (outbox attempt/lease/fencing)</td><td>Technically unresolved; implementation-dependent</td><td>Open</td><td>Bounded by OD-009 principles but deferred details unresolved; not closed.</td></tr>
-<tr><td>PD-008 (idempotency/ingest receipt uniqueness)</td><td>Technically unresolved</td><td>Open</td><td>OD-008/OD-013 principles constrain/bound but connector/final predicates/details unresolved; not closed.</td></tr>
-<tr><td>PD-009 (index strategy)</td><td>Implementation-dependent (evidence)</td><td>Open</td><td>Not closed.</td></tr>
-<tr><td>PD-010 (partitioning strategy)</td><td>Governance-dependent; implementation-dependent</td><td>Open</td><td>Not closed.</td></tr>
-<tr><td>PD-011 (evidence/AI retention representation)</td><td>Governance-dependent; technically unresolved</td><td>Open</td><td>Bounded by OD-010/OD-011 principles but details unresolved; not closed.</td></tr>
-<tr><td>PD-012 (SOC/catalog/storage scope)</td><td>Technically unresolved; governance-dependent</td><td>Open</td><td>Not closed.</td></tr>
+<tr>
+<td>PD-001 (naming/casing policy)</td>
+<td>Technically unresolved</td>
+<td>Open</td>
+<td>Not closed by OD principle approvals.</td>
+</tr>
+<tr>
+<td>PD-002 (identifier strategy)</td>
+<td>Technically unresolved</td>
+<td>Open</td>
+<td>Not closed by OD principle approvals.</td>
+</tr>
+<tr>
+<td>PD-003 (tenant-consistency enforcement pattern)</td>
+<td>Technically unresolved</td>
+<td>Open</td>
+<td>Not closed by OD principle approvals.</td>
+</tr>
+<tr>
+<td>PD-004 (binding history/immutability)</td>
+<td>Technically unresolved</td>
+<td>Open</td>
+<td>Constrained by OD-002/006/007 principles but not finalized.</td>
+</tr>
+<tr>
+<td>PD-005 (verified tenant context mechanism)</td>
+<td>Technically unresolved; governance-dependent; implementation-dependent</td>
+<td>Open (hard blocker)</td>
+<td>Blocks I-12 execution authorization; not closed.</td>
+</tr>
+<tr>
+<td>PD-006 (FORCE RLS/ownership hardening)</td>
+<td>Technically unresolved; implementation-dependent</td>
+<td>Open (hard blocker)</td>
+<td>Not closed.</td>
+</tr>
+<tr>
+<td>PD-007 (outbox attempt/lease/fencing)</td>
+<td>Technically unresolved; implementation-dependent</td>
+<td>Open</td>
+<td>Bounded by OD-009 principles but deferred details unresolved; not closed.</td>
+</tr>
+<tr>
+<td>PD-008 (idempotency/ingest receipt uniqueness)</td>
+<td>Technically unresolved</td>
+<td>Open</td>
+<td>OD-008/OD-013 principles constrain/bound but connector/final predicates/details unresolved; not closed.</td>
+</tr>
+<tr>
+<td>PD-009 (index strategy)</td>
+<td>Implementation-dependent (evidence)</td>
+<td>Open</td>
+<td>Not closed.</td>
+</tr>
+<tr>
+<td>PD-010 (partitioning strategy)</td>
+<td>Governance-dependent; implementation-dependent</td>
+<td>Open</td>
+<td>Not closed.</td>
+</tr>
+<tr>
+<td>PD-011 (evidence/AI retention representation)</td>
+<td>Governance-dependent; technically unresolved</td>
+<td>Open</td>
+<td>Bounded by OD-010/OD-011 principles but details unresolved; not closed.</td>
+</tr>
+<tr>
+<td>PD-012 (SOC/catalog/storage scope)</td>
+<td>Technically unresolved; governance-dependent</td>
+<td>Open</td>
+<td>Not closed.</td>
+</tr>
 </tbody>
 </table>
 <h2>4. ADR 0006 and increment blocker reconciliation</h2>
@@ -174,6 +341,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </ul>
 <h2>5. Conclusion</h2>
 <p>OD-001–OD-013 provide authoritative, bounded governance principles; they do <strong>not</strong> resolve all technical details, do <strong>not</strong> close PD-001–PD-012, do <strong>not</strong> promote ADR 0006 formal status beyond Proposed, and do <strong>not</strong> authorize I-00–I-14 implementation. All implementation remains unauthorized pending separately satisfied prerequisites, explicit approvals/authorizations, technical finalization, and validation evidence as applicable.</p>
+
 </article>
 </div>
 
