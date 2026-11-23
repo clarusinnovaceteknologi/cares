@@ -107,7 +107,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Data Lifecycle and Retention Design (Round 2)</h1>
 <p><strong>Status:</strong> Proposed design documentation only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This document evaluates partitioning, retention, archival, deletion, backup/recovery, and maintenance considerations for the proposed physical schema. No production capacity/performance claims are made. Confirmed requirements are separated from assumptions/proposed strategies.</p>
@@ -317,7 +317,6 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li>Partitioning and index efficacy are workload-dependent; all recommendations require validation with representative data volumes and query patterns (OD-012).</li>
 <li>No maintenance jobs, backup scripts, partition DDL, or lifecycle automation are implemented in this round.</li>
 </ul>
-
 </article>
 </div>
 

@@ -107,13 +107,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3 Dependency Map</h1>
 <p><strong>Status:</strong> Proposed planning artifact only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This map visualizes implementation sequencing, component dependencies, and approval/validation gates derived from Round 2 baselines and recorded open decisions. It does not change OD/PD/ADR statuses or authorize execution.</p>
-<p><strong>Related documents:</strong> <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a>, <a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_ROUND3_CHANGELOG.md.html">POSTGRESQL_ROUND3_CHANGELOG.md</a>, <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>.</p>
+<p><strong>Related documents:</strong> <a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="./POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a>, <a href="./POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="./POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="./POSTGRESQL_ROUND3_CHANGELOG.md.html">POSTGRESQL_ROUND3_CHANGELOG.md</a>, <a href="./POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>.</p>
 <h2>1. Phase and increment dependency flow</h2>
-<pre class="mermaid">flowchart TD
+<pre><code class="language-mermaid">flowchart TD
   A[I-00 Authorization &amp; environment readiness&lt;br/&gt;Conditionally ready] --&gt; B[I-01 Schemas &amp; conventions&lt;br/&gt;PD-001/002/004]
   B --&gt; C[I-02 Global/catalog foundations]
   C --&gt; D[I-03 Tenant access &amp; configuration&lt;br/&gt;PD-003]
@@ -141,9 +141,9 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
   classDef deferred fill:#eef,stroke:#667,color:#333;
   class G,M,N blocked;
   class O deferred;
-</pre>
+</code></pre>
 <h2>2. Decision and approval gate map</h2>
-<pre class="mermaid">flowchart LR
+<pre><code class="language-mermaid">flowchart LR
   subgraph Identity_Licensing[Identity &amp; licensing semantics]
     OD002[OD-002 Binding authority&lt;br/&gt;Proposed]
     OD001[OD-001 ADR 0006 acceptance&lt;br/&gt;Proposed]
@@ -188,7 +188,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
   PD005 --&gt; I12[I-12 RLS/runtime isolation]
   PD006 --&gt; I12
   PD010 --&gt; I14[I-14 Partitioning adoption]
-</pre>
+</code></pre>
 <h2>3. Domain-to-operation dependency view</h2>
 <table>
 <thead>
@@ -313,10 +313,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </tr>
 </tbody>
 </table>
-
 </article>
 </div>
-<script src="../assets/mermaid.min.js"></script>
-<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,securityLevel:'loose'});}</script>
+
 </body>
 </html>

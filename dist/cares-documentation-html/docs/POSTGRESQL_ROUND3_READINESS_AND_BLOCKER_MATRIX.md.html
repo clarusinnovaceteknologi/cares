@@ -107,11 +107,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3 Readiness and Blocker Matrix</h1>
 <p><strong>Status:</strong> Proposed planning assessment only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This matrix classifies readiness for future implementation increments based on the Round 2 baseline and recorded open decisions. It does not authorize implementation and does not resolve OD/PD/ADR items.</p>
-<p><strong>Related documents:</strong> <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a>, <a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>.</p>
+<p><strong>Related documents:</strong> <a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="./POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a>, <a href="./POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="./POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="./POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>, <a href="./POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="./POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="./POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>.</p>
 <h2>1. Readiness classification definitions</h2>
 <table>
 <thead>
@@ -399,7 +399,6 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li><strong>Bounded implementation execution:</strong> <strong>not ready without explicit owner authorization and prerequisite approvals/validations</strong>. Tenant-scoped/runtime implementation is <strong>blocked</strong> by verified-context/RLS approval and validation (PD-005/PD-006) and by unresolved semantic/governance dependencies (notably OD-001/002/003/004/005/008/009/010/011/013 where applicable).</li>
 <li><strong>Safe first increment:</strong> only a tightly bounded, authorized, non-production structural/preparatory increment may be considered after I-00 prerequisites; it cannot claim tenant-safe runtime readiness or resolved licensing/idempotency semantics.</li>
 </ul>
-
 </article>
 </div>
 

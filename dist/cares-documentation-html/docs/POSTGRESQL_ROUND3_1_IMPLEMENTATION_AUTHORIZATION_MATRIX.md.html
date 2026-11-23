@@ -107,11 +107,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_MATRIX.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3.1 — Implementation Authorization Matrix</h1>
 <p><strong>Status:</strong> Proposed governance matrix only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION, NOT AN AUTHORIZATION</strong>. Maps increments I-00–I-14 to Round 3 baseline classifications, prerequisites, and exclusions. <strong>No increment is authorized</strong> unless a separate explicit owner authorization record exists in the repository; none is recorded by this package.</p>
-<p><strong>Baseline sources:</strong> <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>, <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>. Classifications preserved as baseline; no reclassification made (any future reclassification requires owner approval and must be explicitly labeled).</p>
+<p><strong>Baseline sources:</strong> <a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="./POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="./POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a>, <a href="./POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="./POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>. Classifications preserved as baseline; no reclassification made (any future reclassification requires owner approval and must be explicitly labeled).</p>
 <h2>1. Authorization status summary</h2>
 <table>
 <thead>
@@ -402,11 +402,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <ul>
 <li><strong>Technically prepared ≠ authorized:</strong> conditional readiness or discussion of bounded structural preparation does not authorize implementation, execution, merge, deployment, or runtime exposure.</li>
 <li><strong>No fabricated authorization:</strong> absence of an explicit owner authorization record means every increment remains unauthorized.</li>
-<li><strong>Separate authorization required per increment/scope:</strong> use <a href="POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md.html">POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md</a>; authorization for one increment does not authorize subsequent increments.</li>
+<li><strong>Separate authorization required per increment/scope:</strong> use <a href="./POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md.html">POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md</a>; authorization for one increment does not authorize subsequent increments.</li>
 <li><strong>Tenant-runtime prohibition (current state):</strong> I-12 remains blocked (PD-005/PD-006 and required validation). No tenant-safe runtime readiness is claimed.</li>
 <li><strong>Unresolved semantics:</strong> I-06 final semantics remain blocked by OD-001/003/004/008 and ADR 0006 (Proposed); no finalized licensing/quota/accounting enforcement may be implemented or claimed.</li>
 </ul>
-
 </article>
 </div>
 

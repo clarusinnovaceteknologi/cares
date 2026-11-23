@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Safe correction helper for Round 3.2.2 HTML export metadata.
+"""Correct malformed `Generated (UTC)` metadata in exported HTML files.
 
-Fixes malformed generated-timestamp metadata caused by unsafe regex replacement
-where a digit-prefixed timestamp was concatenated after \1 (e.g. producing
-`P26-...` artifacts). Uses an unambiguous replacement to preserve the label.
+Integrated with the corrected exporter formatting approach: restores the label and
+emits the timestamp as a separate value without regex backreference concatenation.
 """
 from __future__ import annotations
 
@@ -11,52 +10,44 @@ import argparse
 import re
 from pathlib import Path
 
-PATTERN = re.compile(r'(<strong>Generated \(UTC\):</strong>\s*)[^<]+')
-MALFORMED = re.compile(r'P\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
+try:
+    from export_cares_documentation_html import format_generated_meta
+except Exception:  # fallback for direct execution contexts
+    import html
+    def format_generated_meta(timestamp_utc: str) -> str:
+        return f"<strong>Generated (UTC):</strong> {html.escape(timestamp_utc)}"
+
+MALFORMED_RE = re.compile(r'<br>\s*P(\d{2})(-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)\s*</div>')
+# Also repair cases where label/value block is malformed but year was preserved oddly.
+LABEL_BLOCK_RE = re.compile(r'(<div class="meta">.*?<strong>Generated \(UTC\):</strong>\s*)([^<]+)(</div>)', re.S)
 
 
-def fix_file(path: Path, utc_timestamp: str | None = None) -> bool:
-    text = path.read_text(encoding='utf-8')
-    original = text
-
-    # Correct already-malformed `P26-...` artifacts while restoring the label.
-    if 'P26-' in text or MALFORMED.search(text):
-        text = re.sub(
-            r'<br>P(\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)(</div>)',
-            lambda m: f'<br><strong>Generated (UTC):</strong> 20{m.group(1)}{m.group(2)}',
-            text,
-        )
-        text = re.sub(
-            r'(<strong>Generated \(UTC\):</strong>\s*)P(\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)',
-            lambda m: m.group(1) + '20' + m.group(2),
-            text,
-        )
-
-    # If an explicit timestamp is provided, apply safely (never r"\1"+digits).
-    if utc_timestamp is not None:
-        text = PATTERN.sub(lambda m: m.group(1) + utc_timestamp, text)
-
-    if text != original:
-        path.write_text(text, encoding='utf-8')
-        return True
-    return False
+def repair_metadata(html_text: str, timestamp_utc: str | None = None) -> tuple[str, bool]:
+    original = html_text
+    if 'P26-' in html_text or MALFORMED_RE.search(html_text):
+        # restore from malformed PYY-... form to 20YY-...
+        def repl(m: re.Match[str]) -> str:
+            ts = timestamp_utc or f"20{m.group(1)}{m.group(2)}"
+            return f"<br>{format_generated_meta(ts)}</div>"
+        html_text = MALFORMED_RE.sub(repl, html_text)
+    return html_text, html_text != original
 
 
-def main() -> int:
+def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument('paths', nargs='+')
-    ap.add_argument('--utc-timestamp', dest='utc_timestamp')
-    args = ap.parse_args()
+    ap.add_argument('paths', nargs='*')
+    ap.add_argument('--timestamp-utc')
+    args = ap.parse_args(argv)
     changed = 0
-    for p in args.paths:
-        if fix_file(Path(p), args.utc_timestamp):
-            print(f'fixed {p}')
+    for p in [Path(x) for x in args.paths]:
+        txt = p.read_text(encoding='utf-8')
+        new, did = repair_metadata(txt, args.timestamp_utc)
+        if did:
+            p.write_text(new, encoding='utf-8')
             changed += 1
-        else:
-            print(f'unchanged {p}')
+            print(f'fixed {p}')
     print(f'changed={changed}')
     return 0
-
 
 if __name__ == '__main__':
     raise SystemExit(main())

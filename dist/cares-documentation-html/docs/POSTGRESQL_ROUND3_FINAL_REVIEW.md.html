@@ -107,13 +107,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3 Final Review</h1>
 <p><strong>Status:</strong> Proposed planning review only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This review assesses Round 3 implementation planning coherence and readiness boundaries. It does not authorize implementation, resolve open decisions, or change ADR/OD/PD/architecture/roadmap status.</p>
 <p><strong>Branch:</strong> <code>planning/postgresql-round3-implementation</code><br />
 <strong>Baseline:</strong> <code>ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d</code> (Round 2 synchronized publication baseline)</p>
-<p><strong>Related Round 3 documents:</strong> <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a>, <a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="POSTGRESQL_ROUND3_CHANGELOG.md.html">POSTGRESQL_ROUND3_CHANGELOG.md</a>.</p>
+<p><strong>Related Round 3 documents:</strong> <a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="./POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a>, <a href="./POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="./POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="./POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="./POSTGRESQL_ROUND3_CHANGELOG.md.html">POSTGRESQL_ROUND3_CHANGELOG.md</a>.</p>
 <p><strong>Authoritative baselines:</strong> Round 1.1 logical docs/audit and Round 2 physical docs/final review/open decisions, plus architecture/security/data/threat/technology/roadmap/traceability/project status and ADRs 0001–0006.</p>
 <h2>1. Review questions</h2>
 <h3>1. Is the implementation sequence technically coherent?</h3>
@@ -121,7 +121,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>2. Which components are ready to be implemented?</h3>
 <p><strong>No component is unconditionally ready for runtime/production implementation.</strong> Planning-preparation work is coherent for bounded, explicitly authorized, non-production structural increments in dependency order (notably I-00 readiness activities and potentially I-01/I-02/I-03 structural foundations) <strong>only after</strong> required owner/DBA/engineering approvals and environment/change-control preconditions are satisfied and without exposing tenant-runtime or unresolved semantic behavior.</p>
 <h3>3. Which components are conditionally ready?</h3>
-<p>Conditionally ready (subject to stated approvals/validations): I-00, I-01, I-02, I-03, I-04, I-05, I-07, I-08, I-09, I-10, and selected I-11 hardening activities, as detailed in <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>. Conditional readiness does <strong>not</strong> imply authorization or resolved semantics.</p>
+<p>Conditionally ready (subject to stated approvals/validations): I-00, I-01, I-02, I-03, I-04, I-05, I-07, I-08, I-09, I-10, and selected I-11 hardening activities, as detailed in <a href="./POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>. Conditional readiness does <strong>not</strong> imply authorization or resolved semantics.</p>
 <h3>4. Which components remain blocked by owner decisions?</h3>
 <ul>
 <li><strong>I-06 licensing/entitlement/ledger final semantics:</strong> blocked by OD-001 (ADR 0006 Proposed), OD-003, OD-004, OD-008 and related physical decisions.</li>
@@ -153,7 +153,6 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <p>Rationale: while implementation planning is coherent, safe progression to implementation is blocked for tenant-scoped/runtime and correctness-critical domains by unresolved/required owner and security/governance decisions and validations (including but not limited to PD-005/PD-006, OD-001/002/003/004/005/008/009/010/011/013 as applicable, and ADR 0006 remaining Proposed). A bounded preparatory structural increment is only a conditional candidate and is <strong>not authorized</strong> by this review.</p>
 <h2>4. Stop condition</h2>
 <p>Round 3 planning concludes with publication of planning artifacts and verification evidence. <strong>Do not begin database implementation, create SQL/migration files, provision infrastructure, or proceed to another development phase.</strong> Wait for explicit owner authorization.</p>
-
 </article>
 </div>
 

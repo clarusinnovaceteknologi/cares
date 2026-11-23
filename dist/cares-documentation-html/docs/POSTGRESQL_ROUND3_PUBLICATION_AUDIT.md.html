@@ -107,7 +107,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3 Publication Audit &amp; Verification</h1>
 <p><strong>Status:</strong> Administrative publication audit record; <strong>NOT A TECHNICAL DESIGN CHANGE, NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This document records verification of the published Round 3 implementation-planning artifacts and evidence consistency only. No physical schema, transaction, RLS, lifecycle/retention, OD/PD, ADR, architecture, or roadmap decisions were changed.</p>
@@ -240,7 +240,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>4.2 Content/consistency checks (evidence-based)</h3>
 <ul>
 <li><strong>Cross-references:</strong> Round 3 documents cross-reference each other and authoritative Round 1.1/Round 2/architecture/ADR baselines (reviewed in source documents).</li>
-<li><strong>Final review status:</strong> <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a> records <strong><code>BLOCKED BY OWNER DECISIONS</code></strong> with required rationale and stop condition (no implementation authorization). Technical readiness content not changed by this audit.</li>
+<li><strong>Final review status:</strong> <a href="./POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a> records <strong><code>BLOCKED BY OWNER DECISIONS</code></strong> with required rationale and stop condition (no implementation authorization). Technical readiness content not changed by this audit.</li>
 <li><strong>No technical changes:</strong> planning artifacts remain planning-only; no DDL/migrations/ORM/DB objects/application code/DB execution introduced.</li>
 <li><strong>Export/index/manifest/ZIP (pre-correction verified artifacts):</strong> corresponding HTML pages for all 8 Round 3 docs present in <code>dist/cares-documentation-html/docs/</code> and in ZIP; index and manifests include Round 3 entries. Exporter report: 50 eligible markdown sources, 50 doc HTML generated (51 generated HTML total), 0 failed conversions, 0 broken internal links, 0 missing referenced assets, 0 empty/unfaithful HTML (reported), Mermaid bundled. Manifest revision at export time: <code>ea1eb79372a1fa04a2cdc4a87b2117fa3c23b20d</code>.</li>
 <li><strong>Mermaid:</strong> dependency map contains 2 fenced <code>mermaid</code> blocks in Markdown and 4 mermaid markers in generated HTML (structural presence validated). <strong>Mermaid visual rendering NOT VERIFIED</strong>.</li>
@@ -294,7 +294,6 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <p>No physical schema design, table/column/type/key/constraint/index definition, RLS or tenant-isolation semantic design, transaction/concurrency semantic design, retention/partitioning/backup/recovery design, OD/PD resolution or status, ADR status, architecture, roadmap, or implementation artifact was changed by this audit. Actions were limited to publication-state inspection, evidence-report correction, creation of this audit record, and export/index/manifest/ZIP synchronization required for added/updated Markdown documentation sources.</p>
 <h2>9. Final audit status</h2>
 <p><strong><code>ROUND 3 PUBLICATION VERIFIED</code></strong> — Administrative publication/evidence reconciliation completed for the Round 3 planning package on <code>planning/postgresql-round3-implementation</code>. Required planning artifacts and publication-evidence records are present, synchronized, and independently verified via Git/<code>git ls-remote</code> at audited commits; export/index/manifest/ZIP correspond to committed Markdown sources at generation/commit points with integrity/link/asset validation evidence recorded. Technical planning readiness remains <strong><code>BLOCKED BY OWNER DECISIONS</code></strong> and no implementation is authorized.</p>
-
 </article>
 </div>
 

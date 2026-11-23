@@ -107,11 +107,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3 Migration and Deployment Strategy</h1>
 <p><strong>Status:</strong> Proposed planning strategy only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This document defines how future PostgreSQL schema implementation should be migrated and deployed if/when explicitly authorized. It does <strong>not</strong> provide DDL, migration files, executable scripts, or infrastructure changes.</p>
-<p><strong>Related documents:</strong> <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a>, <a href="POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a>, <a href="POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html">POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</a>.</p>
+<p><strong>Related documents:</strong> <a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>, <a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a>, <a href="./POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a>, <a href="./POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="./POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a>, <a href="./POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a>, <a href="./POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a>, <a href="./POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html">POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</a>.</p>
 <h2>1. Strategy objectives</h2>
 <ul>
 <li>Deliver schema changes in <strong>small, ordered, reversible-where-feasible increments</strong> aligned with Round 2 dependencies and transaction boundaries.</li>
@@ -252,8 +252,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li>Force-pushing, history rewriting, or modifying Round 1.1/Round 2 publication branches.</li>
 </ul>
 <h2>8. Cross-references</h2>
-<p>See <a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a> for sequencing/approval dependencies and <a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a> for readiness classification and bounded first-increment assessment.</p>
-
+<p>See <a href="./POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a> for sequencing/approval dependencies and <a href="./POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a> for readiness classification and bounded first-increment assessment.</p>
 </article>
 </div>
 

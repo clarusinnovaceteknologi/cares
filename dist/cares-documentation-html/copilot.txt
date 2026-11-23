@@ -1,129 +1,153 @@
-# CARES Round 3.2.2.1 — HTML Metadata and Anchor Integrity Correction (Final Execution Report)
+# CARES — PostgreSQL Round 3.2.2.2 Exporter Recurrence Prevention and ZIP Inventory Reconciliation
 
-## A. Execution identity
-- **Task name and round:** CARES — Round 3.2.2.1 HTML Metadata and Anchor Integrity Correction (documentation-publication correction only).
-- **Execution date/time (Asia/Jakarta):** `2026-11-23T20:05:48+07:00` (captured via `TZ=Asia/Jakarta date --iso-8601=seconds`).
-- **Execution timestamp (UTC):** `2026-11-23T13:05:48+00:00` (captured via `date -u --iso-8601=seconds`).
-- **Additional captured execution timestamp (local system):** `2026-11-23T20:05:48+07:00` (captured via `date --iso-8601=seconds`; same instant as Asia/Jakarta in this environment).
-- **Source branch:** `governance/postgresql-round3-2-2-publication-evidence-audit`
-- **Exact source SHA:** `0c7a7cb9a3f162985d2fdc9175f5314b2dcd0648`
-- **New branch name:** `governance/postgresql-round3-2-2-1-html-integrity-correction`
-- **Final commit SHA:** recorded post-push in final execution report and verified as local==remote HEAD (self-referential Git hash limitation: exact final commit SHA cannot be embedded inside a file contained in that same commit).
-- **GitHub branch URL:** `https://github.com/clarusinnovaceteknologi/cares/tree/governance/postgresql-round3-2-2-1-html-integrity-correction`
+**Verdict: PASS**
 
-**Baseline verification (before modification):**
-- `git fetch origin` executed (ordinary fetch, no `--prune`). No `git remote prune`, no branch deletion, no history rewriting, no amend/rewrite of source commit, no force-push.
-- Remote refs verified: `origin/governance/postgresql-round3-2-2-publication-evidence-audit` = `0c7a7cb9a3f162985d2fdc9175f5314b2dcd0648`; `origin/governance/postgresql-round3-2-2-1-html-integrity-correction` did not exist before this correction.
-- Source worktree `/tmp/cares-postgresql-round3-2-2` on `governance/postgresql-round3-2-2-publication-evidence-audit` at `0c7a7cb9a3f162985d2fdc9175f5314b2dcd0648`, clean (`git status --short --untracked-files=all` empty).
-- Correction worktree created: `git worktree add -b governance/postgresql-round3-2-2-1-html-integrity-correction /tmp/cares-postgresql-round3-2-2-1 0c7a7cb9a3f162985d2fdc9175f5314b2dcd0648` (HEAD `0c7a7cb...`, clean at creation). Source branch/worktree kept unchanged.
+This round corrects the documentation export pipeline and package integrity only. It does not authorize PostgreSQL implementation, application implementation, ADR 0006 acceptance, or progression to a subsequent implementation phase.
 
-## B. Confirmed defects
+## 1. Execution identity and Git evidence
+- **Task:** CARES — PostgreSQL Round 3.2.2.2 Exporter Recurrence Prevention and ZIP Inventory Reconciliation (documentation-export engineering/publication-integrity correction only).
+- **Environment time (recorded):** local `date -Is` = `2026-11-24T00:24:11+07:00`; UTC `date -u -Is` = `2026-11-23T17:24:11+00:00`; Asia/Jakarta `TZ=Asia/Jakarta date -Is` = `2026-11-24T00:24:11+07:00` (same instant; environment clock not independently externally verified).
+- **Source branch:** `governance/postgresql-round3-2-2-1-html-integrity-correction`
+- **Source commit (verified):** `0b4b0eeda7882a9b09484c238691c44c1c62c65b` (verified via `git fetch origin` without `--prune`, remote/local refs and `/tmp/cares-postgresql-round3-2-2-1` clean at source HEAD before work).
+- **New branch:** `governance/postgresql-round3-2-2-2-exporter-recurrence-prevention`
+- **Worktree:** `/tmp/cares-postgresql-round3-2-2-2` (created from exact source commit `0b4b0ee...`; initial branch HEAD at creation `0b4b0ee...`, initial status clean).
+- **Final commit SHA:** recorded post-commit in execution evidence (self-referential hash limitation: exact final commit SHA cannot be embedded inside a file contained in that same commit); remote/local HEAD equality and final SHA reported in final execution summary.
+- **Remote publication:** to be verified by push command evidence in final execution summary (no claim without evidence).
 
-### B1. Generated timestamp metadata corruption (confirmed)
-- **Observed evidence:** all 7 HTML pages regenerated in Round 3.2.2 contained malformed metadata `<br>P26-11-23T11:30:53Z</div>` (missing `<strong>Generated (UTC):</strong>` label and corrupted timestamp prefix) instead of `<br><strong>Generated (UTC):</strong> 2026-11-23T11:30:53Z</div>`.
-  - Affected pages (all 7): `dist/cares-documentation-html/docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md.html`, `.../POSTGRESQL_ROUND3_2_CHANGELOG.md.html`, `.../POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html`, `.../POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html`, `.../POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html`, `.../POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html`, `.../docs/adr/0006-atomic-per-tenant-asset-licensing.md.html`.
-  - Evidence: pre-correction scan found `P26-` in exactly these 7 files and nowhere else in the export.
-- **Root cause:** unsafe regex replacement equivalent to `re.sub(r'(<strong>Generated \(UTC\):</strong>\s*)[^<]+', r'\1' + now_utc, pre)` used during 3.2.2 regeneration. Because `now_utc` began with digits (`2026...`), Python interpreted `\1` followed by `2` as backreference ambiguity (`\12`), corrupting the replacement and losing the label/value structure.
-- **Correction applied:** added `scripts/fix_round3_2_2_html_metadata.py` (safe correction helper using unambiguous lambda/group-value replacement, never concatenating a digit-prefixed timestamp after `\1` in a replacement string). Applied correction to all 7 affected pages, restoring `<strong>Generated (UTC):</strong> 2026-11-23T11:30:53Z` (the actual recorded 3.2.2 regeneration timestamp from manifests/evidence, not invented). Preserved existing metadata structure, CSS classes, template, navigation, and page layout; no unrelated content rewritten.
-- **Validation result:** post-correction verification shows all 7 pages contain valid label and ISO 8601 UTC timestamp `2026-11-23T11:30:53Z`; export-wide scan found `all_export_p26_count = 0`.
+## 2. Actual exporter defect and correction (directly verified)
+- **Inspected:** `scripts/fix_round3_2_2_html_metadata.py` (post-export repair helper from 3.2.2.1), committed export artifacts, and repository tree. No committed “normal” exporter script existed in source; export was previously produced ad hoc (markdown-it-py/gfm-like) with a separate repair step.
+- **Root cause (precise):** malformed metadata in 3.2.2 resulted from regex replacement concatenating a digit-prefixed UTC timestamp directly after `\1` (e.g. `re.sub(r'(<strong>Generated (UTC):</strong>\s*)[^<]+', r'\1' + now_utc, pre)`), causing backreference ambiguity (`\12` when timestamp begins with `2026`) and producing `<br>P26-...` / lost label. The 3.2.2.1 helper repaired generated files but was not integrated into the main export pipeline, leaving recurrence possible.
+- **Correction (corrected normal pipeline):**
+  - Added `scripts/export_cares_documentation_html.py` as the deterministic, canonical documentation export pipeline (markdown-it-py `gfm-like`, preserved template/CSS/layout/navigation, `.md`→`.md.html` link rewriting with `README.md`→`README.html`, index/manifest/copilot/ZIP assembly).
+  - **Metadata emission fixed at source:** `format_generated_meta()` emits label and timestamp as separate, correctly formatted HTML elements (`<strong>Generated (UTC):</strong> {timestamp}`) with no regex replacement/backreference concatenation of digit-prefixed values. `build_meta_block()`/page generation use this function.
+  - **Timestamp provenance:** exporter obtains timestamp from actual runtime UTC via `datetime.now(timezone.utc)` (`now_utc_iso()`, `YYYY-MM-DDTHH:MM:SSZ`), no hardcoded production timestamp. `--generated-utc` override exists only for deterministic testing.
+  - **ZIP/archive safety:** ZIP written to `dist/CARES_DOCUMENTATION_HTML.zip` outside export dir; `build_zip()` excludes nested archives/`*.zip` and never includes the target recursively.
+  - **Integration of prior helper:** `scripts/fix_round3_2_2_html_metadata.py` refactored to use safe formatting/repair logic consistent with exporter (no `\1`+digit concatenation); retained as compatible helper but not relied upon for normal export. Added `scripts/update_export_metadata_artifacts.py` for deterministic index/manifest runtime-timestamp consistency within pipeline.
+  - Exporter regenerates pages for available mapped sources, preserves carried-forward exported artifacts when mapped source markdown is unavailable (retaining embedded historical timestamps/provenance), updates index/manifests to actual runtime export timestamp with provenance notes, copies `copilot.txt` as required, and rebuilds ZIP.
 
-### B2. Heading ID and fragment-anchor integrity (investigated)
-- **Observed evidence:** the 7 pages regenerated in 3.2.2 had no heading `id` attributes (confirmed in 3.2.1 and 3.2.2 states; sampled carried-forward historical page `docs/ARCHITECTURE.md.html` also had no heading IDs). Automated scan of the full export found **0 local fragment references** (`href` containing `#` to local targets), **0 duplicate IDs**, and **0 empty/missing ID values** on headings with IDs.
-- **Root cause / convention:** markdown-it-py regeneration in 3.2.2 did not emit heading IDs; however, comparison with 3.2.1 versions of the same 7 pages and sampled historical exports indicates the established export convention for these pages/this export set did not include heading `id` attributes. No prior heading-ID convention requiring restoration was evidenced for the affected pages.
-- **Correction applied:** no arbitrary heading IDs added (to avoid inventing a new convention or silently changing unrelated document behavior). Existing structure preserved. Fragment integrity validated against actual exported references.
-- **Validation result:** 973 headings across 64 pages examined; 0 heading IDs total (consistent with established observed convention), 0 duplicate IDs, 0 missing/empty heading IDs where convention requires them (none required by evidenced convention), 0 local fragment references, 0 valid/broken fragment resolutions required. No fragment regressions possible from missing IDs given zero fragment references.
-- **Compatibility/limitation:** full backward compatibility for hypothetical historical heading-ID anchors cannot be claimed because no heading-ID convention was evidenced in the affected/historical pages inspected and no fragment references exist to validate against. This is documented as a deterministic, evidence-based outcome (no invented IDs).
+## 3. Automated regression tests (corrected exporter path)
+- **Commands executed:**
+  - `python3 -m py_compile scripts/export_cares_documentation_html.py scripts/fix_round3_2_2_html_metadata.py scripts/update_export_metadata_artifacts.py` → exit 0.
+  - `PYTHONPATH=scripts python3 -m unittest tests.test_export_cares_documentation_metadata -v` (initial run) → `Ran 6 tests ... FAILED (failures=1)` due to index/manifest runtime-timestamp update not yet integrated into `main()` (test-observed defect fixed).
+  - `PYTHONPATH=scripts python3 -m unittest tests.test_export_cares_documentation_metadata -v` (after integration fix) → `Ran 6 tests ... OK` (exit 0).
+  - `PYTHONPATH=scripts python3 -m unittest tests.test_export_cares_documentation_metadata -v` (final evidence rerun) → `Ran 6 tests ... OK` (exit 0).
+- **Test file:** `tests/test_export_cares_documentation_metadata.py` (exercises `export_cares_documentation_html` exporter functions and `exporter.main()` pipeline path, not the standalone repair helper).
+- **Coverage (minimum required):** timestamp beginning with `2026` (and other valid years including `1999`, `2099`, `2024` leap day); expected UTC ISO-8601 format (`now_utc_iso()` regex and rendered outputs); digit-leading timestamp case that would be misinterpreted by naive `\1`+digit regex backreference (validated by correct emission, no `P26-`/malformed output); correct `Generated (UTC)` label preservation; no malformed `P26-...`/`P\d{2}-` artifacts; no unintended modification of unrelated HTML/body content and preserved links/structure. Full exporter-run test verifies runtime UTC metadata, no nested ZIP in export dir, and index/manifest consistency.
+- **Actual export execution (command/result):** `PYTHONPATH=scripts python3 scripts/export_cares_documentation_html.py --repo-root .` → `generated_utc=2026-11-23T17:22:13Z, regenerated_count=35, carried_forward_count=29, failed=[], zip_path=.../dist/CARES_DOCUMENTATION_HTML.zip, zip_exists=true` (exit 0). Re-run after README link-rewrite fix produced same counts with actual runtime `2026-11-23T17:22:13Z` (exit 0). A temporary intermediate run at `2026-11-23T17:01:35Z` was superseded; final package/index/manifests/ZIP correspond to `2026-11-23T17:22:13Z`.
 
-### B3. ZIP archive size and content verification (investigated)
-- **Observed evidence:** actual 3.2.2 source ZIP (`/tmp/cares-postgresql-round3-2-2/dist/CARES_DOCUMENTATION_HTML.zip`) is **1,648,247 bytes** on disk, **69 entries**, **5,950,222 bytes uncompressed**, `zipfile.testzip()` = `None`, contains expected index/manifest/HTML/assets, and is exactly equal to the 3.2.2 export directory contents (`zip_eq_fs True`). The reported ~2.91 KB size on a GitHub commit page (as cited in task) is inconsistent with these archive facts; this audit cannot inspect GitHub UI rendering directly and does not claim hosting/UI state beyond verified repository artifacts.
-- **Root cause:** no corruption or content omission found in the actual committed/local 3.2.2 ZIP artifact. Discrepancy appears external to archive content (UI/display/reporting context not independently verifiable here).
-- **Correction applied:** rebuilt ZIP after integrity corrections so it exactly represents the final corrected export directory.
-- **Validation result:** final ZIP **1,648,316 bytes**, **69 entries**, **5,950,470 bytes uncompressed**, `zipfile.testzip()` = `None`, `unzip -t` reported “No errors detected in compressed data…” (independent check), archive contents exactly equal to export directory.
+## 4. Timestamp provenance and correctness
+- **Exporter mechanism:** actual runtime UTC from system clock (`datetime.now(datetime.timezone.utc)`, second precision, formatted `...Z`). No hardcoded timestamp in production export code.
+- **Newly generated export runtime timestamp:** `2026-11-23T17:22:13Z` (actual exporter execution; recorded in stdout JSON and applied to index/manifest/export metadata for regenerated artifacts).
+- **Consistency:** index and both manifests (`EXPORT_MANIFEST.json`, `EXPORT_MANIFEST.md`) record `export_timestamp_utc = 2026-11-23T17:22:13Z` and note provenance. Regenerated document pages (35) carry runtime UTC metadata `2026-11-23T17:22:13Z`; carried-forward pages (29, including `README.html` and 28 mapped pages whose source markdown is unavailable) retain their embedded historical `Generated (UTC)` timestamps (e.g. `2026-11-22T19:13:45Z`) to avoid fabricated provenance. This distinction is explicit in manifests/report.
+- **Prior value:** `2026-11-23T11:30:53Z` was the recorded timestamp in preceding export artifacts; it is not presented as independently verified original runtime generation time for 3.2.2 except as that recorded artifact value.
+- **Limitation:** environment clock/timezone not independently externally verified; timestamps reported as observed from runtime environment.
 
-### B4. Additional publication-integrity defect found and corrected (discovered during validation)
-- **Observed evidence:** `dist/cares-documentation-html/docs/adr/0006-atomic-per-tenant-asset-licensing.md.html` topbar linked to `../index.html`; from `docs/adr/` depth this resolves incorrectly to `dist/docs/index.html` (missing) instead of export-root `../../index.html`. Present in 3.2.1 and 3.2.2; 3.2.2 baseline had `../../index.html` in Round 3.2 state for the same file (pre-existing regression carried into 3.2.1/3.2.2 regeneration).
-- **Root cause:** incorrect relative path depth in regenerated ADR page template/topbar during prior custom regeneration.
-- **Correction applied:** corrected to `<a href="../../index.html">← Documentation index</a>` in ADR 0006 HTML only.
-- **Validation result:** corrected link scan shows no broken non-fragment href targets (`all_broken_non_fragment 0`, `pageish_broken 0`).
+## 5. ZIP inventory reconciliation and integrity (directly verified)
+- **Intended inventory (derived):** export directory contains 69 files total: 65 HTML files (64 document HTML pages + `index.html`), 2 manifests (`EXPORT_MANIFEST.json`, `EXPORT_MANIFEST.md`), `copilot.txt`, and 1 Mermaid asset (`assets/mermaid.min.js`). No nested archives, no zero-byte files, no temporary/unintended generated artifacts found.
+- **Nested ZIP discrepancy:** `dist/cares-documentation-html/CARES_DOCUMENTATION_HTML.zip` (reported previously as zero-byte in 3.2.2.1 notes) **not present** in current export directory; no `*.zip` files inside export directory; no nested zip entries in archive. Exporter writes ZIP only to `dist/CARES_DOCUMENTATION_HTML.zip` outside export dir and excludes `*.zip` from archive contents, preventing recursive/accidental inclusion.
+- **Export directory:** exact file count **69**; nested ZIPs **[]**; zero-byte files **[]**.
+- **ZIP archive:** `dist/CARES_DOCUMENTATION_HTML.zip` — size **1648615 bytes**; entry count **69**; total uncompressed **5953952 bytes**.
+- **Equality:** entries in ZIP not in export `[]`; files in export not in ZIP `[]`; per-file SHA-256 and size comparison for every corresponding file **69/69 match** (`all_sha256_match_zip True`, mismatches 0).
+- **Integrity:** `zipfile.ZipFile(...).testzip()` = `None` (None/pass); `unzip -t dist/CARES_DOCUMENTATION_HTML.zip` → “No errors detected in compressed data of dist/CARES_DOCUMENTATION_HTML.zip.” (69 files tested) — pass.
+- **Inventory note:** `README.html` is included and is already counted among the 64 document HTML pages (63 `*.md.html` + `README.html` = 64, plus `index.html` = 65 HTML files).
 
-## C. HTML metadata validation
-- **Total pages examined:** 65 (all exported HTML files, including `index.html` and 64 document HTML pages).
-- **Valid metadata count:** 65 (all pages contain correctly rendered `Generated (UTC):` metadata with valid ISO 8601 UTC timestamp format `YYYY-MM-DDTHH:MM:SSZ` where applicable by existing page format; index and document pages validated).
-- **Malformed metadata count:** 0 (no `P26-` or similar replacement artifacts remain).
-- **Timestamp format validation:** regex-validated ISO 8601 UTC format on generated timestamps present in metadata.
-- **Evidence timestamps generated from actual execution environment:**
-  - 7 corrected document pages retain restored actual recorded 3.2.2 regeneration timestamp `2026-11-23T11:30:53Z` (from prior manifest/evidence; not invented).
-  - Correction execution timestamps captured at runtime: Asia/Jakarta `2026-11-23T20:05:48+07:00`, UTC `2026-11-23T13:05:48+00:00`, local `2026-11-23T20:05:48+07:00` via `date` commands.
-- **Regeneration scope:** only the 7 affected pages were corrected in-place for metadata (and ADR 0006 topbar fix); no claim that all pages were regenerated.
+### Per-file SHA-256 comparison (export directory vs ZIP, all 69 files)
+| Archive path (cares-documentation-html/...) | SHA-256 | Size (bytes) |
+|---|---|---:|
+| `cares-documentation-html/EXPORT_MANIFEST.json` | `52b2a13df13758c53afc26f42b1c459c7090028a8d51550632df516cf0e4f3a6` | 18109 |
+| `cares-documentation-html/EXPORT_MANIFEST.md` | `b555a2935cf05432a2d70c1a09a8f761de7f267fbb01eb1a2326cfa47d844d71` | 2618 |
+| `cares-documentation-html/README.html` | `7845911abd9b27cd65241f0c103f18322fc287e5ef728fc19b8aaca49592a67a` | 8144 |
+| `cares-documentation-html/assets/mermaid.min.js` | `8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d` | 3337857 |
+| `cares-documentation-html/copilot.txt` | `3cb2fb69932131e1536c96c1b0d3577a812d65daa1176d6a7d310661724364d3` | 18267 |
+| `cares-documentation-html/docs/ARCHITECTURE.md.html` | `684842892c3ccb4fa6e94d3d411ea53c32b852bae7d4cf54c2d5d37e4271cd3e` | 24021 |
+| `cares-documentation-html/docs/ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md.html` | `0969dc519a189be50a58e73a3ca5b7e51bd0a0e0a2b0895871c5155f494ae33f` | 61093 |
+| `cares-documentation-html/docs/ARCHITECTURE_DECISION_PACKAGE.md.html` | `31fd2dab4e5ed739f044f473b2a6239fb47cbb86d14f05ed402f6b0117612a6f` | 69047 |
+| `cares-documentation-html/docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html` | `34521f4ead180b8f51efe8526d3f68360865dd313393ef277b69d8675aed9d1e` | 218984 |
+| `cares-documentation-html/docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md.html` | `5db88a00924cd81edac9e445f7d8fc386e9ab50ed6586021dc115a6606a47ce0` | 125949 |
+| `cares-documentation-html/docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md.html` | `d759103105441ac821443b9f7828a12e187b0ec6103a27e4a271c72e9a04f0f1` | 232971 |
+| `cares-documentation-html/docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md.html` | `4f3da70bbb74317139555e61081d78189f1abea71373982f70d82054bd335eb4` | 121151 |
+| `cares-documentation-html/docs/ARCHITECTURE_RECONCILIATION_CHANGELOG.md.html` | `3e5ec90c8045db27c81b944e98eedfdbd78db02480d44c9b12bbe279cba58a7d` | 17821 |
+| `cares-documentation-html/docs/CARES_PRODUCT_VISION.md.html` | `60d0f1c623520e5e0eadf6b62dd1d2309674e122abe5ba2f1e9f1ab44b79a992` | 56189 |
+| `cares-documentation-html/docs/DATA_ARCHITECTURE.md.html` | `f2d7f4fc0a063c9a2a40484bc932f30f9c0b11fc22a0f78212be3e6e1ece833b` | 57655 |
+| `cares-documentation-html/docs/DEVELOPMENT_ROADMAP.md.html` | `5d1f5c50fbf06904165eab7406dcb6a2197a1d11655eaceab569bcd4953bfa1b` | 24222 |
+| `cares-documentation-html/docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html` | `eaeb795564b961a34a20d00f39f73092d3a3c6f8b6fc437ff58ce81206540d6c` | 19326 |
+| `cares-documentation-html/docs/POSTGRESQL_INDEX_STRATEGY.md.html` | `66705f283e7c168536e56989c9a9e746ea3acc00fb03148080f429660b23ec77` | 45789 |
+| `cares-documentation-html/docs/POSTGRESQL_LOGICAL_DATA_MODEL.md.html` | `a8a5a20c5e070a5d8462d06a75c9aae67b4e78185bfb4396fee78baf8dc007bf` | 112637 |
+| `cares-documentation-html/docs/POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md.html` | `da1edac56261e7ea0246167f64035d55711e48d4176f91aabe9cd7479de9499f` | 16161 |
+| `cares-documentation-html/docs/POSTGRESQL_LOGICAL_ERD.md.html` | `89be8cdcecf3a9606df8d3643622b1044622063b8dd50fe8f4ff3d359d439bb6` | 31125 |
+| `cares-documentation-html/docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_CHANGELOG.md.html` | `ea8a6a405bb26f64352d11146b3fee1ffe8b5c519d2ac8e4b29c8bf4cac6f280` | 21611 |
+| `cares-documentation-html/docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html` | `ac661b84633f4e181cc60ec6ea3d19b97603d805e1028857b4b3942bbcbfd3bf` | 55014 |
+| `cares-documentation-html/docs/POSTGRESQL_PHYSICAL_ERD.md.html` | `8f6afddb970cf878bb793f42995a0953b38f149b71627efb0de425086d3ff268` | 24063 |
+| `cares-documentation-html/docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html` | `5d7f53c52987ff06ce5cefa01b7b68567c0ac17f3798c601be43a3f63bc384be` | 203860 |
+| `cares-documentation-html/docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html` | `c4fc1d45a5b901529daf92d3eef2c2596b22db6c93c4d534e2f1ab2bd98f43e5` | 21831 |
+| `cares-documentation-html/docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md.html` | `9cfc1965a18a6da9c52aa89e8b3e2185b289e00fa74e0a6185a82bbf6e23aad5` | 12447 |
+| `cares-documentation-html/docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html` | `707d258c9d8d67585350a472edff11bf6bdf5731b506c6bef21d8d7bcd0427e6` | 27246 |
+| `cares-documentation-html/docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md.html` | `d7a9ed7f8098b7317b453002252b47d4b57bb594a7760b69483dd7801d751f30` | 30456 |
+| `cares-documentation-html/docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html` | `4dbafcaf577bcb0ea881a4098e266909b6c2dc870451efa367108c729b2f5745` | 30960 |
+| `cares-documentation-html/docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html` | `dbacee945a14c35e42b6b4e3eb3a38fc47d369d6b48a6a85f55bd428a1cf1877` | 25191 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_1_BLOCKER_AND_DEPENDENCY_MAP.md.html` | `c26c385b5ee528943d844fe73e4fc0a7868b6a5730d6b303bde7e19b5d475c4d` | 17190 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_1_FINAL_REVIEW.md.html` | `cd22b4758b970e159e857b552636f4b33bab640286e536c69ea36de23ab95418` | 19459 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html` | `480b7188d93846467ef1567aed0d3a34fc20bc8b60bca2c0bcdc596de1b0258d` | 21883 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_1_IMPLEMENTATION_AUTHORIZATION_TEMPLATE.md.html` | `a42467d22fa9f28c59f8efba5e231b9a29ffc1a7420788eff3486a74237513d6` | 10720 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md.html` | `5ffbc9c99a330b2cd6b03146df9cea948562ff2d2f22dfb5e234586f4a7a109a` | 58742 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_GATE.md.html` | `8d5b469013cd5960736a9ff3fae389058e9e9eb1514ad80786cd453857762181` | 19507 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_RECORD_TEMPLATE.md.html` | `3352605acb860be6cd04840782f74a6e365a4fc4eb4199e1ba9c8763e44524ed` | 10932 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md.html` | `7b3eb349534b298a516b000985d5d876fed529c55dfff6d4a7aa6b555846c8bd` | 26584 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_2_CHANGELOG.md.html` | `ed13eb75fadb08a65dd1c4edac953a7e6ec811afef9255712965b8b1c4502b00` | 13752 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html` | `04208b4c5361c6ef2a6a277f2ee4cc749c36b18571328bc1beeb6c214187720f` | 25852 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html` | `010132523cc2dcfaaa8fff25426ffb84db28377296473c192c63b65238fce241` | 15424 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html` | `66f8be6bef3a04e35b042a17e045b35776a59974823ebd682117d6fc6e546ce6` | 27169 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html` | `9b6947c14fd687cff2cd815e94cf8ad6ed1841d9ed73e9b3149911733bf7ce57` | 49293 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_CHANGELOG.md.html` | `e7f1f4fdc1e47b471e3ad8b4fef36c3c1f8122d80a738b249215565f5f28024d` | 12927 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html` | `b580c0657513b86788a80818f3007e3d0fa458409271e92e6e49334b2dcdfc60` | 16097 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_FINAL_REVIEW.md.html` | `e0dcdef907c8c776017a8fd3db8132e23dd6c7a52d6c7e69d107634e58219ae6` | 15989 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html` | `32023017369cdc6dc7cf3a454bff48a3e21daad0135d6e070dc11789ce3f00bb` | 28002 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html` | `02760c51763e1519811263dbebc2c97e73bf1beb15c638a258595a37f6c54106` | 20296 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html` | `a3dd35d6ea05866ed7c050fd186db744580472c0706538d58aa4167ee13cf1b8` | 18377 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_PUBLICATION_AUDIT.md.html` | `d0b683802b798b117ddecb7269d436f12d8df922ef1ded502f155817103062ac` | 21490 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html` | `59aedeff5360bc1ff14faa19426dbb109dc17a3ad60046aa9e608a2474fa4f22` | 20149 |
+| `cares-documentation-html/docs/POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html` | `1116bc54a27082015e34fa4446aa3addce434f5924626dcf040cd8dc5cc8ea0d` | 22042 |
+| `cares-documentation-html/docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html` | `a109d1e7fdf88aa64eb6c0dd4b6a083930ff44292e417a459e8979ba3f8a0159` | 24733 |
+| `cares-documentation-html/docs/POSTGRESQL_TECHNICAL_DECISIONS.md.html` | `f4b0cbb0fc4c729ab24277b6129387f867f80e2096d45211b3f850dc07dc2510` | 41781 |
+| `cares-documentation-html/docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md.html` | `3d26c6f605b52f52f684bb0a22caa3b783f6734aad3ea1c4cddc83796c9cbb78` | 39608 |
+| `cares-documentation-html/docs/PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md.html` | `6289bc178508e1c24c3c5671f1935ede476cdc60c181ab8d83fa44fdb7998509` | 20865 |
+| `cares-documentation-html/docs/PROJECT_STATUS.md.html` | `f0241e6de989ba6f4da9def3971bd144948950d498b0bc415fa6acee5bf2e8cf` | 21817 |
+| `cares-documentation-html/docs/REQUIREMENTS_TRACEABILITY.md.html` | `f86d0f4be0c9d51b716f30914eb1b240759075cb57a24a79bfa34c44ee9160df` | 20192 |
+| `cares-documentation-html/docs/SECURITY_ARCHITECTURE.md.html` | `d349fb06f9ed63f43368eb1587a749e27343ecc3cd0290d899190a63657def31` | 34259 |
+| `cares-documentation-html/docs/TECHNOLOGY_SELECTION.md.html` | `45a9f92421818091cf510284528020fec3b73b72a7ca2c763b5e0c6783578d7a` | 25623 |
+| `cares-documentation-html/docs/THREAT_MODEL.md.html` | `dc5117d71b60ae37938a18c291dd45c94d743a3701e2b8f6424fd15b4906f91e` | 17637 |
+| `cares-documentation-html/docs/adr/0001-modular-monolith.md.html` | `fef0acd6400b325401fe69bb05810085a6dbb26e8d96640c8b8c8369a010cca0` | 8757 |
+| `cares-documentation-html/docs/adr/0002-postgresql-and-tenant-isolation.md.html` | `7c74297f2fe10ae0ab67f5977cacce553f3b6653e9ed49a484ca9036cfa85a9a` | 8754 |
+| `cares-documentation-html/docs/adr/0003-device-identity-and-asset-licensing.md.html` | `8ce345a13a9e2563ddf3f339a68e1429102f6d8b73cd393f7b4fcc765788b0f6` | 14530 |
+| `cares-documentation-html/docs/adr/0004-external-ai-provider-boundary.md.html` | `835c16291cbec3a4c80399db133dae65d2f5678fa23d388b7a8d462d7821ea89` | 16973 |
+| `cares-documentation-html/docs/adr/0005-event-processing-and-broker-evolution.md.html` | `a8d89a4d9ec0b57b90c44e558709c9a7dead2e22eed41562e5f4d3377b1b9193` | 15244 |
+| `cares-documentation-html/docs/adr/0006-atomic-per-tenant-asset-licensing.md.html` | `44c33898bfeeec2fa4d1cc9bbd70079ad73f596d3ff8520445070f7e30d6332c` | 51398 |
+| `cares-documentation-html/index.html` | `731402d847af0aff152d77ed33d6e9f0e5bd9de224c4a792e3460335353b9a3b` | 28090 |
 
-## D. Heading and anchor validation
-- **Heading count:** 973 headings across 64 HTML pages with headings (65 total HTML pages examined).
-- **Heading IDs:** 0 total (no `id` attributes found on headings in exported pages; consistent with observed established convention in affected and sampled historical pages).
-- **Duplicate IDs:** 0.
-- **Missing/empty heading IDs:** 0 empty ID values; no missing IDs required by evidenced convention.
-- **Fragment-reference count:** 0 local fragment references examined across the entire export.
-- **Valid and broken fragments:** 0 valid, 0 broken.
-- **Compatibility with previous convention:** compatible with observed convention for inspected 3.2.1/3.2.2 affected pages and sampled carried-forward export pages (no heading IDs, no local fragment references). No new heading-ID convention introduced.
-- **Limitations:** cannot claim compatibility with an unobserved/hypothetical historical heading-ID scheme; no browser/visual anchor-navigation testing performed.
+## 6. HTML link and anchor integrity
+- **Baselines:** Round 3.2 `cd950882b0ea0e58781d9ba8f10440bd383f9b58`; Round 3.2.2 `0c7a7cb9a3f162985d2fdc9175f5314b2dcd0648`; Round 3.2.2.1 `0b4b0eeda7882a9b09484c238691c44c1c62c65b`.
+- **HTML local-link audit (final export, rerun):** HTML pages 65; total id attributes 1 (pre-existing `index.html` search input `id="q"`), duplicate IDs 0; local fragment references 0; broken fragments 0; broken local page/path (non-fragment) links 0 (`pageish_broken=[]`).
+- **Manifest/source-link audit (distinct):** inherited manifest `broken_internal_links` count 10, identical across `cd950882`, `0c7a7cb`, `0b4b0ee`, and current export (`cd95==0c7a True, 0c7a==0b4b True, 0b4b==current True`). Entries unchanged (all in unchanged historical source documents with absolute/local paths such as `/home/ubuntu/...`; no source Markdown modified, no historical documents altered to mask manifest).
+- **Comparison vs baselines:** no new manifest defects; no new broken HTML local page/path links; no new broken fragments; ADR 0006 topbar correction remains intact (`href="../../index.html"` present, `../index.html` absent).
+- **Intermediate correction:** an exporter link-rewrite regression was detected during this round (`docs/POSTGRESQL_LOGICAL_DATA_MODEL.md.html` → `../README.md.html`) and corrected in exporter (`README.md` mapped to `README.html`), then full export rerun and revalidated to 0 broken local page/path links.
+- **External fragment compatibility:** not tested/claimed.
 
-## E. Page-link regression audit
-- **Baseline (Round 3.2 manifest, `cd950882b0ea0e58781d9ba8f10440bd383f9b58`):** 10 broken internal page/path links (exact manifest set preserved).
-- **Round 3.2.2 source manifest (`0c7a7cb...`):** same 10 entries.
-- **Final broken links (manifest baseline set):** 10 (identical entries; `manifest_equals_baseline True`).
-- **Final broken relative/absolute/local page-link scan (corrected export, non-fragment href targets):** 0 broken targets found by resolved-path scan; specifically `pageish_broken 0` (including `.html/.md/.zip/.txt` and `/home/ubuntu/cares` targets).
-- **Newly introduced defects:** 0 relative to 3.2.2 source/baseline manifest set.
-- **Resolved defects:** 1 additional broken relative page link resolved during this correction — ADR 0006 topbar `../index.html` (broken in 3.2.1/3.2.2, outside the 10-entry manifest baseline set) corrected to `../../index.html`.
-- **Exact comparison result (manifest baseline):** identical 10-entry set retained (all in unchanged historical docs: `docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md` -> `/home/ubuntu/cares/docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md`; `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md` -> `/home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip`, `/home/ubuntu/cares/copilot.txt` x2; `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md` -> `/home/ubuntu/cares/copilot.txt` x2; `docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md` -> `/home/ubuntu/cares/copilot.txt` x2 and `/home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip` x2). No new regressions.
+## 7. Rebuild and package
+- Complete HTML export regenerated through corrected normal pipeline: 35 pages regenerated from available mapped sources with runtime UTC metadata, 29 carried forward preserving embedded historical timestamps (mapped sources unavailable). HTML index regenerated/updated with runtime timestamp; manifests regenerated/updated; root `copilot.txt` included in export per convention; `CARES_DOCUMENTATION_HTML.zip` rebuilt. Directory structure preserved; relative assets/links verified in audited scope.
+- No Markdown documentation sources were changed in this round.
 
-## F. Export inventory
-- **Markdown sources represented in export mapping (manifest):** 64.
-- **Markdown source files currently present in `docs/` tree (this worktree):** 35; mapped sources missing from current repo tree but represented by carried-forward exported HTML pages: 29 (reconciled; export preserves historical mapped documents).
-- **Document HTML count:** 64 (63 `*.md.html` document pages + 1 `README.html` document page).
-- **Index count:** 1 (`index.html`).
-- **Total HTML files:** 65.
-- **Manifest files:** 2 (`EXPORT_MANIFEST.json`, `EXPORT_MANIFEST.md`).
-- **Assets (non-document-page export files):** 3 (`copilot.txt`, `README.html` counted as document page above; asset/support files present: `copilot.txt` export copy, `assets/mermaid.min.js`; total non-doc-page support files observed include manifest files and assets as listed).
-- **Regenerated/corrected pages in 3.2.2.1:** 7 HTML pages corrected for metadata integrity (`POSTGRESQL_ROUND3_1_OWNER_DECISION_BRIEFS.md.html`, `POSTGRESQL_ROUND3_2_CHANGELOG.md.html`, `POSTGRESQL_ROUND3_2_DEPENDENCY_AND_BLOCKER_MAP.md.html`, `POSTGRESQL_ROUND3_2_FINAL_REVIEW.md.html`, `POSTGRESQL_ROUND3_2_IMPLEMENTATION_AUTHORIZATION_MATRIX.md.html`, `POSTGRESQL_ROUND3_2_OWNER_DECISION_REGISTER.md.html`, `docs/adr/0006-atomic-per-tenant-asset-licensing.md.html`) with ADR 0006 also receiving a topbar relative-link correction. No full export regeneration performed.
-- **Carried forward:** all other exported document HTML pages and export structure/assets carried forward unchanged except rebuilt ZIP and synchronized exported `copilot.txt` report copy.
+## 8. Governance and authorization boundaries (preserved)
+- **OD-001 through OD-013:** approved principles and bounded conditions preserved (no changes).
+- **PD-001 through PD-012:** remain unresolved/deferred (no formal closure/change).
+- **ADR 0006:** remains **Proposed**.
+- **I-00 through I-14:** no implementation increment authorized by this task.
+- **No implementation performed:** no PostgreSQL DDL, migrations, ORM models, SQL roles/RLS policies, triggers/stored procedures/database functions, asset licensing/accounting logic, idempotency/outbox runtime behavior, agent enrollment/credential lifecycle, or application/API/runtime code created or modified. No Round 3.3 or subsequent implementation phase begun. Changes limited to documentation export scripts/tests and regenerated documentation package/report artifacts.
 
-## G. ZIP audit
-- **Exact filename:** `dist/CARES_DOCUMENTATION_HTML.zip`
-- **Exact archive size (bytes):** `1648316`
-- **Entry count:** 69
-- **Total uncompressed size (bytes):** `5950470`
-- **HTML pages in ZIP:** 65
-- **Presence:** `index.html` present, `EXPORT_MANIFEST.json` present, `EXPORT_MANIFEST.md` present, `copilot.txt` present, `assets/mermaid.min.js` present.
-- **Integrity checks:** `zipfile.ZipFile(...).testzip()` = `None` (pass); `unzip -t dist/CARES_DOCUMENTATION_HTML.zip` reported “No errors detected in compressed data of dist/CARES_DOCUMENTATION_HTML.zip.” (pass, independent check).
-- **Comparison with export directory:** ZIP namelist/content set exactly matches `dist/cares-documentation-html/` file set (`zip_eq_export_dir True`; no extra/missing entries).
-- **3.2.2 source ZIP comparison (investigation):** source ZIP at `0c7a7cb...` was 1,648,247 bytes / 69 entries / 5,950,222 uncompressed / `testzip()` None and equal to its export directory; reported ~2.91 KB GitHub UI size not reproducible from repository artifact and not independently verifiable in this environment.
+## 9. Evidence classification and limitations
+- **Directly verified (command output / static inspection / tests):** source commit and branch/worktree setup, git state at evidence points, exporter root-cause and code changes, py_compile and unittest results, exporter run outputs (runtime UTC, counts), HTML metadata/link/fragment/ID scans, ADR 0006 link, export/ZIP inventory and per-file SHA-256 equality, `zipfile.testzip()` and `unzip -t`, manifest baseline comparisons.
+- **Copilot-generated assertions:** none beyond summarizing verified evidence; report text authored from observed results.
+- **Unverified assumptions/limitations:** browser rendering, visual inspection, Mermaid rendering **not performed**; hosting deployment **not performed**; remote publication/remote HEAD equality verified only if push evidence recorded in final execution summary; environment clock not externally attested; carried-forward pages retain historical embedded timestamps because mapped source Markdown is unavailable (documented); 10 inherited manifest broken links remain in unchanged historical sources by design.
 
-## H. Governance preservation
-Explicitly confirmed:
-- **OD-001–OD-013** owner-approved principles and bounded conditions preserved (no content/status changes).
-- **PD-001–PD-012** remain unresolved/deferred as previously recorded (no changes).
-- **ADR 0006** remains **Proposed** (no status change).
-- **I-00–I-14** remain unauthorized; no implementation increment authorized.
-- **No PostgreSQL implementation performed:** no DDL, migrations, ORM, SQL, database roles, RLS policies, triggers, stored procedures, runtime configuration, or application code created.
-- No licensing semantics, event-deduplication semantics, asset identity, idempotency, outbox behavior, retention, MELIRA consent/provider controls, or workload assumptions altered.
-
-## I. Validation limitations
-- No browser rendering or visual validation performed (static HTML parsing/inspection only); Mermaid visual rendering not validated.
-- Hosting/deployment server contents not inspected or updated; no claim that hosting server contains the new ZIP (git push proves publication to GitHub branch only).
-- No historical heading-ID convention was evidenced for affected pages; heading-ID compatibility beyond observed convention (no IDs, no fragment references) cannot be guaranteed.
-- 29 manifest-mapped historical Markdown sources are not present in the current repository tree; corresponding exported HTML pages are carried forward as export artifacts (inventory reconciled, not restored as source docs).
-- The 10-entry Round 3.2 manifest broken-link baseline remains unchanged (pre-existing historical absolute-path issues outside this correction’s scope).
-
-## J. Git publication evidence
-- **Final branch:** `governance/postgresql-round3-2-2-1-html-integrity-correction`
-- **Final commit SHA:** see verified post-push publication evidence in final execution report (self-referential limitation)
-- **Remote HEAD verification:** to be confirmed equal to local HEAD after push; recorded in final execution report
-- **Worktree status:** verified clean after commit/push (recorded in final execution report).
-- **Source branch unchanged:** `governance/postgresql-round3-2-2-publication-evidence-audit` remains at `0c7a7cb9a3f162985d2fdc9175f5314b2dcd0648` (not modified by this correction).
-- **Protected branches unchanged:** `main`/`master` not modified.
-- **GitHub branch URL:** `https://github.com/clarusinnovaceteknologi/cares/tree/governance/postgresql-round3-2-2-1-html-integrity-correction`
-- **Git operations safety:** no force-push, no history rewrite, no branch deletion, no `git fetch --prune`, no amend/rewrite of source commit, no credentials/tokens exposed.
-
-## K. Final assessment
-**PASS WITH LIMITATIONS**
-
-Critical metadata corruption (all 7 affected pages) corrected and validated (0 malformed metadata remain); ZIP rebuilt and independently integrity-verified with export-directory equality; no local fragment references broken (0 total) and no page-link regressions introduced relative to the preserved baseline manifest set (10 unchanged), with one additional ADR 0006 topbar relative-link defect resolved. Limitations remain: no browser/visual/Mermaid rendering validation, hosting deployment not verified, heading-ID convention beyond observed no-ID state not provable from available evidence, and historical 10-entry manifest broken-link baseline unchanged (out of scope).
+## 10. Final summary
+- Corrected exporter integrated as normal pipeline with safe runtime-UTC metadata emission (no recurrence of regex-backreference `P26-` corruption), regression tests on exporter path passing (6/6), full export regenerated and packaged (65 HTML incl. index, 69 files total, 35 regenerated / 29 carried forward), export/ZIP inventories reconciled exactly with per-file SHA-256 equality and no nested/zero-byte artifacts, ZIP integrity verified, inherited link baselines unchanged with 0 new local HTML page/fragment regressions and ADR 0006 correction intact.
+- **Verdict:** PASS (required tests, inventory comparison, exporter recurrence checks, and package-integrity validations verified by direct evidence within scope; no PostgreSQL/application implementation; governance preserved).

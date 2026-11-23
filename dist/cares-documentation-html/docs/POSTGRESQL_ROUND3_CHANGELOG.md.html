@@ -107,7 +107,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_CHANGELOG.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_CHANGELOG.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3 Implementation Planning Changelog</h1>
 <p><strong>Status:</strong> Proposed planning changelog; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION</strong>. This changelog records Round 3 planning artifacts and analysis only. No schema, OD/PD, ADR, architecture, or roadmap status was changed.</p>
@@ -127,35 +127,35 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </thead>
 <tbody>
 <tr>
-<td><a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a></td>
+<td><a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a></td>
 <td>Phased implementation sequence, invariants, increment objectives/preconditions/dependencies/risks/rollback/verification/approvals, smallest safe first increment (bounded candidate), and explicit exclusions.</td>
 </tr>
 <tr>
-<td><a href="POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a></td>
+<td><a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_WORK_BREAKDOWN.md</a></td>
 <td>Work packages (I-00–I-14/WP/ XC), domain-to-entity mapping for the 50-table Round 2 baseline, and planning-level exit criteria.</td>
 </tr>
 <tr>
-<td><a href="POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a></td>
+<td><a href="./POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md.html">POSTGRESQL_ROUND3_MIGRATION_AND_DEPLOYMENT_STRATEGY.md</a></td>
 <td>Dependency-ordered migration sequencing, environment promotion gates, rollback/recovery/operational considerations, and prohibited actions.</td>
 </tr>
 <tr>
-<td><a href="POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a></td>
+<td><a href="./POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md.html">POSTGRESQL_ROUND3_TEST_AND_ACCEPTANCE_PLAN.md</a></td>
 <td>Required test categories (schema correctness; RLS/tenant isolation; identity binding/licensing invariants; idempotency/concurrency; outbox failure/recovery; audit/evidence integrity; retention/legal hold; backup/restore; performance/query-plan validation; migration upgrade/recovery) with objectives, preconditions, expected results, failure conditions, evidence, and release-blocker classification.</td>
 </tr>
 <tr>
-<td><a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a></td>
+<td><a href="./POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a></td>
 <td>Component/increment readiness classification, OD/PD/ADR dependencies, approvals/evidence required, and overall bounded readiness statement.</td>
 </tr>
 <tr>
-<td><a href="POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a></td>
+<td><a href="./POSTGRESQL_ROUND3_DEPENDENCY_MAP.md.html">POSTGRESQL_ROUND3_DEPENDENCY_MAP.md</a></td>
 <td>Mermaid dependency/approval maps, operation-to-domain prerequisites, and planning traceability matrix.</td>
 </tr>
 <tr>
-<td><a href="POSTGRESQL_ROUND3_CHANGELOG.md.html">POSTGRESQL_ROUND3_CHANGELOG.md</a></td>
+<td><a href="./POSTGRESQL_ROUND3_CHANGELOG.md.html">POSTGRESQL_ROUND3_CHANGELOG.md</a></td>
 <td>This changelog.</td>
 </tr>
 <tr>
-<td><a href="POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a></td>
+<td><a href="./POSTGRESQL_ROUND3_FINAL_REVIEW.md.html">POSTGRESQL_ROUND3_FINAL_REVIEW.md</a></td>
 <td>Coherence/readiness assessment, final status classification, bounded first increment, required approvals, and out-of-scope confirmation.</td>
 </tr>
 </tbody>
@@ -184,7 +184,6 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li>No database provisioned/modified/executed; no application implementation started.</li>
 <li>No OD/PD/ADR/architecture/roadmap status changes.</li>
 </ul>
-
 </article>
 </div>
 

@@ -107,10 +107,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_ERD.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_ERD.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Physical ERD (Round 2)</h1>
-<p><strong>Status:</strong> Proposed physical ERD documentation only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. Mermaid diagrams are simplified physical-relationship views derived from the Round 1.1 logical baseline and Round 2 physical design. They do not replace the authoritative table/column/constraint specifications in <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a> or index/RLS/transaction/lifecycle documents.</p>
+<p><strong>Status:</strong> Proposed physical ERD documentation only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. Mermaid diagrams are simplified physical-relationship views derived from the Round 1.1 logical baseline and Round 2 physical design. They do not replace the authoritative table/column/constraint specifications in <a href="./POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a> or index/RLS/transaction/lifecycle documents.</p>
 <p><strong>Validation note:</strong> Mermaid source is provided as text and can be structurally reviewed; <strong>visual rendering was not executed in this environment</strong> (no renderer CLI verified). Structural Mermaid validation is reported as performed by source inspection only; visual rendering remains <strong>NOT VERIFIED</strong>.</p>
 <h2>1. Diagram conventions</h2>
 <ul>
@@ -121,7 +121,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li>Global/shared catalog tables are marked in notes.</li>
 </ul>
 <h2>2. ERD 1 — Core tenant, access, and configuration</h2>
-<pre class="mermaid">erDiagram
+<pre><code class="language-mermaid">erDiagram
     core__tenant {
         uuid tenant_id PK
         text tenant_status
@@ -177,10 +177,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
     core__external_identity_subject ||--o{ core__support_access_grant : grantee
     core__support_access_grant ||--o{ core__support_access_approval : approved_by
     core__tenant ||--o{ core__tenant_configuration : configures
-</pre>
+</code></pre>
 <p><strong>Notes:</strong> <code>core.external_identity_subject</code> and system/global <code>core.role</code> records may be platform-scoped; tenant-defined roles and all memberships/grants/configurations are tenant-scoped or tenant-contextual as specified.</p>
 <h2>3. ERD 2 — Asset identity, lineage, and licensing</h2>
-<pre class="mermaid">erDiagram
+<pre><code class="language-mermaid">erDiagram
     core__tenant {
         uuid tenant_id PK
     }
@@ -300,10 +300,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
     core__tenant ||--o{ core__identity_operation_idempotency_ledger : scopes
     core__identity_operation_idempotency_ledger ||--o{ core__asset_license_reservation : correlates
     core__asset ||--o| core__asset_tombstone : terminal
-</pre>
+</code></pre>
 <p><strong>Notes:</strong> <code>core.asset_data_source</code> is the proposed authoritative stable binding owning immutable <code>source_device_key_id</code> (OD-002 open). <code>core.source_device_key</code> is an optional 1:1 dependent projection only. <code>asset_lineage_link</code> enforces typed merge/split references (no polymorphic ref). Ledger and event receipt are distinct idempotency/dedup mechanisms.</p>
 <h2>4. ERD 3 — Ingest, processing, audit, and evidence</h2>
-<pre class="mermaid">erDiagram
+<pre><code class="language-mermaid">erDiagram
     core__tenant {
         uuid tenant_id PK
     }
@@ -393,10 +393,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
     audit_evidence__forensic_evidence_record ||--o{ audit_evidence__evidence_object_version : versions
     audit_evidence__forensic_evidence_record ||--o{ audit_evidence__evidence_custody_event : custody
     audit_evidence__forensic_evidence_record ||--o{ audit_evidence__evidence_transition_authorization : controls
-</pre>
+</code></pre>
 <p><strong>Notes:</strong> <code>event_receipt</code> dedup uniqueness is namespace-specific (explicit device-scoped/data-source-global/fallback basis per OD-013). Outbox delivery is at-least-once with unknown-outcome handling; no exactly-once external delivery. <code>processing_work_item</code> is optional/non-core and must not replace receipt/outbox truth.</p>
 <h2>5. ERD 4 — Integration/AI and SOC</h2>
-<pre class="mermaid">erDiagram
+<pre><code class="language-mermaid">erDiagram
     core__tenant {
         uuid tenant_id PK
     }
@@ -495,17 +495,15 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
     integration_ai__data_source ||--o{ soc__asset_inventory_observation : reported_by
     core__asset ||--o{ soc__vulnerability_finding : affects
     soc__asset_inventory_observation ||--o{ soc__vulnerability_finding : evidenced_by
-</pre>
+</code></pre>
 <p><strong>Notes:</strong> <code>soc.threat_intelligence_reference</code> is proposed global/shared; tenant use must not leak tenant data across boundaries. AI provider configuration is explicit per tenant (no silent failover/automatic transfer); secrets are external references only. Detection rules may be tenant-owned or explicitly managed global-scope by policy (Proposed).</p>
 <h2>6. Traceability and omissions</h2>
 <ul>
 <li>All logical entities mapped in the physical schema design are represented in at least one ERD or explicitly covered by domain notes above (including <code>asset_license_event</code>, <code>evidence_object_version</code>, <code>evidence_custody_event</code>, <code>evidence_transition_authorization</code>, <code>membership_role_assignment</code>, <code>role_permission</code>, <code>support_access_approval</code>, <code>source_device_fingerprint_alias</code>, <code>asset_identity_claim</code>, <code>identity_resolution_case</code>, <code>asset_tombstone</code>, <code>ai_usage_budget_accounting</code>, <code>processing_work_item</code>).</li>
-<li>Relationship cardinalities and optionality shown are simplified; authoritative nullability/FK/uniqueness rules are defined in <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a>.</li>
+<li>Relationship cardinalities and optionality shown are simplified; authoritative nullability/FK/uniqueness rules are defined in <a href="./POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a>.</li>
 </ul>
-
 </article>
 </div>
-<script src="../assets/mermaid.min.js"></script>
-<script>if(window.mermaid){mermaid.initialize({startOnLoad:true,securityLevel:'loose'});}</script>
+
 </body>
 </html>

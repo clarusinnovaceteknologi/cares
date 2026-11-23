@@ -107,7 +107,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_LOGICAL_DATA_MODEL.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_LOGICAL_DATA_MODEL.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Logical Data Model (Round 1)</h1>
 <p><strong>Status:</strong> Logical schema design documented; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This document defines a proposed logical model only. It does not create PostgreSQL DDL, migrations, database policies, indexes, triggers, stored procedures, roles, grants, ORM models, application code, or tests. No design element here is evidence of implementation, security validation, or production readiness.</p>
@@ -116,25 +116,25 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h3>1.1 Source documents inspected (repository working source of truth)</h3>
 <ul>
 <li><a href="../README.html">README.md</a></li>
-<li><a href="ARCHITECTURE.md.html">docs/ARCHITECTURE.md</a></li>
-<li><a href="SECURITY_ARCHITECTURE.md.html">docs/SECURITY_ARCHITECTURE.md</a></li>
-<li><a href="THREAT_MODEL.md.html">docs/THREAT_MODEL.md</a></li>
-<li><a href="DATA_ARCHITECTURE.md.html">docs/DATA_ARCHITECTURE.md</a></li>
-<li><a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">docs/POSTGRESQL_TECHNICAL_DECISIONS.md</a></li>
-<li><a href="adr/0001-modular-monolith.md.html">docs/adr/0001-modular-monolith.md</a></li>
-<li><a href="adr/0002-postgresql-and-tenant-isolation.md.html">docs/adr/0002-postgresql-and-tenant-isolation.md</a></li>
-<li><a href="adr/0003-device-identity-and-asset-licensing.md.html">docs/adr/0003-device-identity-and-asset-licensing.md</a></li>
-<li><a href="adr/0004-external-ai-provider-boundary.md.html">docs/adr/0004-external-ai-provider-boundary.md</a></li>
-<li><a href="adr/0005-event-processing-and-broker-evolution.md.html">docs/adr/0005-event-processing-and-broker-evolution.md</a></li>
-<li><a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a></li>
-<li><a href="CARES_PRODUCT_VISION.md.html">docs/CARES_PRODUCT_VISION.md</a></li>
-<li><a href="DEVELOPMENT_ROADMAP.md.html">docs/DEVELOPMENT_ROADMAP.md</a></li>
-<li><a href="PROJECT_STATUS.md.html">docs/PROJECT_STATUS.md</a></li>
-<li><a href="REQUIREMENTS_TRACEABILITY.md.html">docs/REQUIREMENTS_TRACEABILITY.md</a></li>
-<li><a href="ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md.html">docs/ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md</a></li>
-<li><a href="ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a></li>
-<li><a href="ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md</a>, <a href="ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md</a>, <a href="ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md</a>, <a href="ARCHITECTURE_DECISION_PACKAGE.md.html">docs/ARCHITECTURE_DECISION_PACKAGE.md</a></li>
-<li><a href="ARCHITECTURE_RECONCILIATION_CHANGELOG.md.html">docs/ARCHITECTURE_RECONCILIATION_CHANGELOG.md</a>, <a href="PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md.html">docs/PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md</a>, <a href="TECHNOLOGY_SELECTION.md.html">docs/TECHNOLOGY_SELECTION.md</a></li>
+<li><a href="./ARCHITECTURE.md.html">docs/ARCHITECTURE.md</a></li>
+<li><a href="./SECURITY_ARCHITECTURE.md.html">docs/SECURITY_ARCHITECTURE.md</a></li>
+<li><a href="./THREAT_MODEL.md.html">docs/THREAT_MODEL.md</a></li>
+<li><a href="./DATA_ARCHITECTURE.md.html">docs/DATA_ARCHITECTURE.md</a></li>
+<li><a href="./POSTGRESQL_TECHNICAL_DECISIONS.md.html">docs/POSTGRESQL_TECHNICAL_DECISIONS.md</a></li>
+<li><a href="./adr/0001-modular-monolith.md.html">docs/adr/0001-modular-monolith.md</a></li>
+<li><a href="./adr/0002-postgresql-and-tenant-isolation.md.html">docs/adr/0002-postgresql-and-tenant-isolation.md</a></li>
+<li><a href="./adr/0003-device-identity-and-asset-licensing.md.html">docs/adr/0003-device-identity-and-asset-licensing.md</a></li>
+<li><a href="./adr/0004-external-ai-provider-boundary.md.html">docs/adr/0004-external-ai-provider-boundary.md</a></li>
+<li><a href="./adr/0005-event-processing-and-broker-evolution.md.html">docs/adr/0005-event-processing-and-broker-evolution.md</a></li>
+<li><a href="./adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a></li>
+<li><a href="./CARES_PRODUCT_VISION.md.html">docs/CARES_PRODUCT_VISION.md</a></li>
+<li><a href="./DEVELOPMENT_ROADMAP.md.html">docs/DEVELOPMENT_ROADMAP.md</a></li>
+<li><a href="./PROJECT_STATUS.md.html">docs/PROJECT_STATUS.md</a></li>
+<li><a href="./REQUIREMENTS_TRACEABILITY.md.html">docs/REQUIREMENTS_TRACEABILITY.md</a></li>
+<li><a href="./ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md.html">docs/ARCHITECTURE_CROSS_DOCUMENT_CONSISTENCY_REVIEW.md</a></li>
+<li><a href="./ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_FINAL_CORRECTIONS.md</a></li>
+<li><a href="./ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS.md</a>, <a href="./ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND2.md</a>, <a href="./ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md.html">docs/ARCHITECTURE_DECISION_PACKAGE_GAP_ANALYSIS_ROUND3.md</a>, <a href="./ARCHITECTURE_DECISION_PACKAGE.md.html">docs/ARCHITECTURE_DECISION_PACKAGE.md</a></li>
+<li><a href="./ARCHITECTURE_RECONCILIATION_CHANGELOG.md.html">docs/ARCHITECTURE_RECONCILIATION_CHANGELOG.md</a>, <a href="./PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md.html">docs/PRODUCT_ROADMAP_ALIGNMENT_CHANGELOG.md</a>, <a href="./TECHNOLOGY_SELECTION.md.html">docs/TECHNOLOGY_SELECTION.md</a></li>
 </ul>
 <h3>1.2 Implementation/prototype inspection (distinguishing current state)</h3>
 <table>
@@ -1566,7 +1566,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <tbody>
 <tr>
 <td>Multi-tenancy, tenant boundary, verified context, RLS defense-in-depth, logical roles</td>
-<td>Vision §3, <a href="ARCHITECTURE.md.html">ARCHITECTURE.md</a>, <a href="SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a>, <a href="DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>, <a href="THREAT_MODEL.md.html">THREAT_MODEL.md</a>, ADR0001/0002, <a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a></td>
+<td>Vision §3, <a href="./ARCHITECTURE.md.html">ARCHITECTURE.md</a>, <a href="./SECURITY_ARCHITECTURE.md.html">SECURITY_ARCHITECTURE.md</a>, <a href="./DATA_ARCHITECTURE.md.html">DATA_ARCHITECTURE.md</a>, <a href="./THREAT_MODEL.md.html">THREAT_MODEL.md</a>, ADR0001/0002, <a href="./POSTGRESQL_TECHNICAL_DECISIONS.md.html">POSTGRESQL_TECHNICAL_DECISIONS.md</a></td>
 </tr>
 <tr>
 <td>Canonical asset, one-device-one-asset, bindings/keys/aliases/claims, merge/split, pending identity</td>
@@ -1794,12 +1794,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </ul>
 <h2>8. Companion documents</h2>
 <ul>
-<li><a href="POSTGRESQL_LOGICAL_ERD.md.html">POSTGRESQL_LOGICAL_ERD.md</a></li>
-<li><a href="POSTGRESQL_TRANSACTION_BOUNDARIES.md.html">POSTGRESQL_TRANSACTION_BOUNDARIES.md</a></li>
-<li><a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a></li>
-<li><a href="POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md.html">POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md</a></li>
+<li><a href="./POSTGRESQL_LOGICAL_ERD.md.html">POSTGRESQL_LOGICAL_ERD.md</a></li>
+<li><a href="./POSTGRESQL_TRANSACTION_BOUNDARIES.md.html">POSTGRESQL_TRANSACTION_BOUNDARIES.md</a></li>
+<li><a href="./POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a></li>
+<li><a href="./POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md.html">POSTGRESQL_LOGICAL_DESIGN_CHANGELOG.md</a></li>
 </ul>
-
 </article>
 </div>
 

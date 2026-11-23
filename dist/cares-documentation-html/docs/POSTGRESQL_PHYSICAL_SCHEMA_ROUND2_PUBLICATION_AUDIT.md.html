@@ -107,7 +107,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Physical Schema Round 2 — Publication Reconciliation &amp; Final Evidence Audit</h1>
 <p><strong>Audit type:</strong> Administrative publication reconciliation and evidence audit only (no technical schema/design/implementation changes).
@@ -173,7 +173,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li><code>git ls-remote --heads origin design/postgresql-round2-physical-schema</code>: <code>1c21c0d5820ee087045b43f3d66b9725ab67731f\trefs/heads/design/postgresql-round2-physical-schema</code></li>
 <li>Comparison: local HEAD == remote-tracking HEAD == ls-remote HEAD (<strong>matched</strong>). No divergence, no conflicts, no unexpected commits, no permission problems observed.</li>
 </ul>
-<p>Inspected records/artifacts: <a href="/home/ubuntu/cares/copilot.txt">copilot.txt</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>, <code>dist/cares-documentation-html/EXPORT_MANIFEST.md</code>, <code>dist/cares-documentation-html/EXPORT_MANIFEST.json</code>, <code>dist/cares-documentation-html/index.html</code>, <a href="/home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip">dist/CARES_DOCUMENTATION_HTML.zip</a>, and relevant git history/timestamps.</p>
+<p>Inspected records/artifacts: <a href="/home/ubuntu/cares/copilot.txt">copilot.txt</a>, <a href="./POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>, <code>dist/cares-documentation-html/EXPORT_MANIFEST.md</code>, <code>dist/cares-documentation-html/EXPORT_MANIFEST.json</code>, <code>dist/cares-documentation-html/index.html</code>, <a href="/home/ubuntu/cares/dist/CARES_DOCUMENTATION_HTML.zip">dist/CARES_DOCUMENTATION_HTML.zip</a>, and relevant git history/timestamps.</p>
 <h2>4. Publication state reconciliation (Git evidence)</h2>
 <table>
 <thead>
@@ -221,8 +221,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <p>Corrections made (publication/evidence records only; no technical design content changed):</p>
 <ol>
 <li><strong><a href="/home/ubuntu/cares/copilot.txt">copilot.txt</a>:</strong> reconciled stale &quot;LOCAL DESIGN/EXPORT COMPLETE; COMMIT AND REMOTE PUBLICATION PENDING...&quot; / &quot;not yet committed/pushed&quot; / &quot;pending push&quot; statements to reflect verified local commit and remote publication state (<code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code>, <code>git ls-remote</code> verified, local==remote at inspection). Clarified distinction between Round 2 design execution completion, local commit status, remote push status, remote branch HEAD verification, documentation export status, ZIP integrity verification, and Mermaid structural validation vs actual visual rendering. Addressed date discrepancy by marking the original execution-context date as <strong>unknown/unverified</strong> from available reliable evidence and distinguishing it from git commit timestamps, export metadata timestamps, and this audit timestamp. Did not claim remote file SHA-256 verification (no remote file download/independent remote hashing performed).</li>
-<li><strong><a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>:</strong> reconciled the stale &quot;Remote publication status at time of writing this document: not yet pushed/verified...&quot; statement to reflect verified publication evidence while preserving the original design-review context and all technical findings/readiness/OD content unchanged.</li>
-<li><strong><a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</a>:</strong> created (this report).</li>
+<li><strong><a href="./POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>:</strong> reconciled the stale &quot;Remote publication status at time of writing this document: not yet pushed/verified...&quot; statement to reflect verified publication evidence while preserving the original design-review context and all technical findings/readiness/OD content unchanged.</li>
+<li><strong><a href="./POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</a>:</strong> created (this report).</li>
 <li><strong>HTML export/index/manifest/ZIP:</strong> regenerated/updated to reflect the above source-document corrections and include this audit report in the export package, preserving existing export directory structure; integrity and consistency re-verified (see §6).</li>
 </ol>
 <p>No correction commits were created before this audit's reconciliation commit; this audit creates one publication-reconciliation commit containing only necessary report/export corrections (recorded in final response and <code>copilot.txt</code>).</p>
@@ -369,7 +369,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li>No technical schema design, OD resolution, ADR status, or roadmap was changed. <strong>ADR 0006 remains Proposed.</strong></li>
 <li>Carried-forward open decisions <strong>OD-001–OD-013</strong> remain as previously recorded (Proposed/Deferred/open per baseline/Round 2 records); physical decisions <strong>PD-001–PD-012</strong> remain Proposed/Deferred. No open decision approved or closed.</li>
 <li>Round 2 remains <strong>design/documentation only (NOT IMPLEMENTED, NOT TESTED)</strong>. Mermaid visual rendering <strong>NOT VERIFIED</strong> (structural validation only where performed). Runtime DB correctness/isolation/performance/concurrency, workload/capacity validation, and formal approvals remain outstanding as previously documented.</li>
-<li>Bounded exclusions and blockers for implementation finalization remain as stated in <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a> and <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>. Any technical defects, if discovered, are findings for future explicitly authorized review only.</li>
+<li>Bounded exclusions and blockers for implementation finalization remain as stated in <a href="./POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a> and <a href="./POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>. Any technical defects, if discovered, are findings for future explicitly authorized review only.</li>
 </ul>
 <h2>9. Explicit confirmation</h2>
 <p><strong>No technical schema design or implementation was changed by this publication reconciliation audit.</strong> Changes were limited to publication/evidence reconciliation records (<code>copilot.txt</code>, publication-status text in the Round 2 final review), creation of this audit report, and regeneration of corresponding HTML/index/manifest/ZIP artifacts to reflect those record changes. No SQL DDL, migrations, ORM models, DB roles/policies/triggers/procedures, application code, or database provisioning/modification occurred. No Round 3 implementation planning or implementation was started.</p>
@@ -410,7 +410,6 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <ul>
 <li>This evidence-recording commit publishes the above verified corrective-commit SHA and ls-remote evidence in <code>copilot.txt</code> and this audit, with regenerated HTML/index/manifest/ZIP. Its exact final SHA is confirmed by post-push <code>git ls-remote</code> in the final execution report.</li>
 </ul>
-
 </article>
 </div>
 

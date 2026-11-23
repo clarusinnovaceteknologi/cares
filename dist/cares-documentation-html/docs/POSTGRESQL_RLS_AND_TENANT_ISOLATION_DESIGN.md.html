@@ -107,7 +107,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL RLS and Tenant Isolation Design (Round 2)</h1>
 <p><strong>Status:</strong> Proposed design documentation only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This document defines the physical isolation model, role posture, tenant-context lifecycle, and conceptual RLS policy design for CARES PostgreSQL. No database roles, grants, RLS policies, security-definer functions, GUC settings, or enforcement objects are created. <strong>RLS is defense in depth and not sufficient alone</strong>; application/service authorization remains required.</p>
@@ -539,7 +539,6 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <li><strong>Risks:</strong> misconfigured pooling can leak session state; incorrect policy/role design can permit leakage or denial; missing composite tenant FKs can allow cross-tenant references even when RLS filters reads; global/shared tables and administrative paths require strict governance.</li>
 <li><strong>Isolation testing requirements (design intent):</strong> cross-tenant negative tests for SELECT/INSERT/UPDATE/DELETE/JOIN/RETURNING, pooled-connection context-reset tests, role/privilege tests (including no <code>BYPASSRLS</code> for runtime roles), partition access tests if partitioned, support-access scope tests, and fail-closed tests for missing/invalid context. All are <strong>NOT IMPLEMENTED/NOT TESTED</strong> in this round.</li>
 </ul>
-
 </article>
 </div>
 

@@ -107,11 +107,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_ROUND3_1_OWNER_DECISION_REGISTER.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Round 3.1 — Owner Decision Register</h1>
 <p><strong>Status:</strong> Proposed governance register only; <strong>NOT IMPLEMENTED, NOT TESTED, NOT APPROVED FOR EXECUTION, NOT AN OWNER DECISION RECORD</strong>. Consolidates OD-001–OD-013 and PD-001–PD-012 from committed repository sources for owner review. Existing identifiers and recorded statuses are preserved; missing/unavailable information is explicitly marked.</p>
-<p><strong>Verified source baseline:</strong> <code>planning/postgresql-round3-implementation</code> @ <code>ee6e005bc50ffa8f3cd376a83b01369044005c3b</code>. <strong>Source note:</strong> committed logical register <code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> is not present at this baseline; OD entries are traced from committed carry-forward/review/planning sources (primarily <a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html">POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md</a>, <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>). Where original-register detail is unavailable, marked <strong>Requires owner clarification / source unavailable at baseline</strong>. <strong>ADR 0006 remains Proposed</strong> (no promotion).</p>
+<p><strong>Verified source baseline:</strong> <code>planning/postgresql-round3-implementation</code> @ <code>ee6e005bc50ffa8f3cd376a83b01369044005c3b</code>. <strong>Source note:</strong> committed logical register <code>docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> is not present at this baseline; OD entries are traced from committed carry-forward/review/planning sources (primarily <a href="./POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a>, <a href="./POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a>, <a href="./POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html">POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md</a>, <a href="./POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a>). Where original-register detail is unavailable, marked <strong>Requires owner clarification / source unavailable at baseline</strong>. <strong>ADR 0006 remains Proposed</strong> (no promotion).</p>
 <h2>1. OD-001 through OD-013 (logical/carried-forward open decisions)</h2>
 <table>
 <thead>
@@ -426,11 +426,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h2>3. Cross-cutting governance notes</h2>
 <ul>
 <li><strong>No owner decisions recorded:</strong> all items above remain in their preserved statuses; no decision is made, approved, deferred-by-owner, or closed by this register.</li>
-<li><strong>No implementation authorized:</strong> identification of a conditionally ready increment does not authorize implementation. I-00–I-14 classifications remain as documented in <a href="POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a> and <a href="POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>.</li>
+<li><strong>No implementation authorized:</strong> identification of a conditionally ready increment does not authorize implementation. I-00–I-14 classifications remain as documented in <a href="./POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md.html">POSTGRESQL_ROUND3_READINESS_AND_BLOCKER_MATRIX.md</a> and <a href="./POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md.html">POSTGRESQL_ROUND3_IMPLEMENTATION_PLAN.md</a>.</li>
 <li><strong>Contradiction/source gap:</strong> absence of committed <code>POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</code> and committed ADR 0006 markdown source at baseline is reported for owner review; this package does not infer or replace missing source content.</li>
 <li><strong>Invariants preserved:</strong> tenant isolation (trusted verified transaction-bound context only; no client-supplied tenant IDs; no user-settable PostgreSQL GUC authorization), authoritative binding/immutable <code>source_device_key_id</code>, ledger/event-dedup separation, typed lineage, no exactly-once external delivery, licensing/identity invariants, MELIRA external SaaS constraints.</li>
 </ul>
-
 </article>
 </div>
 

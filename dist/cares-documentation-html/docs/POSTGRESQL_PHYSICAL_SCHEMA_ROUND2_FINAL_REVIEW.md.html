@@ -107,11 +107,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <body>
 <div class="topbar"><a href="../index.html">← Documentation index</a></div>
 <div class="wrap">
-<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</code><br><strong>Generated (UTC):</strong> 2026-11-22T19:13:45Z</div>
+<div class="meta"><strong>Source:</strong> <code>docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</code><br><strong>Generated (UTC):</strong> 2026-11-23T17:22:13Z</div>
 <article class="markdown-body">
 <h1>CARES PostgreSQL Physical Schema Round 2 — Final Review</h1>
 <p><strong>Status:</strong> Proposed design review only; <strong>NOT IMPLEMENTED, NOT TESTED</strong>. This review evaluates the Round 2 PostgreSQL physical schema design documentation against the published Round 1.1 audited logical baseline. It does not authorize implementation, database object creation, ADR/status changes, or roadmap changes. <strong>ADR 0006 remains Proposed.</strong></p>
-<p><strong>Branch:</strong> <code>design/postgresql-round2-physical-schema</code> (created from <code>origin/audit/postgresql-round1-1-publication</code>, baseline commit <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code>). <strong>Remote publication status (reconciled 2026-11-22, Git evidence):</strong> Round 2 artifact commit <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code> is present locally and on <code>origin/design/postgresql-round2-physical-schema</code> (local HEAD == remote-tracking == <code>git ls-remote</code> at reconciliation audit inspection). Publication-reconciliation record corrections are documented in <a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</a> and <a href="/home/ubuntu/cares/copilot.txt">copilot.txt</a>.</p>
+<p><strong>Branch:</strong> <code>design/postgresql-round2-physical-schema</code> (created from <code>origin/audit/postgresql-round1-1-publication</code>, baseline commit <code>c433fe897d1922c9e154a19b5646c99c3ec6d73d</code>). <strong>Remote publication status (reconciled 2026-11-22, Git evidence):</strong> Round 2 artifact commit <code>ea7ca9adf226ab7b321a6f89d0e1ab520794a4d8</code> is present locally and on <code>origin/design/postgresql-round2-physical-schema</code> (local HEAD == remote-tracking == <code>git ls-remote</code> at reconciliation audit inspection). Publication-reconciliation record corrections are documented in <a href="./POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_PUBLICATION_AUDIT.md</a> and <a href="/home/ubuntu/cares/copilot.txt">copilot.txt</a>.</p>
 <h2>1. Executive summary</h2>
 <p>Round 2 translates the Round 1.1 logical baseline into a comprehensive proposed physical schema design covering schema organization, complete logical-to-physical mapping, per-table/column specifications, key/constraint strategy, index strategy, RLS/tenant-isolation design, transaction-to-physical mapping for all 13 critical operations, data lifecycle/retention considerations, open decisions, changelog, and this final review.</p>
 <p><strong>Overall assessment:</strong> the Round 2 documentation is <strong>substantially complete and traceable</strong> for implementation-planning purposes, with preserved Round 1.1 invariants (authoritative binding ownership, idempotency contract shape, explicit event dedup namespace semantics, typed lineage, no exactly-once external delivery) and preserved architectural/security constraints. However, multiple required approvals and validations remain open (notably OD-001–OD-009/OD-011/OD-013 and ADR 0006 acceptance, plus operational/workload validation and several physical-design finalizations). No executable DDL/migrations/DB objects were produced.</p>
@@ -119,31 +119,31 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h2>2. Documents actually inspected (baseline and Round 2)</h2>
 <h3>2.1 Baseline documents (inspected in this round)</h3>
 <ul>
-<li><a href="POSTGRESQL_LOGICAL_DATA_MODEL.md.html">docs/POSTGRESQL_LOGICAL_DATA_MODEL.md</a></li>
-<li><a href="POSTGRESQL_LOGICAL_ERD.md.html">docs/POSTGRESQL_LOGICAL_ERD.md</a></li>
-<li><a href="POSTGRESQL_TRANSACTION_BOUNDARIES.md.html">docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md</a></li>
-<li><a href="POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a></li>
-<li><a href="POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html">docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md</a></li>
-<li><a href="DATA_ARCHITECTURE.md.html">docs/DATA_ARCHITECTURE.md</a></li>
-<li><a href="SECURITY_ARCHITECTURE.md.html">docs/SECURITY_ARCHITECTURE.md</a></li>
-<li><a href="POSTGRESQL_TECHNICAL_DECISIONS.md.html">docs/POSTGRESQL_TECHNICAL_DECISIONS.md</a></li>
-<li><a href="adr/0003-device-identity-and-asset-licensing.md.html">docs/adr/0003-device-identity-and-asset-licensing.md</a></li>
-<li><a href="adr/0005-event-processing-and-broker-evolution.md.html">docs/adr/0005-event-processing-and-broker-evolution.md</a></li>
-<li><a href="adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a></li>
-<li><a href="PROJECT_STATUS.md.html">docs/PROJECT_STATUS.md</a></li>
+<li><a href="./POSTGRESQL_LOGICAL_DATA_MODEL.md.html">docs/POSTGRESQL_LOGICAL_DATA_MODEL.md</a></li>
+<li><a href="./POSTGRESQL_LOGICAL_ERD.md.html">docs/POSTGRESQL_LOGICAL_ERD.md</a></li>
+<li><a href="./POSTGRESQL_TRANSACTION_BOUNDARIES.md.html">docs/POSTGRESQL_TRANSACTION_BOUNDARIES.md</a></li>
+<li><a href="./POSTGRESQL_SCHEMA_OPEN_DECISIONS.md.html">docs/POSTGRESQL_SCHEMA_OPEN_DECISIONS.md</a></li>
+<li><a href="./POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md.html">docs/POSTGRESQL_LOGICAL_MODEL_ROUND1_1_FINAL_AUDIT.md</a></li>
+<li><a href="./DATA_ARCHITECTURE.md.html">docs/DATA_ARCHITECTURE.md</a></li>
+<li><a href="./SECURITY_ARCHITECTURE.md.html">docs/SECURITY_ARCHITECTURE.md</a></li>
+<li><a href="./POSTGRESQL_TECHNICAL_DECISIONS.md.html">docs/POSTGRESQL_TECHNICAL_DECISIONS.md</a></li>
+<li><a href="./adr/0003-device-identity-and-asset-licensing.md.html">docs/adr/0003-device-identity-and-asset-licensing.md</a></li>
+<li><a href="./adr/0005-event-processing-and-broker-evolution.md.html">docs/adr/0005-event-processing-and-broker-evolution.md</a></li>
+<li><a href="./adr/0006-atomic-per-tenant-asset-licensing.md.html">docs/adr/0006-atomic-per-tenant-asset-licensing.md</a></li>
+<li><a href="./PROJECT_STATUS.md.html">docs/PROJECT_STATUS.md</a></li>
 <li>Export/packaging conventions and audit artifacts (<code>dist/cares-documentation-html/</code>, <code>dist/CARES_DOCUMENTATION_HTML.zip</code>, <code>dist/cares-external-audit/</code>, <code>copilot.txt</code>)</li>
 </ul>
 <h3>2.2 Round 2 documents produced and reviewed</h3>
 <ul>
-<li><a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a></li>
-<li><a href="POSTGRESQL_PHYSICAL_ERD.md.html">docs/POSTGRESQL_PHYSICAL_ERD.md</a></li>
-<li><a href="POSTGRESQL_INDEX_STRATEGY.md.html">docs/POSTGRESQL_INDEX_STRATEGY.md</a></li>
-<li><a href="POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a></li>
-<li><a href="POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a></li>
-<li><a href="POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html">docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</a></li>
-<li><a href="POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a></li>
-<li><a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md</a></li>
-<li><a href="POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a> (this document)</li>
+<li><a href="./POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a></li>
+<li><a href="./POSTGRESQL_PHYSICAL_ERD.md.html">docs/POSTGRESQL_PHYSICAL_ERD.md</a></li>
+<li><a href="./POSTGRESQL_INDEX_STRATEGY.md.html">docs/POSTGRESQL_INDEX_STRATEGY.md</a></li>
+<li><a href="./POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md.html">docs/POSTGRESQL_RLS_AND_TENANT_ISOLATION_DESIGN.md</a></li>
+<li><a href="./POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">docs/POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a></li>
+<li><a href="./POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md.html">docs/POSTGRESQL_DATA_LIFECYCLE_AND_RETENTION.md</a></li>
+<li><a href="./POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_OPEN_DECISIONS.md</a></li>
+<li><a href="./POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_CHANGELOG.md</a></li>
+<li><a href="./POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md.html">docs/POSTGRESQL_PHYSICAL_SCHEMA_ROUND2_FINAL_REVIEW.md</a> (this document)</li>
 </ul>
 <h2>3. Logical-to-physical traceability</h2>
 <table>
@@ -158,7 +158,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <tr>
 <td>Complete logical entity mapping present</td>
 <td><strong>PASS</strong></td>
-<td><a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a> §3.3 and §6 define proposed physical representations for all 50 expected logical entities inventoried from the Round 1.1 baseline; targeted validation found no missing entity names from the expected set.</td>
+<td><a href="./POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a> §3.3 and §6 define proposed physical representations for all 50 expected logical entities inventoried from the Round 1.1 baseline; targeted validation found no missing entity names from the expected set.</td>
 </tr>
 <tr>
 <td>ERD-simplified/omitted logical entities represented physically</td>
@@ -173,7 +173,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <tr>
 <td>All 13 logical transaction operations mapped</td>
 <td><strong>PASS</strong></td>
-<td><a href="POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a> defines Operations 1–13 with tables, constraints/indexes, transaction intent, locking/concurrency, and failure/retry/recovery notes.</td>
+<td><a href="./POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a> defines Operations 1–13 with tables, constraints/indexes, transaction intent, locking/concurrency, and failure/retry/recovery notes.</td>
 </tr>
 <tr>
 <td>Traceability of critical invariants</td>
@@ -210,7 +210,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <tr>
 <td>Index coverage for required patterns</td>
 <td><strong>PASS WITH LIMITATIONS</strong></td>
-<td><a href="POSTGRESQL_INDEX_STRATEGY.md.html">POSTGRESQL_INDEX_STRATEGY.md</a> covers identity/binding resolution, event dedup namespaces, idempotency ledger, audit/evidence retrieval, time-based/dashboard queries, and outbox claiming/recovery. Several predicates/partial indexes and JSONB/expression choices remain proposed and workload-dependent.</td>
+<td><a href="./POSTGRESQL_INDEX_STRATEGY.md.html">POSTGRESQL_INDEX_STRATEGY.md</a> covers identity/binding resolution, event dedup namespaces, idempotency ledger, audit/evidence retrieval, time-based/dashboard queries, and outbox claiming/recovery. Several predicates/partial indexes and JSONB/expression choices remain proposed and workload-dependent.</td>
 </tr>
 <tr>
 <td>Transaction mapping consistency</td>
@@ -242,7 +242,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </thead>
 <tbody>
 <tr>
-<td><a href="POSTGRESQL_PHYSICAL_ERD.md.html">POSTGRESQL_PHYSICAL_ERD.md</a></td>
+<td><a href="./POSTGRESQL_PHYSICAL_ERD.md.html">POSTGRESQL_PHYSICAL_ERD.md</a></td>
 <td>Performed (source inspection)</td>
 <td><strong>NOT VERIFIED</strong></td>
 <td><strong>PASS WITH LIMITATIONS</strong></td>
@@ -302,10 +302,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h2>8. Evidence summary</h2>
 <ul>
 <li><strong>Document existence:</strong> all nine required Round 2 documents present under <code>docs/</code> (verified by file checks).</li>
-<li><strong>Entity coverage:</strong> 50 expected logical entity names found in <a href="POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a> mapping/specification context (no missing names in targeted check).</li>
+<li><strong>Entity coverage:</strong> 50 expected logical entity names found in <a href="./POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md.html">POSTGRESQL_PHYSICAL_SCHEMA_DESIGN.md</a> mapping/specification context (no missing names in targeted check).</li>
 <li><strong>Key semantics present:</strong> authoritative binding ownership text, idempotency scope fields/index references (<code>tenant_id</code>, <code>operation_type</code>, <code>idempotency_key</code>), explicit <code>event_namespace</code>/dedup basis fields, and typed lineage fields (<code>merge_operation_id</code>, <code>split_operation_id</code>) with non-polymorphic design stated.</li>
-<li><strong>Transaction coverage:</strong> Operations 1–13 headings present in <a href="POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a>.</li>
-<li><strong>Mermaid structure:</strong> 4 fenced Mermaid blocks in <a href="POSTGRESQL_PHYSICAL_ERD.md.html">POSTGRESQL_PHYSICAL_ERD.md</a>.</li>
+<li><strong>Transaction coverage:</strong> Operations 1–13 headings present in <a href="./POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md.html">POSTGRESQL_PHYSICAL_TRANSACTION_DESIGN.md</a>.</li>
+<li><strong>Mermaid structure:</strong> 4 fenced Mermaid blocks in <a href="./POSTGRESQL_PHYSICAL_ERD.md.html">POSTGRESQL_PHYSICAL_ERD.md</a>.</li>
 <li><strong>Invariant preservation:</strong> RLS/isolation document states tenant authority only from trusted, verified, transaction-bound context, never from client-supplied tenant IDs and never from user-settable PostgreSQL GUCs for authorization decisions.</li>
 <li>Export/package validation results, file hashes, and git publication verification are recorded in <a href="/home/ubuntu/cares/copilot.txt">copilot.txt</a> upon completion of execution steps.</li>
 </ul>
@@ -331,7 +331,6 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </ul>
 <p><strong>Blocked issues (specific, not whole-round blockers):</strong> none identified that prevent implementation planning as a documentation/planning activity; however, the approvals and validations above <strong>block final implementation correctness/approval</strong> for affected areas until resolved.</p>
 <p><strong>Stop condition:</strong> Round 2 documentation/design work is complete for this execution. <strong>Do not start Round 3 implementation</strong> and do not create SQL/migrations/application implementation without explicit project-owner authorization.</p>
-
 </article>
 </div>
 
